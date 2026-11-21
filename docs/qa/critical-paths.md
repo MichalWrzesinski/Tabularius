@@ -1,0 +1,11 @@
+# Critical path verification plan
+
+Paths are defined in [product overview](../product/overview.md#critical-paths). Method: Playwright E2E against the Compose stack at 1440 px and 360 px, plus API tests for data and error variants.
+
+| Path | Preconditions | Steps → observable result | Tasks | Complete in | Readiness |
+|---|---|---|---|---|---|
+| CP-001 | seeded business data; representative with assigned customers | request (manual in increment 2, email from increment 3) → completed ticket → login from link → download → file equals fixture | TASK-002, 003, 005; increment 3–5 | increment 5 (with mail and LLM) | Awaiting implementation |
+| CP-002 | mail stub, interpreter double | request without period → templated question → correlated reply → same ticket, plan v2 → exactly one file | increments 3–5 | increment 5 | Awaiting implementation |
+| CP-003 | two representatives, admin | other representative's customer refused; foreign file URL 404; reassignment and blocking detected before execution and download; spoofed sender does not execute (production mode) | TASK-004, 005; increment 3 | increment 3 | Awaiting implementation |
+| CP-004 | admin account, Mailpit | create representative → password mail → login → block → session invalid, download refused | TASK-004 | increment 2 | Awaiting implementation |
+| CP-005 | interpreter double failing; business API failing | provider error / data-source error → ticket kept in intervention → admin retry or manual parameters → result; never reported as success | TASK-005; increment 4 | increment 4 | Awaiting implementation |
