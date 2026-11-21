@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: composer
+    directories: ["/api", "/business"]
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+  - package-ecosystem: npm
+    directory: /client
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }
+      vitest: { patterns: ["vitest", "@vitest/*"] }
+  - package-ecosystem: docker
+    directories: ["/infra/php", "/client"]
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }

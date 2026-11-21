@@ -1,0 +1,71 @@
+# Shared commands for humans, agents and CI. Only Docker and make are needed on the host.
+SHELL := /bin/sh
+export UID := $(shell id -u)
+export GID := $(shell id -g)
+DC := docker compose
+API := $(DC) run --rm --no-deps api
+BUSINESS := $(DC) run --rm --no-deps business
+CLIENT := $(DC) run --rm --no-deps client
+
+.PHONY: up down logs install migrate test check check-backend check-frontend secrets hooks ci build clean-db
+
+.env:
+	cp .env.example .env
+
+up: .env build install ## start everything from scratch
+	$(DC) up -d --wait db
+	$(MAKE) migrate
+	$(DC) up -d
+	@echo "Tabularius: http://127.0.0.1:8080  (API health: /api/health)"
+
+build: .env
+	$(DC) build
+
+install: .env
+	$(API) composer install --no-interaction --no-progress
+	$(BUSINESS) composer install --no-interaction --no-progress
+	$(CLIENT) npm ci --no-audit --no-fund
+
+down:
+	$(DC) down
+
+logs:
+	$(DC) logs -f --tail=100
+
+migrate: .env
+	$(DC) run --rm api sh -c 'DATABASE_URL="$$MIGRATIONS_DATABASE_URL" bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration'
+	$(DC) run --rm business sh -c 'DATABASE_URL="$$MIGRATIONS_DATABASE_URL" bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration'
+
+test: .env
+	$(DC) up -d --wait db
+	$(DC) run --rm api vendor/bin/phpunit
+	$(DC) run --rm business vendor/bin/phpunit
+	$(CLIENT) npm test
+
+check: check-backend check-frontend secrets ## full set of checks (same as CI)
+
+check-backend: .env
+	$(DC) up -d --wait db
+	@for app in api business; do \
+	  echo "== $$app" && \
+	  $(DC) run --rm $$app sh -c 'bin/console cache:warmup --env=dev >/dev/null && \
+	    vendor/bin/php-cs-fixer check --diff --show-progress=none && \
+	    vendor/bin/phpstan analyse --no-progress --memory-limit=1G && \
+	    XDEBUG_MODE=coverage php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text=var/coverage.txt --only-summary-for-coverage-text && \
+	    php scripts/coverage-threshold.php var/coverage.txt 95 && \
+	    composer audit --no-interaction --locked' || exit 1; \
+	done
+
+check-frontend: .env
+	$(CLIENT) sh -c 'npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm audit --omit=dev'
+
+secrets:
+	docker run --rm -v "$(CURDIR)":/repo zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f dir /repo --no-banner --redact --config /repo/.gitleaks.toml
+
+hooks:
+	git config core.hooksPath .githooks
+
+ci: .env build install check ## what the CI job `check` runs
+
+clean-db: ## drop the local database volume (data loss: local only)
+	$(DC) down -v
