@@ -26,9 +26,10 @@ async function submit() {
   busy.value = true
   try {
     await createAccount(name.value.trim(), email.value.trim(), rep.value)
-    notice.value = proto.mode === 'demo'
-      ? 'Konto utworzone. W demo wiadomość z hasłem jest przechwytywana i nie trafia do adresata.'
-      : 'Konto utworzone. Losowe hasło wysłano pracownikowi; administrator go nie widzi.'
+    notice.value =
+      proto.mode === 'demo'
+        ? 'Konto utworzone. W demo wiadomość z hasłem jest przechwytywana i nie trafia do adresata.'
+        : 'Konto utworzone. Losowe hasło wysłano pracownikowi; administrator go nie widzi.'
     name.value = ''
     email.value = ''
     formOpen.value = false
@@ -42,13 +43,19 @@ async function toggle(a: Account) {
   notice.value = null
   try {
     await setAccountStatus(a.id, a.status === 'active' ? 'blocked' : 'active')
-    notice.value = a.status === 'blocked' ? `Zablokowano ${a.name}: sesje unieważnione, pobieranie raportów wyłączone.` : `Odblokowano ${a.name}.`
+    notice.value =
+      a.status === 'blocked' ? `Zablokowano ${a.name}: sesje unieważnione, pobieranie raportów wyłączone.` : `Odblokowano ${a.name}.`
   } catch (e) {
     notice.value = e instanceof Error ? e.message : 'Operacja nie powiodła się.'
   }
 }
 async function remove(a: Account) {
-  if (!window.confirm(`Usunąć konto ${a.name}? Dostęp zostanie odebrany, historia zgłoszeń i dziennik pozostaną. Tej operacji nie można cofnąć.`)) return
+  if (
+    !window.confirm(
+      `Usunąć konto ${a.name}? Dostęp zostanie odebrany, historia zgłoszeń i dziennik pozostaną. Tej operacji nie można cofnąć.`,
+    )
+  )
+    return
   try {
     await deleteAccount(a.id)
     notice.value = `Usunięto konto ${a.repCode}. Historia zachowana zgodnie z polityką przechowywania.`
@@ -61,19 +68,40 @@ async function remove(a: Account) {
 <template>
   <div>
     <div class="pagehead">
-      <div><h1>Pracownicy</h1><p>Konta handlowców i ich przypisanie do handlowców w systemie danych.</p></div>
-      <button class="cta" type="button" :aria-expanded="formOpen" aria-controls="new-account" @click="formOpen = !formOpen"><Ico name="userPlus" />Dodaj pracownika</button>
+      <div>
+        <h1>Pracownicy</h1>
+        <p>Konta handlowców i ich przypisanie do handlowców w systemie danych.</p>
+      </div>
+      <button class="cta" type="button" :aria-expanded="formOpen" aria-controls="new-account" @click="formOpen = !formOpen">
+        <Ico name="userPlus" />Dodaj pracownika
+      </button>
     </div>
-    <p v-if="notice" class="x-alert done" role="status"><Ico name="check" /><span>{{ notice }}</span></p>
+    <p v-if="notice" class="x-alert done" role="status">
+      <Ico name="check" /><span>{{ notice }}</span>
+    </p>
 
     <form v-if="formOpen" id="new-account" class="card params" style="margin-bottom: 23px" novalidate @submit.prevent="submit">
       <h3>Nowe konto handlowca</h3>
       <p class="x-muted" style="margin: -14px 0 18px">Konto jest aktywne od razu. Hasło generuje system i wysyła je pracownikowi.</p>
-      <div v-if="formError" class="x-alert error" role="alert"><Ico name="alert" /><span>{{ formError }}</span></div>
+      <div v-if="formError" class="x-alert error" role="alert">
+        <Ico name="alert" /><span>{{ formError }}</span>
+      </div>
       <div class="x-grid3">
-        <div class="field"><label for="acc-name">Imię i nazwisko</label><div class="input"><input id="acc-name" v-model="name" autocomplete="off" /></div></div>
-        <div class="field"><label for="acc-email">Służbowy e-mail</label><div class="input"><Ico name="mail" /><input id="acc-email" v-model="email" type="email" autocomplete="off" /></div></div>
-        <div class="field"><label for="acc-rep">Handlowiec w systemie danych</label><select id="acc-rep" v-model="rep" class="x-native" style="height: 62px"><option value="PH-05">PH-05 · Wielkopolska (4 klientów)</option><option value="PH-02">PH-02 · Mazowsze (9 klientów)</option></select></div>
+        <div class="field">
+          <label for="acc-name">Imię i nazwisko</label>
+          <div class="input"><input id="acc-name" v-model="name" autocomplete="off" /></div>
+        </div>
+        <div class="field">
+          <label for="acc-email">Służbowy e-mail</label>
+          <div class="input"><Ico name="mail" /><input id="acc-email" v-model="email" type="email" autocomplete="off" /></div>
+        </div>
+        <div class="field">
+          <label for="acc-rep">Handlowiec w systemie danych</label
+          ><select id="acc-rep" v-model="rep" class="x-native" style="height: 62px">
+            <option value="PH-05">PH-05 · Wielkopolska (4 klientów)</option>
+            <option value="PH-02">PH-02 · Mazowsze (9 klientów)</option>
+          </select>
+        </div>
       </div>
       <button class="cta" type="submit" :disabled="busy"><Ico name="check" />{{ busy ? 'Tworzenie…' : 'Utwórz konto' }}</button>
     </form>
@@ -84,14 +112,24 @@ async function remove(a: Account) {
           <div class="avatar" aria-hidden="true">{{ initials(a.name) }}</div>
           <div class="x-grow">
             <b>{{ a.name }}</b>
-            <span>{{ proto.anonymize && !a.shared ? 'adres ukryty w demo publicznym' : a.email }} · {{ a.repCode }} · klientów: {{ a.customers }}</span>
+            <span
+              >{{ proto.anonymize && !a.shared ? 'adres ukryty w demo publicznym' : a.email }} · {{ a.repCode }} · klientów:
+              {{ a.customers }}</span
+            >
             <small>Ostatnie logowanie: {{ a.lastLogin ? formatDateTime(a.lastLogin) : 'nigdy' }}</small>
           </div>
-          <span class="badge" :class="a.status === 'active' ? 'done' : 'error'">{{ a.status === 'active' ? 'Aktywne' : 'Zablokowane' }}</span>
+          <span class="badge" :class="a.status === 'active' ? 'done' : 'error'">{{
+            a.status === 'active' ? 'Aktywne' : 'Zablokowane'
+          }}</span>
           <span v-if="a.shared" class="badge neutral">Wspólne konto demo</span>
           <template v-else>
-            <button class="x-btn2" type="button" @click="toggle(a)"><Ico :name="a.status === 'active' ? 'lock' : 'unlock'" />{{ a.status === 'active' ? 'Zablokuj' : 'Odblokuj' }}<span class="sr-only"> {{ a.name }}</span></button>
-            <button class="x-btn2 danger" type="button" @click="remove(a)"><Ico name="trash" />Usuń<span class="sr-only"> {{ a.name }}</span></button>
+            <button class="x-btn2" type="button" @click="toggle(a)">
+              <Ico :name="a.status === 'active' ? 'lock' : 'unlock'" />{{ a.status === 'active' ? 'Zablokuj' : 'Odblokuj'
+              }}<span class="sr-only"> {{ a.name }}</span>
+            </button>
+            <button class="x-btn2 danger" type="button" @click="remove(a)">
+              <Ico name="trash" />Usuń<span class="sr-only"> {{ a.name }}</span>
+            </button>
           </template>
         </li>
       </ul>

@@ -26,12 +26,21 @@ const stats = computed(() => {
 <template>
   <div>
     <div class="pagehead">
-      <div><h1>Przegląd zgłoszeń</h1><p>Wiadomości, statusy i gotowe raporty — w jednym miejscu.</p></div>
+      <div>
+        <h1>Przegląd zgłoszeń</h1>
+        <p>Wiadomości, statusy i gotowe raporty — w jednym miejscu.</p>
+      </div>
       <div class="date">{{ formatLongDate(NOW) }}</div>
     </div>
     <AsyncBlock :loading="loading && !data" :error="error" :skeleton-rows="6" @retry="reload">
       <div class="stats">
-        <RouterLink v-for="s in stats" :key="s.label" class="stat" :to="{ path: '/admin/zgloszenia', query: { status: s.filter } }" style="text-decoration: none">
+        <RouterLink
+          v-for="s in stats"
+          :key="s.label"
+          class="stat"
+          :to="{ path: '/admin/zgloszenia', query: { status: s.filter } }"
+          style="text-decoration: none"
+        >
           <div class="sym"><Ico :name="s.icon" /></div>
           <span class="num">{{ s.value }}</span>
           <b>{{ s.label }}</b>

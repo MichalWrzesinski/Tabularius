@@ -1,7 +1,20 @@
 import { proto } from '../mock/api'
 import type { Ticket } from '../mock/types'
 
-const MONTH_NOM = ['styczeń', 'luty', 'marzec', 'kwiecień', 'maj', 'czerwiec', 'lipiec', 'sierpień', 'wrzesień', 'październik', 'listopad', 'grudzień']
+const MONTH_NOM = [
+  'styczeń',
+  'luty',
+  'marzec',
+  'kwiecień',
+  'maj',
+  'czerwiec',
+  'lipiec',
+  'sierpień',
+  'wrzesień',
+  'październik',
+  'listopad',
+  'grudzień',
+]
 
 /** „01–31.10.2026” → „październik” when the period is one full calendar month. */
 function fullMonth(period: string): string | null {
@@ -37,5 +50,10 @@ export function ticketPerson(t: Ticket): string {
 }
 
 export function initials(name: string): string {
-  return name.split(/\s+/).map((x) => x[0] ?? '').join('').slice(0, 2).toUpperCase()
+  return name
+    .split(/\s+/)
+    .map((x) => x[0] ?? '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 }

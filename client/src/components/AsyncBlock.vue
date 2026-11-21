@@ -14,7 +14,9 @@ defineEmits<{ retry: [] }>()
     <Ico name="alert" />
     <div>
       <p>{{ error }}</p>
-      <button class="x-btn2 x-small" style="margin-top: 12px" type="button" @click="$emit('retry')"><Ico name="refresh" />Spróbuj ponownie</button>
+      <button class="x-btn2 x-small" style="margin-top: 12px" type="button" @click="$emit('retry')">
+        <Ico name="refresh" />Spróbuj ponownie
+      </button>
     </div>
   </div>
   <slot v-else />

@@ -13,8 +13,15 @@ export const STATUS: Record<TicketStatus, { label: string; tone: 'done' | 'progr
 }
 
 export const STATUS_ORDER: TicketStatus[] = [
-  'received', 'interpreting', 'needs_clarification', 'awaiting_confirmation',
-  'queued', 'running', 'completed', 'rejected', 'needs_intervention',
+  'received',
+  'interpreting',
+  'needs_clarification',
+  'awaiting_confirmation',
+  'queued',
+  'running',
+  'completed',
+  'rejected',
+  'needs_intervention',
 ]
 
 export const OPERATION_LABEL: Record<Operation, string> = {
