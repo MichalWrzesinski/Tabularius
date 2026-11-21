@@ -63,3 +63,17 @@ The prototype is ready for the owner's assessment. Feedback will be handled as a
 ## 9. Possible publication angle
 
 „The mockup showed the sender's email — the brief forbade it”: how the public-demo privacy rule changed a designed screen. Supported by the before/after screens.
+
+## Revision — owner rejected the first version (2026-11-21)
+
+- **Human intervention (owner):** „Prototyp na localhost:5173 nie wygląda jak makiety załączone do opisu startowego. Przykładowo strona główna ma zupełnie inne treści. Nie akceptuje.”
+- **Cause (agent's own analysis):** the agent treated the mockups as a „visual direction” and wrote its own layouts, copy and icon set (Lucide). The brief says the mockups' HTML/CSS sources and assets are *the basis for implementing the appearance* (§9.1). The automated checks (overflow, console, flows) all passed but never compared the result with the mockups, so they could not catch this.
+- **Fix:**
+  - generated `mockup.css` from the four mockup stylesheets and rebuilt every mockup screen with the mockup's markup, copy and SVG icons;
+  - moved the extra elements into `x-`-prefixed `extras.css`;
+  - made the public-demo anonymization a separate switch, so the default view matches the mockup;
+  - aligned the sample tickets with the mockup list (T-1040 discount simulation, T-1039 „Błąd”).
+- **New check:** `client/scripts/compare-mockups.mjs` renders each mockup HTML and the matching app route at 1500 × 1000 and 390 px. The screenshots were compared visually by the agent. Home, both logins, overview and ticket details now match except for the listed differences ([prototype README](../../design/prototype/README.md#differences-from-the-mockups-and-why)). This is a visual comparison, not a pixel diff.
+- **Trade-off reopened:** the first version raised low-contrast mockup greys to WCAG AA. The second keeps the mockup values and asks the owner.
+- **Lesson:** when supplied mockups have sources, compare against them screen by screen before asking for acceptance. Passing functional checks does not show the design was followed.
+- Publication angle (optional): „Green checks, rejected prototype” — automated checks verified behaviour but not fidelity to the design input.

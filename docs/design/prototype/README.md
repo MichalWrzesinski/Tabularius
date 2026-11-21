@@ -1,38 +1,57 @@
 # Prototype (increment 1)
 
-Built 2026-11-21 in the target stack (`client/`: Vue 3 + TypeScript, Vite) with a mocked API and synthetic data. Run instructions: [client/README.md](../../../client/README.md). Status: **waiting for the owner's assessment**.
+Run instructions: [client/README.md](../../../client/README.md). Status: **second version (2026-11-21) waiting for the owner's assessment.** The owner rejected the first version the same day because it did not look like the mockups (for example, the home page had different content).
+
+## How the second version is built
+
+- The visual layer is [client/src/styles/mockup.css](../../../client/src/styles/mockup.css), generated from the mockups' `desktop/style.css`, `desktop/home.css`, `mobile/mobile.css` and `mobile/home.css`. Class names, HTML structure, copy and inline SVG icons are taken from the mockup sources. Phone rules apply below 860 px.
+- Changes against the sources are needed because the mockups are fixed artboards (1500 × 1000 and 390 px):
+  - fluid widths instead of `.screen` 1500 × 1000, `.main` 1232 px, `.login` 650 + 850 px and `.form` 460 px;
+  - a sticky sidebar;
+  - the footer in the normal page flow.
+- Elements the mockups do not define live in [extras.css](../../../client/src/styles/extras.css) with an `x-` prefix, so they never override a mockup class. These cover states, actions, the employee screens and the CSV preview.
+- Comparison screenshots of the app at the mockup sizes are in [compare/](compare/), named like the mockup PNGs in [../mockups/](../mockups/). Script: `client/scripts/compare-mockups.mjs`.
+
+## Differences from the mockups, and why
+
+| Where | Mockup | Prototype | Reason |
+|---|---|---|---|
+| Employee login, demo box | Mailbox address only | Adds the shared demo account credentials (`handlowiec@example.com` / `Demo123!`) | Brief §4.1: shared demo credentials are displayed. Without them the employee cannot open the linked report |
+| Admin login, demo box | „Konto demonstracyjne do skonfigurowania” | „Konto demonstracyjne, wspólne dla uczestników” | The account exists in the prototype. `admin@example.com` / `Demo123!` are taken from the mockup |
+| Admin login heading | „Odbierz raport” | unchanged | Kept as in the mockup. It may be a copy of the employee heading; **owner to confirm** |
+| Login screens | Static fields | Validation errors, show/hide password, error and „after login we open the report” notes | Brief §9 states |
+| Overview counters | 8 / 3 / 2 / 24 | Calculated from the synthetic tickets | Sample numbers in the mockups are demo data |
+| Status „Do sprawdzenia” vs „Błąd” | Both labels shown | Same status `needs_intervention`. The badge reads „Błąd” for technical failures and „Do sprawdzenia” otherwise | One intervention status in the process (TKT-STATUS) |
+| Ticket details | Correspondence, file card, parameters | Same layout. Extra: a status banner for states other than completed, an action card for interventions, a reply simulation (prototype only), a collapsible result preview, and the history tab | Scenarios from brief §9 |
+| Ticket details in the **public demo** | Shows name, address and body | „Prototyp” → „Widoki publicznego demo” replaces them with an alias and the recognized operation | Brief §4.1 / ID-DEMO-3. Off by default so the screen matches the mockup (trusted view) |
+| „Ustawienia” | Menu item | A read-only page with environment information | A menu item does not add scope |
+| Employee screens („Moje raporty”, report, confirmation) | None | The admin shell structure with the employee login's teal palette, file cards and parameter cards | Brief §8, §9.1 asks for them |
+| Text contrast | Grey secondary text such as `#a092ac` | Unchanged in mockup elements | Kept as designed. Contrast is flagged under limitations |
 
 ## Scenarios covered (brief §9)
 
-| Scenario | Where | Result of the automated walkthrough (Playwright, 1440 and 360 px) |
+| Scenario | Where | Automated walkthrough (Playwright, 1440 and 360 px) |
 |---|---|---|
-| Valid request → report | `/admin/zgloszenia/T-1042`, employee `/moje-raporty/f-7c1e9a` | file, notification, result preview, CSV download |
-| Missing period → question → reply → same ticket, one result | `/admin/zgloszenia/T-1040` („Symulacja odpowiedzi”) | plan v1 → v2, queued once, completed, file created |
+| Valid request → report | `T-1042`, employee `/moje-raporty/f-7c1e9a` | file, preview, CSV download |
+| Missing period → question → reply → same ticket, one result | `T-1040` (discount simulation, „Odpowiedź pracownika”) | plan v1 → v2, queued once, completed |
 | Prohibited report (payroll, „delete the database”) | `T-1037` | rejected, no data read |
 | Customer of another representative | `T-1034` | refused without naming other customers |
-| Provider error → intervention | `T-1039` | ticket kept; retry (fails again by design) or manual parameters → report |
+| Data-source error → retry | `T-1039` („Błąd”) | retry → completed |
+| AI provider error → manual handling | `T-1033` | retry interpretation (fails again by design) or manual parameters → report |
 | Ambiguous customer after 3 rounds | `T-1035` | admin picks a customer within the owner's scope |
-| Email link → login → report (no automatic download) | `/moje-raporty/f-7c1e9a` without a session | redirect to login, back to the report |
-| Production confirmation (ID-2) | `/moje-raporty/potwierdz/T-1036` | confirm → discount simulation with the 2 500,01 half-up case |
-| Foreign or missing file | `/moje-raporty/f-0000ff` | „Ten raport jest niedostępny” (no existence hint) |
-| Loading / empty / error states | „Prototyp” panel: latency, empty employee, list error | skeletons, empty states, error with retry |
+| E-mail link → login → report, no automatic download | `/moje-raporty/f-7c1e9a` without a session | login, then back to the report |
+| Production confirmation (ID-2) | `/moje-raporty/potwierdz/T-1036` | confirm → discount simulation (2 500,01 half-up case) |
+| Foreign or missing file | `/moje-raporty/f-0000ff` | „Ten raport jest niedostępny” |
+| Loading, empty, error states | „Prototyp” panel | skeletons, empty states, error with retry |
 
-Automated checks (script `client/scripts/prototype-screens.mjs`): 55 checks, no horizontal page scroll at 1440 or 360 px, no console errors. Curated screenshots are in [screens/](screens/). A downloaded sample of the CSV is in [sample-sales-report.csv](sample-sales-report.csv): UTF-8 with BOM, `;`, CRLF, decimal comma, and `'+48 Auto Części` escaped.
+Results:
+- Automated checks (`client/scripts/prototype-screens.mjs`): 57 checks, no horizontal page scroll at 1440 or 360 px, no console errors.
+- Curated screenshots: [screens/](screens/).
+- Sample CSV: [sample-sales-report.csv](sample-sales-report.csv).
 
-## Decisions taken in the prototype
+## Limitations
 
-- Public demo views never show the sender address, subject or body. Incoming messages show as „Prośba od uczestnika · rozpoznano: …”. Production mode shows the body as plain text (no HTML rendering).
-- Ticket titles come from the operation and the resolved parameters, not from the email subject.
-- Overview keeps the mockups' four counters: Nowe (`received` + `interpreting`), W realizacji (`queued` + `running`), Wymagają interwencji, Ukończone. Clarification and confirmation are reached through the status filter.
-- The administrator's interventions run within the ticket owner's scope (ACC-ADM-1). The UI says so, and every change appears in the ticket history.
-- Icons come from Lucide (MIT licence), which matches the mockups' line style, instead of copying the inline SVGs.
-- Contrast: the mockups' light grey text (`#a092ac`, about 2.7:1) was replaced by `--muted` `#74667f` (4.8–5.3:1). The teal button gradient was darkened to at least 4.77:1. Status colours are 5.1–6.4:1 and always come with text.
-- The „Prototyp” control panel and „Symulacja odpowiedzi” exist only in the prototype (dashed outline).
-
-## Limitations and gaps
-
-- No backend. Permission checks in `src/mock/api.ts` only imitate the rules and are not a security boundary.
-- Keyboard: every control is a native element with a visible focus ring, and the mobile menu and profile menu close with Esc. A full keyboard-only walkthrough and a screen-reader check have not been done.
-- The CSV has not been opened in Excel or LibreOffice yet (RPT-OUT-2/4 require it in increment 2).
-- The wide CSV preview scrolls horizontally inside its own frame on narrow screens. The page itself does not scroll sideways.
-- Dates are fixed to the reference date 15.11.2026.
+- No backend. Permission checks in `src/mock/api.ts` only imitate the rules.
+- Contrast: some secondary texts taken from the mockups are below WCAG AA, for example `#a092ac` on white at about 2.7:1. The first version darkened them; the second keeps the mockup values. **Owner to decide** whether to darken them (recommended; the change is not visible at a glance).
+- No full keyboard-only or screen-reader pass yet. The controls are native elements with focus styles, and Esc closes the menus.
+- The CSV has not been opened in Excel or LibreOffice yet.

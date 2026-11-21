@@ -1,32 +1,31 @@
 <script setup lang="ts">
-import { ArrowRight, Database, Eye, EyeOff, FileText, LogIn, Mail } from 'lucide-vue-next'
+// Mockups: docs/design/mockups/{desktop,mobile}/01-logowanie-pracownik.html and 02-logowanie-admin.html.
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import BrandMark from '../components/BrandMark.vue'
-import { DEMO_MAILBOX } from '../mock/data'
+import logo from '../assets/logo.svg'
+import Ico from '../components/Ico.vue'
 import { DEMO_CREDENTIALS, login, proto } from '../mock/api'
+import { DEMO_MAILBOX } from '../mock/data'
 
 const props = defineProps<{ role: 'admin' | 'employee' }>()
 const route = useRoute()
 const router = useRouter()
+const isAdmin = computed(() => props.role === 'admin')
+const creds = computed(() => DEMO_CREDENTIALS[props.role])
 
 const email = ref('')
 const password = ref('')
 const show = ref(false)
 const busy = ref(false)
 const error = ref<string | null>(null)
-const fieldErrors = ref<{ email?: string; password?: string }>({})
-
-const isAdmin = computed(() => props.role === 'admin')
-const creds = computed(() => DEMO_CREDENTIALS[props.role])
+const emailError = ref<string | null>(null)
+const passError = ref<string | null>(null)
 
 async function submit() {
-  fieldErrors.value = {}
   error.value = null
-  if (!email.value.trim()) fieldErrors.value.email = 'Podaj adres e-mail.'
-  else if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) fieldErrors.value.email = 'Podaj prawidłowy adres e-mail.'
-  if (!password.value) fieldErrors.value.password = 'Podaj hasło.'
-  if (fieldErrors.value.email || fieldErrors.value.password) return
+  emailError.value = !email.value.trim() ? 'Podaj adres e-mail.' : /^\S+@\S+\.\S+$/.test(email.value.trim()) ? null : 'Podaj prawidłowy adres e-mail.'
+  passError.value = password.value ? null : 'Podaj hasło.'
+  if (emailError.value || passError.value) return
   busy.value = true
   try {
     await login(props.role, email.value, password.value)
@@ -38,307 +37,95 @@ async function submit() {
     busy.value = false
   }
 }
-
-function fillDemo() {
-  email.value = creds.value.email
-  password.value = creds.value.password
+function forgot() {
+  error.value = null
+  window.alert('Prototyp: reset wygeneruje nowe hasło i wyśle je na zarejestrowany adres, bez informacji, czy konto istnieje.')
 }
 </script>
 
 <template>
-  <div class="login" :class="isAdmin ? 'login--admin' : 'login--emp'">
-    <section class="hero">
-      <RouterLink to="/" class="hero__brand"><BrandMark :size="52" /></RouterLink>
-      <div class="hero__lead">
-        <p class="eyebrow">Od wiadomości do raportu</p>
-        <h1 v-if="isAdmin">Zgłoszenia i raporty w jednym miejscu</h1>
-        <h1 v-else>Od e-maila do gotowego raportu</h1>
-        <p class="intro">
-          {{ isAdmin ? 'Śledź zgłoszenia, uzupełniaj parametry i zarządzaj kontami handlowców.' : 'Wyślij prośbę e-mailem. Gdy raport będzie gotowy, otrzymasz link do pobrania.' }}
-        </p>
-        <div class="flow" aria-hidden="true">
-          <span class="flowbox"><Mail /></span><span class="flowline" />
-          <span class="flowbox"><Database /></span><span class="flowline" />
-          <span class="flowbox"><FileText /></span>
-        </div>
+  <div class="screen login" :class="{ 'x-emp': !isAdmin }">
+    <section class="hero" :class="{ blue: !isAdmin }">
+      <RouterLink class="brand" to="/" style="color: inherit"><img :src="logo" alt="" />Tabularius</RouterLink>
+      <div class="lead">
+        <div class="eyebrow">Od wiadomości do raportu</div>
+        <h1 v-if="isAdmin">Zarządzaj<br />zgłoszeniami</h1>
+        <h1 v-else>Od e-maila<br />do gotowego raportu</h1>
+        <p v-if="isAdmin" class="intro">Przeglądaj wiadomości pracowników, <br />sprawdzaj status realizacji i pobieraj <br />gotowe raporty.</p>
+        <p v-else class="intro">Wyślij prośbę e-mailem. Gdy raport będzie <br />gotowy, otrzymasz link do pobrania.</p>
+      </div>
+      <div class="flow" aria-hidden="true">
+        <div class="flowbox"><Ico name="mail" /></div><div class="flowline" />
+        <div class="flowbox"><Ico name="db" /></div><div class="flowline" />
+        <div class="flowbox"><Ico name="calendar" /></div>
       </div>
       <div v-if="proto.mode === 'demo'" class="demo">
-        <h2>Wypróbuj demo</h2>
-        <p>Wyślij e-mail z prośbą na adres:</p>
-        <p class="demo__address">{{ DEMO_MAILBOX }}</p>
-        <p>Przykład: „Przygotuj raport sprzedaży za październik 2026”. Link do raportu otrzymasz w odpowiedzi.</p>
-        <p class="demo__warn">Widoki demo są wspólne dla uczestników. Nie wysyłaj danych poufnych ani prawdziwych danych firmowych.</p>
+        <template v-if="isAdmin">
+          <h3>Dostęp do demo</h3>
+          <p>Przykładowe dane logowania</p>
+          <p style="margin-top: 12px">E-mail: <b>{{ creds.email }}</b><br />Hasło: <b>{{ creds.password }}</b></p>
+          <p style="font-size: 13px; margin-top: 15px; opacity: 0.8">Konto demonstracyjne, wspólne dla uczestników.</p>
+        </template>
+        <template v-else>
+          <h3>Wypróbuj demo</h3>
+          <p>Wyślij e-mail z poleceniem na adres:</p>
+          <b class="address">{{ DEMO_MAILBOX }}</b>
+          <p>Przykład: Przygotuj raport sprzedaży<br />za październik 2026.</p>
+          <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi. Konto demo: <b>{{ creds.email }}</b> / <b>{{ creds.password }}</b></p>
+        </template>
       </div>
+      <div class="herofoot">TABULARIUS &nbsp; / &nbsp; WERSJA DEMONSTRACYJNA</div>
     </section>
 
     <section class="formarea">
-      <p class="toprole"><RouterLink to="/" class="mbrand"><BrandMark :size="38" /></RouterLink><span class="toprole__spacer" /><span v-if="proto.mode === 'demo'" class="pill">DEMO</span>{{ isAdmin ? 'Panel administratora' : 'Panel pracownika' }}</p>
-      <form class="form" novalidate @submit.prevent="submit">
-        <p class="eyebrow form__eyebrow">{{ isAdmin ? 'Dostęp operacyjny' : 'Twój raport jest blisko' }}</p>
-        <h2 class="form__title">{{ isAdmin ? 'Zaloguj się' : 'Odbierz raport' }}</h2>
-        <p class="form__sub">{{ isAdmin ? 'Panel do obsługi zgłoszeń i kont.' : 'Zaloguj się, aby przejść do swoich raportów.' }}</p>
+      <div class="toprole"><span v-if="proto.mode === 'demo'" class="pill">DEMO</span> {{ isAdmin ? 'Panel administratora' : 'Panel pracownika' }}</div>
+      <form id="main" class="form" novalidate @submit.prevent="submit">
+        <div class="eyebrow">{{ isAdmin ? 'Panel administratora' : 'Twój raport jest blisko' }}</div>
+        <h2>Odbierz raport</h2>
+        <p class="sub">{{ isAdmin ? 'Zaloguj się, aby przejść do panelu.' : 'Zaloguj się, aby przejść do swoich raportów.' }}</p>
 
-        <div v-if="route.query.next && !isAdmin" class="alert alert--info" style="margin-bottom: 22px">
-          <LogIn aria-hidden="true" /><p>Po zalogowaniu otworzymy raport z wiadomości e-mail.</p>
-        </div>
-        <div v-if="error" class="alert alert--error" role="alert" style="margin-bottom: 22px"><p>{{ error }}</p></div>
+        <div v-if="route.query.next && !isAdmin" class="x-alert progress"><Ico name="info" /><span>Po zalogowaniu otworzymy raport z wiadomości e-mail.</span></div>
+        <div v-if="error" class="x-alert error" role="alert"><Ico name="alert" /><span>{{ error }}</span></div>
 
         <div class="field">
           <label :for="`${role}-email`">E-mail</label>
-          <div class="input" :class="{ 'input--invalid': fieldErrors.email }">
-            <Mail aria-hidden="true" />
-            <input :id="`${role}-email`" v-model="email" type="email" autocomplete="username" placeholder="np. anna.kowalska@firma.pl"
-              :aria-invalid="!!fieldErrors.email" :aria-describedby="fieldErrors.email ? `${role}-email-err` : undefined" />
+          <div class="input">
+            <Ico name="mail" />
+            <input :id="`${role}-email`" v-model="email" type="email" autocomplete="username" :placeholder="isAdmin ? 'np. admin@firma.pl' : 'np. anna.kowalska@firma.pl'"
+              :aria-invalid="!!emailError" :aria-describedby="emailError ? `${role}-email-err` : undefined" />
           </div>
-          <p v-if="fieldErrors.email" :id="`${role}-email-err`" class="field__error">{{ fieldErrors.email }}</p>
+          <p v-if="emailError" :id="`${role}-email-err`" class="x-fielderr">{{ emailError }}</p>
         </div>
         <div class="field">
-          <label :for="`${role}-password`">Hasło</label>
-          <div class="input" :class="{ 'input--invalid': fieldErrors.password }">
-            <input :id="`${role}-password`" v-model="password" :type="show ? 'text' : 'password'" autocomplete="current-password" placeholder="Wprowadź hasło"
-              :aria-invalid="!!fieldErrors.password" :aria-describedby="fieldErrors.password ? `${role}-pass-err` : undefined" />
-            <button class="icon-btn" type="button" :aria-pressed="show" :aria-label="show ? 'Ukryj hasło' : 'Pokaż hasło'" @click="show = !show">
-              <component :is="show ? EyeOff : Eye" aria-hidden="true" />
-            </button>
+          <label :for="`${role}-pass`">Hasło</label>
+          <div class="input">
+            <input :id="`${role}-pass`" v-model="password" :type="show ? 'text' : 'password'" autocomplete="current-password" placeholder="Wprowadź hasło"
+              :aria-invalid="!!passError" :aria-describedby="passError ? `${role}-pass-err` : undefined" />
+            <button class="x-eye" type="button" :aria-pressed="show" :aria-label="show ? 'Ukryj hasło' : 'Pokaż hasło'" @click="show = !show"><Ico :name="show ? 'eyeOff' : 'eye'" /></button>
           </div>
-          <p v-if="fieldErrors.password" :id="`${role}-pass-err`" class="field__error">{{ fieldErrors.password }}</p>
+          <p v-if="passError" :id="`${role}-pass-err`" class="x-fielderr">{{ passError }}</p>
         </div>
-        <p class="forgot"><a href="#" @click.prevent="error = 'Prototyp: reset hasła wygeneruje nowe hasło i wyśle je na zarejestrowany adres (bez informacji, czy konto istnieje).'">Nie pamiętasz hasła?</a></p>
-
-        <div class="form__actions">
-          <button class="btn" type="submit" :disabled="busy">
-            <LogIn aria-hidden="true" />{{ busy ? 'Logowanie…' : 'Zaloguj się' }}
-          </button>
-        </div>
-
-        <div v-if="proto.mode === 'demo'" class="creds">
-          <p><b>Wspólne konto demonstracyjne</b></p>
-          <p>E-mail: <code>{{ creds.email }}</code><br />Hasło: <code>{{ creds.password }}</code></p>
-          <button type="button" class="textlink" @click="fillDemo">Wypełnij dane demo<ArrowRight aria-hidden="true" /></button>
-        </div>
+        <a class="forgot" href="#" @click.prevent="forgot">Nie pamiętasz hasła?</a>
+        <button class="cta" :class="{ blue: !isAdmin }" type="submit" :disabled="busy"><Ico name="login" :width="1.8" />{{ busy ? 'Logowanie…' : 'Zaloguj się' }}</button>
+        <p v-if="proto.mode === 'demo'" class="formnote x-desk">{{ isAdmin ? 'Dane dostępowe do demo znajdziesz po lewej stronie.' : 'Instrukcję wypróbowania demo znajdziesz po lewej stronie.' }}</p>
+        <p v-if="proto.mode === 'demo'" class="formnote x-mob">{{ isAdmin ? 'Dane dostępowe do demo znajdziesz poniżej.' : 'Instrukcję wypróbowania demo znajdziesz poniżej.' }}</p>
       </form>
-      <p class="formfooter">© 2026 Tabularius</p>
+      <div v-if="proto.mode === 'demo'" class="demo">
+        <template v-if="isAdmin">
+          <h3>Dostęp do demo</h3>
+          <p>Przykładowe dane logowania</p>
+          <p style="margin-top: 12px">E-mail: <b>{{ creds.email }}</b><br />Hasło: <b>{{ creds.password }}</b></p>
+          <p style="font-size: 13px; margin-top: 15px; opacity: 0.8">Konto demonstracyjne, wspólne dla uczestników.</p>
+        </template>
+        <template v-else>
+          <h3>Wypróbuj demo</h3>
+          <p>Wyślij e-mail z poleceniem na adres:</p>
+          <b class="address">{{ DEMO_MAILBOX }}</b>
+          <p>Przykład: Przygotuj raport sprzedaży<br />za październik 2026.</p>
+          <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi. Konto demo: <b>{{ creds.email }}</b> / <b>{{ creds.password }}</b></p>
+        </template>
+      </div>
+      <div class="formfooter"><span>© 2026 Tabularius</span></div>
     </section>
   </div>
 </template>
-
-<style scoped>
-.login {
-  display: grid;
-  grid-template-columns: minmax(380px, 43%) 1fr;
-  min-height: 100vh;
-  background: #fff;
-}
-.login--emp {
-  --accent: var(--emp-600);
-  --accent-light: var(--emp-500);
-  --accent-dark: var(--emp-700);
-}
-.login--admin {
-  --accent: var(--admin-600);
-  --accent-light: var(--admin-500);
-  --accent-dark: var(--admin-700);
-}
-.hero {
-  position: relative;
-  isolation: isolate;
-  padding: 52px clamp(24px, 4.5vw, 64px);
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  gap: 34px;
-}
-.login--admin .hero {
-  background:
-    url('../assets/pattern-flow.svg') center / 100% 100% no-repeat,
-    radial-gradient(ellipse at 100% 40%, #5d2790 0, transparent 65%),
-    linear-gradient(145deg, var(--admin-side-1), var(--admin-side-2) 65%, var(--admin-side-3));
-}
-.login--emp .hero {
-  background:
-    url('../assets/pattern-flow.svg') center / 100% 100% no-repeat,
-    radial-gradient(ellipse at 100% 38%, #118b91 0, transparent 68%),
-    linear-gradient(145deg, var(--emp-hero-1), var(--emp-hero-2) 65%, var(--emp-hero-3));
-}
-.hero__brand {
-  color: #fff;
-  text-decoration: none;
-  align-self: flex-start;
-}
-.eyebrow {
-  font-size: 12px;
-  letter-spacing: 2px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.hero .eyebrow {
-  color: #e2d3f2;
-}
-.login--emp .hero .eyebrow {
-  color: #c4e8ea;
-}
-.hero h1 {
-  font-size: clamp(32px, 3.4vw, 49px);
-  line-height: 1.13;
-  letter-spacing: -1.2px;
-  margin: 16px 0 20px;
-}
-.intro {
-  font-size: clamp(15px, 1.4vw, 20px);
-  line-height: 1.6;
-  max-width: 460px;
-  color: #f1eaf7;
-}
-.flow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 28px;
-}
-.flowbox {
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--sun);
-  color: var(--mark);
-  flex-shrink: 0;
-}
-.flowbox svg {
-  width: 28px;
-  height: 28px;
-}
-.flowline {
-  height: 2px;
-  width: 48px;
-  background: #ffffff70;
-}
-.demo {
-  padding: 22px 24px;
-  border-radius: 18px;
-  border: 1px solid #ffffff30;
-  background: #ffffff16;
-  font-size: 15px;
-  line-height: 1.6;
-}
-.demo h2 {
-  font-size: 21px;
-  margin-bottom: 8px;
-}
-.demo__address {
-  font-weight: 700;
-  font-size: 19px;
-  margin: 4px 0 8px;
-  overflow-wrap: anywhere;
-}
-.demo__warn {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #f6ecff;
-}
-.formarea {
-  padding: 48px clamp(20px, 6vw, 100px) 28px;
-  display: flex;
-  flex-direction: column;
-}
-.toprole {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  color: var(--muted);
-  font-size: 13px;
-}
-.mbrand {
-  display: none;
-  color: var(--ink);
-  text-decoration: none;
-  margin-right: auto;
-}
-.pill {
-  border: 1px solid var(--line);
-  border-radius: 50px;
-  padding: 6px 12px;
-  font-size: 11px;
-  letter-spacing: 1px;
-  font-weight: 700;
-  color: var(--ink-soft);
-}
-.form {
-  width: 100%;
-  max-width: 460px;
-  margin: clamp(32px, 9vh, 97px) auto 0;
-}
-.form__eyebrow {
-  color: var(--accent);
-  margin-bottom: 14px;
-}
-.form__title {
-  font-size: clamp(30px, 3vw, 43px);
-  letter-spacing: -1.2px;
-  margin-bottom: 10px;
-}
-.form__sub {
-  color: var(--muted);
-  font-size: 16px;
-  margin-bottom: 32px;
-}
-.forgot {
-  text-align: right;
-  margin: -6px 0 26px;
-  font-size: 14px;
-}
-.forgot a {
-  color: var(--accent);
-  display: inline-block;
-  padding: 10px 0;
-}
-.form__actions {
-  display: flex;
-  justify-content: center;
-}
-.creds {
-  margin-top: 28px;
-  padding: 16px 18px;
-  border-radius: 14px;
-  background: var(--surface-muted);
-  font-size: 14px;
-  line-height: 1.7;
-}
-.login--emp .creds {
-  background: var(--emp-100);
-}
-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
-}
-.formfooter {
-  margin-top: auto;
-  padding-top: 28px;
-  text-align: right;
-  font-size: 12px;
-  color: var(--muted);
-}
-@media (max-width: 860px) {
-  .login {
-    display: flex;
-    flex-direction: column-reverse;
-  }
-  .hero {
-    padding: 28px 20px 30px;
-  }
-  .hero__brand {
-    display: none;
-  }
-  .mbrand {
-    display: inline-flex;
-  }
-  .formarea {
-    padding: 20px 20px 10px;
-  }
-  .form {
-    margin-top: 24px;
-  }
-}
-</style>

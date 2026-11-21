@@ -8,7 +8,7 @@ Metrics: agent usage not measured (no tool export configured); application LLM c
 
 | # | Increment (brief §11) | State | Depends on |
 |---|---|---|---|
-| 1 | Discovery: vocabulary, financial and access rules, threat model, prototype | discovery drafted, owner decisions recorded, prototype built 2026-11-21; waiting for owner assessment | — |
+| 1 | Discovery: vocabulary, financial and access rules, threat model, prototype | discovery drafted, owner decisions recorded; prototype v1 rejected by owner (did not match mockups), v2 rebuilt on mockup sources 2026-11-21, waiting for owner assessment | — |
 | 2 | Deterministic report engine on seeded demo business system, API, login, dashboard | planned | 1, technical decisions, setup |
 | 3 | Mail ingestion, secure identity, durable tickets | planned | 2; mailbox details for the real adapter |
 | 4 | LLM interpretation, evaluation, attack tests | planned | 3; OpenAI key and evaluation budget for real runs |

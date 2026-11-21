@@ -1,17 +1,4 @@
-/* Design tokens derived from the owner's mockups (docs/design/mockups, desktop v8 / mobile v8). */
-@font-face {
-  font-family: Ubuntu;
-  src: url('../assets/fonts/Ubuntu-Light.ttf') format('truetype');
-  font-weight: 300;
-  font-display: swap;
-}
-@font-face {
-  font-family: Ubuntu;
-  src: url('../assets/fonts/Ubuntu-Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-display: swap;
-}
-
+/* Design tokens (values from the mockups) for the x- elements in extras.css. Fonts: mockup.css. */
 :root {
   --font: Ubuntu, system-ui, sans-serif;
 

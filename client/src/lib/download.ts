@@ -13,3 +13,8 @@ export function downloadCsv(file: ReportFile) {
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+
+export function csvSizeLabel(file: ReportFile): string {
+  const bytes = new TextEncoder().encode(buildCsv(file.header, file.rows.map((r) => r.cells))).length
+  return `CSV · ${Math.max(1, Math.round(bytes / 1024))} KB`
+}

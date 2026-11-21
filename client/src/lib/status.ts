@@ -9,7 +9,7 @@ export const STATUS: Record<TicketStatus, { label: string; tone: 'done' | 'progr
   running: { label: 'W realizacji', tone: 'progress' },
   completed: { label: 'Ukończone', tone: 'done' },
   rejected: { label: 'Odrzucone', tone: 'neutral' },
-  needs_intervention: { label: 'Wymaga interwencji', tone: 'error' },
+  needs_intervention: { label: 'Do sprawdzenia', tone: 'error' },
 }
 
 export const STATUS_ORDER: TicketStatus[] = [
@@ -32,4 +32,10 @@ export const ISSUE_LABEL: Record<string, string> = {
   out_of_catalog: 'Operacja spoza katalogu',
   out_of_scope_customer: 'Klient poza Twoim zakresem',
   recipient_change_requested: 'Prośba o zmianę odbiorcy (zignorowana)',
+}
+
+/** Mockup shows „Błąd” for technical failures; other interventions read „Do sprawdzenia”. Same status. */
+export function statusLabel(status: TicketStatus, reason?: string): string {
+  if (status === 'needs_intervention' && reason && /błąd|niedostępn|limit dostawcy/i.test(reason)) return 'Błąd'
+  return STATUS[status].label
 }

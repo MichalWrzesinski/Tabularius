@@ -1,22 +1,20 @@
 <script setup lang="ts">
-import { RefreshCw, TriangleAlert } from 'lucide-vue-next'
+import Ico from './Ico.vue'
 
 defineProps<{ loading: boolean; error: string | null; skeletonRows?: number }>()
 defineEmits<{ retry: [] }>()
 </script>
 
 <template>
-  <div v-if="loading" aria-busy="true" aria-live="polite">
-    <span class="sr-only">Ładowanie…</span>
-    <div v-for="i in skeletonRows ?? 4" :key="i" class="skeleton" style="height: 52px; margin-bottom: 10px" />
+  <div v-if="loading" aria-busy="true">
+    <span class="sr-only" role="status">Ładowanie…</span>
+    <div v-for="i in skeletonRows ?? 4" :key="i" class="x-skel" style="height: 60px" />
   </div>
-  <div v-else-if="error" class="alert alert--error" role="alert">
-    <TriangleAlert aria-hidden="true" />
+  <div v-else-if="error" class="x-alert error" role="alert">
+    <Ico name="alert" />
     <div>
       <p>{{ error }}</p>
-      <button class="btn btn--small btn--secondary" style="margin-top: 10px" type="button" @click="$emit('retry')">
-        <RefreshCw aria-hidden="true" />Spróbuj ponownie
-      </button>
+      <button class="x-btn2 x-small" style="margin-top: 12px" type="button" @click="$emit('retry')"><Ico name="refresh" />Spróbuj ponownie</button>
     </div>
   </div>
   <slot v-else />

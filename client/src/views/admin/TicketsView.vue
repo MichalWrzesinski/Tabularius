@@ -18,12 +18,7 @@ const initial = computed(() => {
 
 <template>
   <div>
-    <div class="page-head">
-      <div>
-        <h1>Zgłoszenia</h1>
-        <p>Wszystkie prośby odebrane ze skrzynki, od najnowszych.</p>
-      </div>
-    </div>
+    <div class="pagehead"><div><h1>Zgłoszenia</h1><p>Wszystkie prośby odebrane ze skrzynki, od najnowszych.</p></div></div>
     <AsyncBlock :loading="loading && !data" :error="error" @retry="reload">
       <TicketList v-if="data" :tickets="data" :per-page="10" :initial-status="initial" />
     </AsyncBlock>

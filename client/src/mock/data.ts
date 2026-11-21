@@ -58,9 +58,9 @@ function salesFile(): ReportFile {
     id: 'f-7c1e9a',
     ticketId: 'T-1042',
     ownerId: DEMO_REP_ID,
-    name: 'sprzedaz_2026-10-01_2026-10-31.csv',
+    name: 'sprzedaz_2026-10.csv',
     operation: 'sales_report',
-    periodLabel: '1–31 października 2026',
+    periodLabel: '01–31.10.2026',
     scopeLabel: `Twoi klienci (${OCT_CUSTOMERS.length})`,
     createdAt: '2026-11-15T09:42:30Z',
     expiresAt: '2026-11-22T09:42:30Z',
@@ -107,7 +107,7 @@ export function discountFile(ticketId: string, createdAt: string): ReportFile {
     id: 'f-d41b07', ticketId, ownerId: DEMO_REP_ID,
     name: 'symulacja_rabatu_moto-lux_2026-10.csv',
     operation: 'customer_discount_simulation',
-    periodLabel: '1–31 października 2026',
+    periodLabel: '01–31.10.2026',
     scopeLabel: 'Moto-Lux Gdańsk',
     createdAt, expiresAt: exp, header,
     rows: [
@@ -161,17 +161,16 @@ export function buildFixtures() {
       id: 'T-1042', ownerId: DEMO_REP_ID, ...person(0), participantAlias: alias(0),
       receivedAt: '2026-11-15T09:42:00Z', status: 'completed', clarificationRounds: 0, fileId: 'f-7c1e9a',
       plans: [{ version: 1, author: 'model', at: '2026-11-15T09:42:06Z', operation: 'sales_report', params: [
-        { label: 'Okres', value: '1–31 października 2026 („ostatni miesiąc”)' }, { label: 'Zakres', value: 'Przypisani klienci (6)' }], issues: [] }],
+        { label: 'Okres', value: '01–31.10.2026' }, { label: 'Zakres', value: 'Przypisani klienci' }], issues: [] }],
       messages: [
-        inMsg('2026-11-15T09:42:00Z', 'Dzień dobry,\n\nproszę o zestawienie sprzedaży za ostatni miesiąc dla moich klientów.\n\nDziękuję,\nAnna'),
-        outMsg('2026-11-15T09:42:40Z', 'notification', 'report_ready', 'Raport sprzedaży za 1–31 października 2026 jest gotowy. Zaloguj się, aby go pobrać: https://tabularius.gitpush.app/moje-raporty/f-7c1e9a'),
+        inMsg('2026-11-15T09:42:00Z', 'Dzień dobry,\n\nProszę o zestawienie sprzedaży za październik\ndla przypisanych mi klientów.\n\nDziękuję,\nAnna'),
       ],
       events: [
         { at: '2026-11-15T09:42:00Z', actor: 'system', actorName: 'System', text: 'Wiadomość zapisana, tożsamość: konto demonstracyjne' },
-        { at: '2026-11-15T09:42:06Z', actor: 'model', actorName: 'Interpretacja', text: 'Plan v1: raport sprzedaży, okres „ostatni miesiąc”' },
+        { at: '2026-11-15T09:42:06Z', actor: 'model', actorName: 'Interpretacja', text: 'Plan v1: raport sprzedaży, okres „październik”' },
         { at: '2026-11-15T09:42:07Z', actor: 'system', actorName: 'System', text: 'Plan zweryfikowany i autoryzowany; okres 01.10–31.10.2026' },
         { at: '2026-11-15T09:42:30Z', actor: 'system', actorName: 'System', text: 'Raport wygenerowany (7 pozycji, 6 klientów)' },
-        { at: '2026-11-15T09:42:40Z', actor: 'system', actorName: 'Poczta', text: 'Powiadomienie przyjęte przez serwer poczty' },
+        { at: '2026-11-15T09:42:40Z', actor: 'system', actorName: 'Poczta', text: 'Powiadomienie z linkiem przyjęte przez serwer poczty (szablon report_ready)' },
       ],
     },
     {
@@ -188,28 +187,30 @@ export function buildFixtures() {
     {
       id: 'T-1040', ownerId: DEMO_REP_ID, ...person(2), participantAlias: alias(2),
       receivedAt: '2026-11-15T09:21:00Z', status: 'needs_clarification', clarificationRounds: 1,
-      plans: [{ version: 1, author: 'model', at: '2026-11-15T09:21:04Z', operation: 'sales_report', params: [
-        { label: 'Okres', value: '— brak —' }, { label: 'Zakres', value: 'Przypisani klienci (6)' }], issues: ['missing_period'] }],
+      plans: [{ version: 1, author: 'model', at: '2026-11-15T09:21:04Z', operation: 'customer_discount_simulation', params: [
+        { label: 'Klient', value: 'Moto-Lux Gdańsk' }, { label: 'Okres', value: '— brak —' }, { label: 'Polityka', value: 'DEMO-RABAT 2026.1 (fikcyjna)' }], issues: ['missing_period'] }],
       messages: [
-        inMsg('2026-11-15T09:21:00Z', 'Cześć, przygotujcie proszę raport sprzedaży dla moich klientów.'),
-        outMsg('2026-11-15T09:21:10Z', 'question', 'ask_period', 'Za jaki okres przygotować raport sprzedaży? Możesz podać np. „październik 2026” albo daty od–do. Raport obejmuje tylko zakończone dni, najpóźniej do 14 listopada 2026.'),
+        inMsg('2026-11-15T09:21:00Z', 'Cześć,\n\npoliczcie proszę, jaki rabat wyszedłby dla Moto-Lux Gdańsk.\n\nMarta'),
+        outMsg('2026-11-15T09:21:10Z', 'question', 'ask_period', 'Za jaki okres policzyć aktywność klienta i symulację rabatu? Podaj np. „październik 2026” albo daty od–do. Raport obejmuje tylko zakończone dni, najpóźniej do 14.11.2026.'),
       ],
       events: [
         { at: '2026-11-15T09:21:00Z', actor: 'system', actorName: 'System', text: 'Wiadomość zapisana' },
-        { at: '2026-11-15T09:21:04Z', actor: 'model', actorName: 'Interpretacja', text: 'Plan v1: raport sprzedaży; brak okresu' },
+        { at: '2026-11-15T09:21:04Z', actor: 'model', actorName: 'Interpretacja', text: 'Plan v1: symulacja rabatu dla Moto-Lux Gdańsk; brak okresu' },
         { at: '2026-11-15T09:21:10Z', actor: 'system', actorName: 'Poczta', text: 'Pytanie 1 z 3 wysłane (szablon: brak okresu)' },
       ],
     },
     {
       id: 'T-1039', ownerId: DEMO_REP_ID, ...person(3), participantAlias: alias(3),
-      receivedAt: '2026-11-15T09:12:00Z', status: 'needs_intervention', reason: 'Błąd dostawcy AI — przekroczony czas odpowiedzi po 2 ponownych próbach', clarificationRounds: 0,
-      plans: [],
-      messages: [inMsg('2026-11-15T09:12:00Z', 'Raport sprzedaży za wrzesień 2026 dla wszystkich moich klientów.')],
+      receivedAt: '2026-11-15T09:12:00Z', status: 'needs_intervention', reason: 'Błąd źródła danych — API systemu sprzedaży nie odpowiedziało po 2 ponowieniach', clarificationRounds: 0,
+      plans: [{ version: 1, author: 'model', at: '2026-11-15T09:12:05Z', operation: 'sales_report', params: [
+        { label: 'Okres', value: '08–14.11.2026' }, { label: 'Zakres', value: 'Przypisani klienci' }], issues: [] }],
+      messages: [inMsg('2026-11-15T09:12:00Z', 'Dzień dobry,\n\npotrzebuję sprzedaży z ostatnich 7 dni dla moich klientów.\n\nJan')],
       events: [
         { at: '2026-11-15T09:12:00Z', actor: 'system', actorName: 'System', text: 'Wiadomość zapisana' },
-        { at: '2026-11-15T09:12:31Z', actor: 'system', actorName: 'Interpretacja', text: 'Przekroczony czas odpowiedzi (30 s), ponowienie 1/2' },
-        { at: '2026-11-15T09:13:35Z', actor: 'system', actorName: 'Interpretacja', text: 'Przekroczony czas odpowiedzi (30 s), ponowienie 2/2' },
-        { at: '2026-11-15T09:14:40Z', actor: 'system', actorName: 'System', text: 'Przekazano do obsługi ręcznej; nic nie wysłano do pracownika' },
+        { at: '2026-11-15T09:12:05Z', actor: 'model', actorName: 'Interpretacja', text: 'Plan v1: raport sprzedaży, „ostatnie 7 dni” = 08–14.11.2026' },
+        { at: '2026-11-15T09:12:40Z', actor: 'system', actorName: 'Raporty', text: 'API systemu sprzedaży: przekroczony czas (10 s), ponowienie 1/2' },
+        { at: '2026-11-15T09:13:45Z', actor: 'system', actorName: 'Raporty', text: 'API systemu sprzedaży: przekroczony czas (10 s), ponowienie 2/2' },
+        { at: '2026-11-15T09:14:40Z', actor: 'system', actorName: 'System', text: 'Przekazano do obsługi ręcznej; pracownik nie dostał informacji o sukcesie' },
       ],
     },
     {
@@ -218,7 +219,6 @@ export function buildFixtures() {
       plans: [{ version: 1, author: 'model', at: '2026-11-15T08:58:04Z', operation: 'parts_catalog', params: [{ label: 'Producent', value: 'Bosch' }], issues: [] }],
       messages: [
         inMsg('2026-11-15T08:58:00Z', 'Wyślij katalog Bosch'),
-        outMsg('2026-11-15T09:00:20Z', 'notification', 'report_ready', 'Katalog części Bosch jest gotowy. Zaloguj się, aby go pobrać.'),
       ],
       events: [
         { at: '2026-11-15T08:58:00Z', actor: 'system', actorName: 'System', text: 'Wiadomość zapisana' },
@@ -243,7 +243,7 @@ export function buildFixtures() {
       id: 'T-1036', ownerId: DEMO_REP_ID, ...person(4), participantAlias: alias(6),
       receivedAt: '2026-11-15T08:30:00Z', status: 'awaiting_confirmation', clarificationRounds: 0,
       plans: [{ version: 1, author: 'model', at: '2026-11-15T08:30:05Z', operation: 'customer_discount_simulation', params: [
-        { label: 'Klient', value: 'Moto-Lux Gdańsk' }, { label: 'Okres', value: '1–31 października 2026' }, { label: 'Polityka', value: 'DEMO-RABAT 2026.1 (fikcyjna)' }], issues: [] }],
+        { label: 'Klient', value: 'Moto-Lux Gdańsk' }, { label: 'Okres', value: '01–31.10.2026' }, { label: 'Polityka', value: 'DEMO-RABAT 2026.1 (fikcyjna)' }], issues: [] }],
       messages: [
         inMsg('2026-11-15T08:30:00Z', 'Jaki rabat wyszedłby dla Moto-Lux za październik?'),
         outMsg('2026-11-15T08:30:12Z', 'confirmation_request', 'confirm_request', 'Otrzymaliśmy Twoją prośbę. Zaloguj się i potwierdź ją, zanim przygotujemy raport.'),
@@ -258,7 +258,7 @@ export function buildFixtures() {
       receivedAt: '2026-11-15T08:12:00Z', status: 'needs_intervention', reason: 'Limit pytań wyczerpany (3 z 3) — niejednoznaczny klient', clarificationRounds: 3,
       candidates: ['Alfa Motors Sp. z o.o.', 'Alfa-Tech Hurtownia'],
       plans: [{ version: 3, author: 'model', at: '2026-11-15T08:40:00Z', operation: 'customer_discount_simulation', params: [
-        { label: 'Klient', value: '„Alfa” — 2 pasujących klientów' }, { label: 'Okres', value: '1–31 października 2026' }], issues: ['ambiguous_customer'] }],
+        { label: 'Klient', value: '„Alfa” — 2 pasujących klientów' }, { label: 'Okres', value: '01–31.10.2026' }], issues: ['ambiguous_customer'] }],
       messages: [
         inMsg('2026-11-15T08:12:00Z', 'Jak radzi sobie klient Alfa?'),
         outMsg('2026-11-15T08:12:10Z', 'question', 'ask_operation_customer', 'Który raport przygotować i dla którego klienta? Pasujący klienci z Twojego zakresu: Alfa Motors Sp. z o.o., Alfa-Tech Hurtownia.'),
@@ -272,7 +272,7 @@ export function buildFixtures() {
       id: 'T-1034', ownerId: 'acc-2', ...person(3), participantAlias: alias(1),
       receivedAt: '2026-11-15T07:55:00Z', status: 'rejected', reason: 'Klient poza zakresem pracownika', clarificationRounds: 0,
       plans: [{ version: 1, author: 'model', at: '2026-11-15T07:55:04Z', operation: 'sales_report', params: [
-        { label: 'Okres', value: '1–31 października 2026' }, { label: 'Zakres', value: 'odrzucony' }], issues: ['out_of_scope_customer'] }],
+        { label: 'Okres', value: '01–31.10.2026' }, { label: 'Zakres', value: 'odrzucony' }], issues: ['out_of_scope_customer'] }],
       messages: [
         inMsg('2026-11-15T07:55:00Z', 'Sprzedaż za październik dla klienta Alfatrans Logistyka.'),
         outMsg('2026-11-15T07:55:09Z', 'refusal', 'out_of_scope', 'Nie możemy przygotować raportu dla wskazanego klienta. Możesz zamawiać raporty dla swoich 9 przypisanych klientów.'),
@@ -283,17 +283,30 @@ export function buildFixtures() {
     },
   ]
 
+  tickets.push({
+    id: 'T-1033', ownerId: DEMO_REP_ID, ...person(4), participantAlias: alias(4),
+    receivedAt: '2026-11-15T06:40:00Z', status: 'needs_intervention', reason: 'Błąd dostawcy AI — brak odpowiedzi po 2 ponowieniach', clarificationRounds: 0,
+    plans: [],
+    messages: [inMsg('2026-11-15T06:40:00Z', 'Dzień dobry,\n\nproszę o raport sprzedaży za wrzesień 2026 dla moich klientów.\n\nEwa')],
+    events: [
+      { at: '2026-11-15T06:40:00Z', actor: 'system', actorName: 'System', text: 'Wiadomość zapisana' },
+      { at: '2026-11-15T06:40:31Z', actor: 'system', actorName: 'Interpretacja', text: 'Przekroczony czas odpowiedzi dostawcy AI (30 s), ponowienie 1/2' },
+      { at: '2026-11-15T06:41:35Z', actor: 'system', actorName: 'Interpretacja', text: 'Przekroczony czas odpowiedzi dostawcy AI (30 s), ponowienie 2/2' },
+      { at: '2026-11-15T06:42:40Z', actor: 'system', actorName: 'System', text: 'Przekazano do obsługi ręcznej; nic nie wysłano do pracownika' },
+    ],
+  })
+
   // Older history for pagination (all completed, synthetic).
   const ops: [Ticket['plans'][number]['operation'], string][] = [
-    ['sales_report', 'Okres|1–30 września 2026'], ['parts_catalog', 'Producent|Mann-Filter'],
-    ['sales_report', 'Okres|8–14 listopada 2026'], ['parts_catalog', 'Producent|TRW'],
+    ['sales_report', 'Okres|01–30.09.2026'], ['parts_catalog', 'Producent|Mann-Filter'],
+    ['sales_report', 'Okres|08–14.11.2026'], ['parts_catalog', 'Producent|TRW'],
   ]
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < 27; i++) {
     const op = ops[i % ops.length]!
     const [label, value] = op[1].split('|') as [string, string]
     const at = new Date(Date.UTC(2026, 10, 14, 15, 0) - i * 3.5 * 3600000).toISOString()
     tickets.push({
-      id: `T-${1033 - i}`, ownerId: DEMO_REP_ID, ...person(i), participantAlias: alias(i),
+      id: `T-${1032 - i}`, ownerId: DEMO_REP_ID, ...person(i), participantAlias: alias(i),
       receivedAt: at, status: i % 9 === 4 ? 'rejected' : 'completed', reason: i % 9 === 4 ? 'Operacja spoza katalogu' : undefined,
       clarificationRounds: 0,
       plans: [{ version: 1, author: 'model', at, operation: i % 9 === 4 ? null : op[0], params: i % 9 === 4 ? [] : [{ label, value }], issues: i % 9 === 4 ? ['out_of_catalog'] : [] }],
@@ -303,7 +316,7 @@ export function buildFixtures() {
   }
 
   const accounts: Account[] = [
-    { id: DEMO_REP_ID, name: 'Handlowiec demonstracyjny', email: 'handlowiec@demo.tabularius', repCode: 'PH-01', customers: 6, status: 'active', lastLogin: '2026-11-15T09:44:00Z', shared: true },
+    { id: DEMO_REP_ID, name: 'Handlowiec demonstracyjny', email: 'handlowiec@example.com', repCode: 'PH-01', customers: 6, status: 'active', lastLogin: '2026-11-15T09:44:00Z', shared: true },
     { id: 'acc-2', name: 'Piotr Nowak', email: 'piotr.nowak@example.com', repCode: 'PH-02', customers: 9, status: 'active', lastLogin: '2026-11-14T16:10:00Z' },
     { id: 'acc-3', name: 'Marta Wiśniewska', email: 'marta.wisniewska@example.com', repCode: 'PH-03', customers: 7, status: 'active', lastLogin: null },
     { id: 'acc-4', name: 'Jan Zieliński', email: 'jan.zielinski@example.com', repCode: 'PH-04', customers: 5, status: 'blocked', lastLogin: '2026-11-02T08:00:00Z' },

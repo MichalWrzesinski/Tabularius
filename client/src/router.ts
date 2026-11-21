@@ -10,17 +10,20 @@ export const router = createRouter({
     { path: '/admin/logowanie', component: () => import('./views/LoginView.vue'), props: { role: 'admin' }, meta: { title: 'Logowanie administratora' } },
     {
       path: '/moje-raporty',
-      component: () => import('./components/EmployeeShell.vue'),
+      component: () => import('./components/AppShell.vue'),
+      props: { role: 'employee' },
       meta: { role: 'employee' },
       children: [
         { path: '', component: () => import('./views/employee/MyReportsView.vue'), meta: { title: 'Moje raporty' } },
+        { path: 'konto', component: () => import('./views/SettingsView.vue'), meta: { title: 'Ustawienia' } },
         { path: ':fileId', component: () => import('./views/employee/ReportView.vue'), props: true, meta: { title: 'Raport' } },
         { path: 'potwierdz/:ticketId', component: () => import('./views/employee/ConfirmView.vue'), props: true, meta: { title: 'Potwierdź prośbę' } },
       ],
     },
     {
       path: '/admin',
-      component: () => import('./components/AdminShell.vue'),
+      component: () => import('./components/AppShell.vue'),
+      props: { role: 'admin' },
       meta: { role: 'admin' },
       children: [
         { path: '', component: () => import('./views/admin/OverviewView.vue'), meta: { title: 'Przegląd' } },
@@ -30,6 +33,7 @@ export const router = createRouter({
         { path: 'dane', component: () => import('./views/admin/DataView.vue'), meta: { title: 'Dostępne dane' } },
         { path: 'pracownicy', component: () => import('./views/admin/AccountsView.vue'), meta: { title: 'Pracownicy' } },
         { path: 'dziennik', component: () => import('./views/admin/AuditView.vue'), meta: { title: 'Dziennik zdarzeń' } },
+        { path: 'ustawienia', component: () => import('./views/SettingsView.vue'), meta: { title: 'Ustawienia' } },
       ],
     },
     { path: '/:pathMatch(.*)*', component: () => import('./views/NotFoundView.vue'), meta: { title: 'Nie znaleziono' } },

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Check, CircleCheck, ShieldCheck, X } from 'lucide-vue-next'
 import { computed, ref } from 'vue'
-import { OPERATION_LABEL } from '../../lib/status'
+import Ico from '../../components/Ico.vue'
 import { formatDateTime } from '../../lib/format'
+import { OPERATION_LABEL } from '../../lib/status'
 import { useAsync } from '../../lib/useAsync'
 import { cancelTicket, confirmTicket, getTicket } from '../../mock/api'
 
@@ -11,7 +11,6 @@ const { data: ticket, loading, error, reload } = useAsync(() => getTicket(props.
 const plan = computed(() => ticket.value?.plans[ticket.value.plans.length - 1])
 const busy = ref(false)
 const actionError = ref<string | null>(null)
-
 async function run(fn: (id: string) => Promise<unknown>) {
   busy.value = true
   actionError.value = null
@@ -26,91 +25,33 @@ async function run(fn: (id: string) => Promise<unknown>) {
 </script>
 
 <template>
-  <div class="wrap">
-    <div class="page-head"><div><h1>Potwierdź prośbę</h1><p>Przygotujemy raport dopiero po Twoim potwierdzeniu.</p></div></div>
-    <p class="alert alert--info"><ShieldCheck aria-hidden="true" /><span>Tryb produkcyjny: adres nadawcy e-maila nie potwierdza tożsamości, dlatego prosimy o potwierdzenie po zalogowaniu.</span></p>
-
-    <div v-if="loading && !ticket" class="skeleton" style="height: 240px; margin-top: 18px" aria-busy="true" />
-    <div v-else-if="error" class="alert alert--error" role="alert"><p>{{ error }}</p><button class="btn btn--small btn--secondary" type="button" @click="reload">Spróbuj ponownie</button></div>
-
-    <section v-else-if="ticket" class="card card__body plan">
+  <div>
+    <div class="pagehead"><div><h1>Potwierdź prośbę</h1><p>Przygotujemy raport dopiero po Twoim potwierdzeniu.</p></div></div>
+    <div class="x-alert progress"><Ico name="shield" /><span>Adres nadawcy e-maila nie potwierdza tożsamości, dlatego prosimy o potwierdzenie po zalogowaniu (tryb produkcyjny).</span></div>
+    <div v-if="loading && !ticket" class="x-skel" style="height: 260px" aria-busy="true" />
+    <div v-else-if="error" class="x-alert error" role="alert"><Ico name="alert" /><span>{{ error }} <button class="x-btn2 x-small" type="button" @click="reload">Spróbuj ponownie</button></span></div>
+    <div v-else-if="ticket" class="card params" style="max-width: 640px">
       <template v-if="ticket.status === 'awaiting_confirmation'">
-        <h2>{{ plan?.operation ? OPERATION_LABEL[plan.operation] : 'Prośba' }}</h2>
-        <p class="muted">Wiadomość z {{ formatDateTime(ticket.receivedAt) }} · #{{ ticket.id }}</p>
-        <dl>
-          <div v-for="p in plan?.params ?? []" :key="p.label"><dt>{{ p.label }}</dt><dd>{{ p.value }}</dd></div>
-        </dl>
-        <p class="muted">Wynik będzie dostępny tylko dla Ciebie, po zalogowaniu.</p>
-        <div v-if="actionError" class="alert alert--error" role="alert"><p>{{ actionError }}</p></div>
-        <div class="buttons">
-          <button class="btn" type="button" :disabled="busy" @click="run(confirmTicket)"><Check aria-hidden="true" />Potwierdź i przygotuj raport</button>
-          <button class="btn btn--secondary" type="button" :disabled="busy" @click="run(cancelTicket)"><X aria-hidden="true" />To nie ja / anuluj</button>
+        <h3>{{ plan?.operation ? OPERATION_LABEL[plan.operation] : 'Prośba' }}</h3>
+        <div class="param"><small>WIADOMOŚĆ</small><p>#{{ ticket.id }} · {{ formatDateTime(ticket.receivedAt) }}</p></div>
+        <div v-for="p in plan?.params ?? []" :key="p.label" class="param"><small>{{ p.label.toUpperCase() }}</small><p>{{ p.value }}</p></div>
+        <p class="x-muted" style="margin: 4px 0 20px">Wynik będzie dostępny tylko dla Ciebie, po zalogowaniu.</p>
+        <div v-if="actionError" class="x-alert error" role="alert"><Ico name="alert" /><span>{{ actionError }}</span></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px">
+          <button class="cta blue" type="button" :disabled="busy" @click="run(confirmTicket)"><Ico name="check" />Potwierdź i przygotuj raport</button>
+          <button class="x-btn2" type="button" :disabled="busy" @click="run(cancelTicket)"><Ico name="close" />To nie ja — anuluj</button>
         </div>
       </template>
-      <div v-else-if="ticket.status === 'rejected'" class="done">
-        <h2>Prośba anulowana</h2>
-        <p>Nie przygotujemy raportu. Administrator zobaczy informację w historii zgłoszenia.</p>
-        <RouterLink class="btn btn--secondary" to="/moje-raporty">Moje raporty</RouterLink>
+      <template v-else-if="ticket.status === 'rejected'">
+        <h3>Prośba anulowana</h3>
+        <p class="x-muted" style="margin-bottom: 18px">Nie przygotujemy raportu. Administrator zobaczy informację w historii zgłoszenia.</p>
+        <RouterLink class="x-btn2" to="/moje-raporty">Moje raporty</RouterLink>
+      </template>
+      <div v-else role="status">
+        <h3>{{ ticket.status === 'completed' ? 'Raport gotowy' : 'Potwierdzone — przygotowujemy raport' }}</h3>
+        <p v-if="ticket.status !== 'completed'" class="x-muted">To potrwa chwilę. Otrzymasz też wiadomość e-mail.</p>
+        <RouterLink v-if="ticket.fileId" class="cta blue" :to="`/moje-raporty/${ticket.fileId}`">Otwórz raport <Ico name="arrow" :width="2" /></RouterLink>
       </div>
-      <div v-else class="done" role="status">
-        <CircleCheck aria-hidden="true" class="ok" />
-        <h2>{{ ticket.status === 'completed' ? 'Raport gotowy' : 'Potwierdzone — przygotowujemy raport' }}</h2>
-        <p v-if="ticket.status !== 'completed'">To potrwa chwilę. Otrzymasz też wiadomość e-mail.</p>
-        <RouterLink v-if="ticket.fileId" class="btn" :to="`/moje-raporty/${ticket.fileId}`">Otwórz raport</RouterLink>
-      </div>
-    </section>
+    </div>
   </div>
 </template>
-
-<style scoped>
-.wrap {
-  max-width: 720px;
-}
-.plan {
-  margin-top: 18px;
-}
-.plan h2 {
-  font-size: 21px;
-}
-.muted {
-  color: var(--muted);
-  font-size: 14px;
-  margin-top: 6px;
-}
-dl {
-  margin: 18px 0;
-  display: grid;
-  gap: 14px;
-}
-dt {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--muted);
-}
-dd {
-  margin: 2px 0 0;
-  font-size: 16px;
-}
-.buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
-}
-.done {
-  display: grid;
-  gap: 10px;
-  justify-items: start;
-}
-.ok {
-  width: 36px;
-  height: 36px;
-  color: var(--emp-600);
-}
-@media (max-width: 640px) {
-  .buttons .btn {
-    width: 100%;
-  }
-}
-</style>

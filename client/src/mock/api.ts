@@ -12,6 +12,8 @@ const fixtures = buildFixtures()
 
 export const proto = reactive({
   mode: 'demo' as Mode,
+  /** Public-demo view rules (ID-DEMO-3): aliases instead of names, no message content. Off = trusted/organization view as in the mockups. */
+  anonymize: false,
   latencyMs: 450,
   failLists: false,
   emptyEmployee: false,
@@ -88,8 +90,8 @@ function audit(actor: string, action: string, target: string) {
 // ---- auth -------------------------------------------------------------
 
 export const DEMO_CREDENTIALS = {
-  employee: { email: 'handlowiec@demo.tabularius', password: 'demo-handlowiec' },
-  admin: { email: 'admin@demo.tabularius', password: 'demo-admin' },
+  employee: { email: 'handlowiec@example.com', password: 'Demo123!' },
+  admin: { email: 'admin@example.com', password: 'Demo123!' },
 }
 
 export function login(role: 'admin' | 'employee', email: string, password: string) {
@@ -207,20 +209,23 @@ function complete(t: Ticket, file: ReportFile) {
     t.fileId = file.id
     t.status = 'completed'
     event(t, 'system', 'System', `Raport wygenerowany: ${file.name}`)
-    t.messages.push(outMsg(now(), 'notification', 'report_ready', `Raport jest gotowy. Zaloguj się, aby go pobrać: https://tabularius.gitpush.app/moje-raporty/${file.id}`))
-    event(t, 'system', 'Poczta', 'Powiadomienie przyjęte przez serwer poczty')
+    // Notifications are delivery events, not correspondence (mockup: „Korespondencja 1”).
+    event(t, 'system', 'Poczta', 'Powiadomienie z linkiem przyjęte przez serwer poczty (szablon report_ready)')
   }, 1600)
+}
+
+function newId() {
+  return `f-${Math.random().toString(16).slice(2, 8)}`
 }
 
 function salesFileFor(t: Ticket, period: string, from: string, to: string): ReportFile {
   const base = db.files.find((f) => f.id === 'f-7c1e9a')!
-  const id = `f-${Math.random().toString(16).slice(2, 8)}`
   const created = now()
   return {
     ...base,
-    id,
+    id: newId(),
     ticketId: t.id,
-    name: `sprzedaz_${from}_${to}.csv`,
+    name: `sprzedaz_${from}_${to}.csv`.replace(/_(\d{4}-\d{2})-01_\1-\d{2}\.csv$/, '_$1.csv'),
     periodLabel: period,
     createdAt: created,
     expiresAt: new Date(new Date(created).getTime() + 7 * 86400000).toISOString(),
@@ -228,7 +233,7 @@ function salesFileFor(t: Ticket, period: string, from: string, to: string): Repo
   }
 }
 
-/** Simulates a correlated reply in the thread of T-1040 (demo walkthrough of TKT-CLAR / TKT-VER). */
+/** Simulates a correlated reply in the thread of T-1040 (TKT-CLAR / TKT-VER walkthrough). */
 export function simulateReply(id: string, text: string) {
   return wait(() => {
     const t = ticket(id)
@@ -238,27 +243,42 @@ export function simulateReply(id: string, text: string) {
     t.status = 'interpreting'
     setTimeout(() => {
       const prev = t.plans[t.plans.length - 1]!
+      const version = prev.version + 1
       t.plans.push({
-        version: prev.version + 1, author: 'model', at: now(), operation: 'sales_report',
-        params: [{ label: 'Okres', value: '1–31 października 2026 („za październik”)' }, prev.params[1]!], issues: [],
+        version, author: 'model', at: now(), operation: prev.operation,
+        params: prev.params.map((p) => (p.label === 'Okres' ? { label: 'Okres', value: '01–31.10.2026' } : p)), issues: [],
       })
-      event(t, 'model', 'Interpretacja', `Plan v${prev.version + 1}: uzupełniono okres; zakres zachowany`)
+      event(t, 'model', 'Interpretacja', `Plan v${version}: uzupełniono okres 01–31.10.2026; pozostałe parametry zachowane`)
       t.status = 'queued'
-      event(t, 'system', 'System', `Plan v${prev.version + 1} w kolejce (jedno wykonanie na wersję)`)
-      setTimeout(() => complete(t, salesFileFor(t, '1–31 października 2026', '2026-10-01', '2026-10-31')), 900)
+      event(t, 'system', 'System', `Plan v${version} w kolejce (jedno wykonanie na wersję)`)
+      setTimeout(() => complete(t, { ...discountFile(t.id, now()), id: newId() }), 900)
     }, 1300)
     return t
   })
 }
 
-/** Admin sets parameters manually after a provider error (CP-005). */
+/** Admin retries execution after a data-source error (same plan version, idempotent). */
+export function adminRetryExecution(id: string) {
+  return wait(() => {
+    const t = ticket(id)
+    if (t.status !== 'needs_intervention') throw new ApiError('conflict', 'Zgłoszenie nie wymaga już interwencji.')
+    t.reason = undefined
+    event(t, 'admin', 'Administrator', 'Ponowienie wykonania planu v1 (bez zmiany parametrów)')
+    audit('Administrator', 'Ponowienie wykonania', t.id)
+    t.status = 'queued'
+    setTimeout(() => complete(t, salesFileFor(t, '08–14.11.2026', '2026-11-08', '2026-11-14')), 900)
+    return t
+  })
+}
+
+/** Admin sets parameters manually after an AI provider error (CP-005). */
 export function adminResolveSales(id: string, monthLabel: string, from: string, to: string) {
   return wait(() => {
     const t = ticket(id)
     if (t.status !== 'needs_intervention') throw new ApiError('conflict', 'Zgłoszenie nie wymaga już interwencji.')
     const version = (t.plans[t.plans.length - 1]?.version ?? 0) + 1
     t.plans.push({ version, author: 'admin', at: now(), operation: 'sales_report', params: [
-      { label: 'Okres', value: monthLabel }, { label: 'Zakres', value: 'Przypisani klienci właściciela (6)' }], issues: [] })
+      { label: 'Okres', value: monthLabel }, { label: 'Zakres', value: 'Przypisani klienci' }], issues: [] })
     t.reason = undefined
     event(t, 'admin', 'Administrator', `Plan v${version} ustawiony ręcznie (zakres właściciela zgłoszenia)`)
     audit('Administrator', 'Ręczne ustawienie parametrów', t.id)
@@ -292,12 +312,12 @@ export function adminChooseCustomer(id: string, customer: string) {
     if (!t.candidates?.includes(customer)) throw new ApiError('forbidden', 'Klient spoza zakresu właściciela zgłoszenia.')
     const version = (t.plans[t.plans.length - 1]?.version ?? 0) + 1
     t.plans.push({ version, author: 'admin', at: now(), operation: 'customer_discount_simulation', params: [
-      { label: 'Klient', value: customer }, { label: 'Okres', value: '1–31 października 2026' }, { label: 'Polityka', value: 'DEMO-RABAT 2026.1 (fikcyjna)' }], issues: [] })
+      { label: 'Klient', value: customer }, { label: 'Okres', value: '01–31.10.2026' }, { label: 'Polityka', value: 'DEMO-RABAT 2026.1 (fikcyjna)' }], issues: [] })
     t.reason = undefined
     event(t, 'admin', 'Administrator', `Plan v${version}: wybrano klienta „${customer}”`)
     audit('Administrator', 'Wybór klienta w niejednoznacznym zgłoszeniu', t.id)
     t.status = 'queued'
-    setTimeout(() => complete(t, { ...discountFile(t.id, now()), id: `f-${Math.random().toString(16).slice(2, 8)}`, scopeLabel: customer, name: 'symulacja_rabatu_2026-10.csv' }), 900)
+    setTimeout(() => complete(t, { ...discountFile(t.id, now()), id: newId(), scopeLabel: customer, name: 'symulacja_rabatu_2026-10.csv' }), 900)
     return t
   })
 }

@@ -20,10 +20,16 @@ async function check(page, label, size) {
   await page.screenshot({ path: `${OUT}/${size.name}-${label}.png`, fullPage: true })
 }
 
+async function fillLogin(page, role) {
+  const email = role === 'admin' ? 'admin@example.com' : 'handlowiec@example.com'
+  await page.getByLabel('E-mail').fill(email)
+  await page.getByLabel('Hasło', { exact: true }).fill('Demo123!') // gitleaks:allow (public demo credential shown in the UI)
+  await page.getByRole('button', { name: 'Zaloguj się' }).click()
+}
+
 async function login(page, role) {
   await page.goto(`${BASE}${role === 'admin' ? '/admin/logowanie' : '/logowanie'}`)
-  await page.getByRole('button', { name: 'Wypełnij dane demo' }).click()
-  await page.getByRole('button', { name: 'Zaloguj się' }).click()
+  await fillLogin(page, role)
   await page.waitForURL(role === 'admin' ? '**/admin' : '**/moje-raporty')
 }
 
@@ -44,23 +50,29 @@ for (const size of sizes) {
     ['/admin/zgloszenia/T-1042', '04-ticket-completed'],
     ['/admin/zgloszenia/T-1037', '05-ticket-out-of-catalog'],
     ['/admin/zgloszenia/T-1034', '06-ticket-out-of-scope'],
-    ['/admin/zgloszenia/T-1039', '07-ticket-provider-error'],
+    ['/admin/zgloszenia/T-1039', '07-ticket-data-error'],
+    ['/admin/zgloszenia/T-1033', '07b-ticket-ai-provider-error'],
     ['/admin/zgloszenia/T-1035', '08-ticket-ambiguous-customer'],
     ['/admin/zgloszenia/T-1040', '09-ticket-clarification'],
     ['/admin/pliki', '11-files'], ['/admin/pracownicy', '12-accounts'], ['/admin/dziennik', '13-audit'], ['/admin/dane', '14-data'],
     ['/admin/zgloszenia', '15-tickets-all'],
   ]) { await page.goto(BASE + path); await check(page, label, size) }
 
+  // CP-005: retry after a data-source error
+  await page.goto(`${BASE}/admin/zgloszenia/T-1039`)
+  await page.getByRole('button', { name: 'Ponów wykonanie' }).click()
+  await page.locator('.tickettitle .badge', { hasText: 'Ukończone' }).waitFor({ timeout: 10000 })
+
   // CP-002 walkthrough (in-memory state: do it without reloading)
   await page.goto(`${BASE}/admin/zgloszenia/T-1040`)
   await page.getByRole('button', { name: 'Wyślij odpowiedź' }).click()
-  await page.getByText('Ukończone', { exact: true }).first().waitFor({ timeout: 10000 })
+  await page.locator('.tickettitle .badge', { hasText: 'Ukończone' }).waitFor({ timeout: 10000 })
   await check(page, '10-ticket-clarification-answered', size)
-  await page.getByRole('tab', { name: /Historia/ }).click()
+  await page.getByRole('tab', { name: 'Historia' }).click()
   await check(page, '10b-ticket-history', size)
 
   if (size.name === 'mobile') {
-    await page.getByRole('button', { name: 'Otwórz menu' }).click()
+    await page.locator('summary[aria-label="Otwórz menu"]').click()
     await check(page, '16-mobile-menu', size)
   }
 
@@ -69,8 +81,7 @@ for (const size of sizes) {
   await page.goto(`${BASE}/moje-raporty/f-7c1e9a`)
   await page.waitForURL(/\/logowanie\?next=/)
   await check(page, '20-employee-login-from-link', size)
-  await page.getByRole('button', { name: 'Wypełnij dane demo' }).click()
-  await page.getByRole('button', { name: 'Zaloguj się' }).click()
+  await fillLogin(page, 'employee')
   await page.waitForURL('**/moje-raporty/f-7c1e9a')
   await check(page, '21a-employee-report-loading', size)
   await page.getByRole('button', { name: 'Pobierz CSV' }).waitFor()
