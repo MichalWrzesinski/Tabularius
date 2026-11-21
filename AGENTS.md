@@ -23,4 +23,8 @@ Standards: `docs/standards/` — AppStandards suite 5.0.0, copied 2026-11-21 fro
 
 ## Commands
 
-None yet (repository contains documentation only).
+Backend: none yet. Dashboard prototype (`client/`, Docker only, host Node is too old): see [client/README.md](client/README.md).
+
+## Pitfalls
+
+- `vue-tsc` 3.3 does not work with TypeScript 7 (missing `typescript/lib/tsc` export); keep TypeScript 5.9 until vue-tsc supports it.

@@ -1,6 +1,6 @@
 # Design direction
 
-Status: mockups received from the owner (2026-11-16, desktop v8 / mobile v8); working prototype not yet built. Source mockups: [desktop](mockups/desktop/index.html), [mobile](mockups/mobile/index.html) with their READMEs. The HTML/CSS sources are the reference; PNGs are previews.
+Status: mockups received from the owner (2026-11-16, desktop v8 / mobile v8); working prototype built 2026-11-21 and awaiting the owner's assessment — [prototype](prototype/README.md). Source mockups: [desktop](mockups/desktop/index.html), [mobile](mockups/mobile/index.html) with their READMEs. The HTML/CSS sources are the reference; PNGs are previews.
 
 ## Kept from the mockups
 
@@ -25,4 +25,4 @@ Status: mockups received from the owner (2026-11-16, desktop v8 / mobile v8); wo
 
 Employee: „Moje raporty” list, report detail with download button (opened from the email link after login), request confirmation (production mode). Admin: ticket in clarification, access denial, provider error with intervention actions (clarify parameters, choose customer, retry), accounts list with add/block/delete, file list, audit log. States: loading, empty, error, success.
 
-Prototype location and status will be recorded here when built (`client/`, mocked API, marked experimental).
+Tokens: [client/src/styles/tokens.css](../../client/src/styles/tokens.css); shared components: [components.css](../../client/src/styles/components.css).

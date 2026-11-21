@@ -84,6 +84,15 @@ Verification plan: `docs/qa/critical-paths.md` (created in planning of increment
 
 PDF/XLSX output; profile editor in the dashboard; provider-level identity integration (e.g. a mail gateway that stamps verified sender); multiple organizations; scheduled recurring reports.
 
+## Owner decisions (2026-11-21)
+
+- Production identity: portal confirmation before execution (ID-2).
+- Domain for the application: `tabularius.gitpush.app` (mail links, cookies); the mailbox address is confirmed at mail integration.
+- Budget cap for real OpenAI evaluation runs: USD 20 in total for development and final runs, plus a daily spend guard in the application.
+- Demo participant data retention: [ID-DEMO-7](areas/identity-access.md#demo-mode-id-demo).
+- Repository: private `MichalWrzesinski/Tabularius`, created at setup.
+
 ## Open questions
 
-Tracked with recommendations in [case-study stage 01](../case-study/stages/01-discovery.md#open-questions-for-the-owner) until answered; answers move into the relevant area file.
+- Mailbox provider, address and IMAP/SMTP hosts (needed for the real adapter in increment 3).
+- Hosting: check the existing shared VPS (outgoing SMTP ports are blocked there for Profilo) and agree cost before provisioning.

@@ -59,7 +59,9 @@ Discovery draft complete for increment 1–2 dependencies; nothing blocks the pr
 
 ## Open questions for the owner
 
-| # | Question | Impact / blocks | Recommendation |
+On 2026-11-21 the owner accepted all recommendations below („Yes, I accept”). Q2 still needs the provider details; Q3 needs the VPS check and a cost decision before provisioning.
+
+| # | Question | Impact / blocks | Recommendation (accepted) |
 |---|---|---|---|
 | Q1 | Production identity: accept portal confirmation before execution as the default? | Production mode design (increment 3); not the demo | Yes; provider metadata only as a later verified opt-in |
 | Q2 | Mailbox provider, address (mockup: `zgloszenie@gitpush.app`), IMAP/SMTP hosts | Real adapter (increment 3); local work uses a stub | Send provider name and address; secrets later via a secure channel |
