@@ -23,8 +23,12 @@ Standards: `docs/standards/` — AppStandards suite 5.0.0, copied 2026-11-21 fro
 
 ## Commands
 
-Backend: none yet. Dashboard prototype (`client/`, Docker only, host Node is too old): see [client/README.md](client/README.md).
+`make up`, `make down`, `make migrate`, `make test`, `make check` (= CI job `check`), `make secrets`, `make hooks` — see [README](README.md#quick-start). Only Docker and make on the host (host Node is too old); one-off tools: `docker compose run --rm api|business|client …`.
 
 ## Pitfalls
 
+- Dependency age: Composer enforces 14 days via `config.policy.cooldown` in both `composer.json`; npm versions are pinned by hand to releases ≥ 14 days old; Dependabot uses `cooldown: 14`. Image tags are pinned with digests.
+- PHP 8.5 has OPcache built in: do not `docker-php-ext-install opcache` (the build fails with `cp: can't stat 'modules/*'`).
+- Symfony recipes write `.env.dev` with a random `APP_SECRET`; it is git-ignored and must not be committed (gitleaks catches it). Secrets come from the root `.env` via Compose.
+- Migrations run as the migrator/owner roles (`MIGRATIONS_DATABASE_URL`); the apps run as `tabularius_app` / `business_reader`. A table created by another role is invisible to the app roles unless granted.
 - `vue-tsc` 3.3 does not work with TypeScript 7 (missing `typescript/lib/tsc` export); keep TypeScript 5.9 until vue-tsc supports it.

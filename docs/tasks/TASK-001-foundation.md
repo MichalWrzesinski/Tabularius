@@ -1,6 +1,6 @@
 # TASK-001 — Runnable foundation and CI
 
-Status: READY · Priority: high · Increment: 2
+Status: DONE (on merge) · Priority: high · Increment: 2
 
 ## Goal and scope
 After cloning, `make up` starts the whole stack locally: caddy, client, api, worker, business, db, mailpit. `make check` runs all checks, and CI runs the same set as job `check`.
@@ -19,3 +19,11 @@ Out of scope: business data, auth, reports.
 
 ## Verification
 CI job `check`; manual `make up` from a clean clone. Critical paths: no impact yet (foundation).
+
+## Report
+- `make up` from the working tree: all services start; `/api/health` 200, `/api/ready` 200 with the database, business `/ready` 200 on the internal port; only `127.0.0.1:8080` is published.
+- `make check-backend` (api, business): php-cs-fixer clean, PHPStan level max without errors, PHPUnit green (api 3, business 5 tests incl. `business_reader` DDL/DML/SELECT denial with SQLSTATE 42501), line coverage 100 % (gate 95 %), `composer audit` clean.
+- `make check-frontend`: ESLint + Prettier clean, vue-tsc clean, Vitest 26 tests, logic coverage 100 % lines (gate 90 %), production build, `npm audit --omit=dev` 0 vulnerabilities. `make secrets`: no leaks (after removing recipe-generated `.env.dev` files).
+- Production images build and report healthy; processes run as non-root; `/api/ready` without a database returns 503 JSON.
+- Not yet verified: fresh-clone run and CI on GitHub (this PR); branch protection depends on `scripts/setup-github.sh` run by the owner.
+- Decisions: Composer cooldown policy enforces the 14-day rule; Node 26.13.0 instead of 26.13.1 and PostgreSQL 18.6 instead of 18.7 for the same rule; `final_class` fixer rule dropped (Doctrine proxies).

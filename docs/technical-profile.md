@@ -1,6 +1,6 @@
 # Technical profile
 
-As of 2026-11-21 (technical decisions; no backend code yet). Versions are checked against registries on that date. Packages released less than 14 days ago are not used. Manifests become the source of exact versions once they exist.
+As of 2026-11-21 (TASK-001 foundation). Versions are checked against registries on that date. Packages released less than 14 days ago are not used. Manifests become the source of exact versions once they exist.
 
 ## Stack
 
@@ -26,13 +26,14 @@ As of 2026-11-21 (technical decisions; no backend code yet). Versions are checke
 - Same origin: a reverse proxy (Caddy) serves `client` at `/` and the `api` at `/api`.
 - Business system access: only through an integration-profile adapter (`rest-json` for the demo), using a bearer token from the environment. The business API's runtime database role has SELECT on approved views only.
 
-## Quality checks (planned for setup)
+## Quality checks
 
 - Backend: PHPUnit (unit and integration against a test database), PHPStan at the maximum level, PHP-CS-Fixer, `composer audit`.
 - Frontend: vue-tsc, ESLint, Prettier, Vitest, `npm audit`; Playwright for the main flow and the 360 px / desktop check.
-- Coverage threshold per the quality-checks standard, enforced in CI.
+- Coverage gates: backend line coverage ≥ 95 % per app (`scripts/coverage-threshold.php`; money, dates and access rules live there); client logic modules `src/lib/**` ≥ 90 % lines (Vitest), views are covered by Playwright paths.
 - Secrets: gitleaks in pre-commit and CI.
-- CI: GitHub Actions, job `check`.
+- CI: GitHub Actions `ci.yml` — job `check` runs `make ci` and builds the three production images; job `publish` pushes `ghcr.io/michalwrzesinski/tabularius-{api,business,client}:<sha>` after merge to main. Actions pinned to commit SHAs. Repository settings: `scripts/setup-github.sh` (run by the owner).
+- Images: PHP-FPM (`infra/php/Dockerfile`, targets `dev`/`prod`, non-root `www-data`, FastCGI healthcheck), client static build on Caddy (non-root). Local reverse proxy: `infra/caddy/Caddyfile` (public `:80` → 127.0.0.1:8080; internal `:8081` for the business API).
 
 ## Pitfalls
 
