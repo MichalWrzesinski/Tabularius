@@ -1,0 +1,66 @@
+/* Design tokens derived from the owner's mockups (docs/design/mockups, desktop v8 / mobile v8). */
+@font-face {
+  font-family: Ubuntu;
+  src: url('../assets/fonts/Ubuntu-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: Ubuntu;
+  src: url('../assets/fonts/Ubuntu-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --font: Ubuntu, system-ui, sans-serif;
+
+  --ink: #30183e;
+  --ink-soft: #5d4a6b;
+  --muted: #74667f; /* 5.1:1 on white; mockup greys (#a092ac) fail AA for text */
+  --line: #e7e0ee;
+  --line-soft: #f0ebf5;
+  --surface: #ffffff;
+  --surface-muted: #f5f2fa;
+  --page: #f8f7fc;
+
+  --sun: #ffcf78;
+  --mark: #482341;
+
+  /* Administrator (purple) */
+  --admin-700: #3b1a62;
+  --admin-600: #7044b1;
+  --admin-500: #7d51bf;
+  --admin-100: #f0ebfc;
+  --admin-side-1: #24102f;
+  --admin-side-2: #391145;
+  --admin-side-3: #512062;
+
+  /* Employee (teal) */
+  --emp-700: #07555e;
+  --emp-600: #0d7880;
+  --emp-500: #0e7f86;
+  --emp-100: #e6f4f4;
+  --emp-hero-1: #063f4a;
+  --emp-hero-2: #075e68;
+  --emp-hero-3: #087b80;
+
+  /* Status colours (always paired with text) */
+  --st-done-fg: #5a4899;
+  --st-done-bg: #f0ebfc;
+  --st-progress-fg: #2f63a8;
+  --st-progress-bg: #ebf2ff;
+  --st-wait-fg: #8a5f12;
+  --st-wait-bg: #fff3d6;
+  --st-error-fg: #b0384f;
+  --st-error-bg: #ffedf1;
+  --st-neutral-fg: #5d5468;
+  --st-neutral-bg: #efedf2;
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 17px;
+  --shadow: 0 5px 12px #32104008;
+  --focus: 0 0 0 3px #ffffff, 0 0 0 5px var(--accent, var(--admin-600));
+  --touch: 48px;
+}
