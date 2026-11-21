@@ -16,7 +16,7 @@ Run instructions: [client/README.md](../../../client/README.md). Status: **secon
 
 | Where | Mockup | Prototype | Reason |
 |---|---|---|---|
-| Employee login, demo box | Mailbox address only | Adds the shared demo account credentials (`handlowiec@example.com` / `Demo123!`) | Brief §4.1: shared demo credentials are displayed. Without them the employee cannot open the linked report |
+| Employee login, demo box | Mailbox address only | Adds „Przykładowe dane logowania” with `handlowiec@example.com` / `Demo123!`, in the same format as the admin box (owner request, 2026-11-21) | Brief §4.1: shared demo credentials are displayed. Without them the employee cannot open the linked report |
 | Admin login, demo box | „Konto demonstracyjne do skonfigurowania” | „Konto demonstracyjne, wspólne dla uczestników” | The account exists in the prototype. `admin@example.com` / `Demo123!` are taken from the mockup |
 | Admin login heading | „Odbierz raport” | unchanged | Kept as in the mockup. It may be a copy of the employee heading; **owner to confirm** |
 | Login screens | Static fields | Validation errors, show/hide password, error and „after login we open the report” notes | Brief §9 states |
@@ -25,7 +25,7 @@ Run instructions: [client/README.md](../../../client/README.md). Status: **secon
 | Ticket details | Correspondence, file card, parameters | Same layout. Extra: a status banner for states other than completed, an action card for interventions, a reply simulation (prototype only), a collapsible result preview, and the history tab | Scenarios from brief §9 |
 | Ticket details in the **public demo** | Shows name, address and body | „Prototyp” → „Widoki publicznego demo” replaces them with an alias and the recognized operation | Brief §4.1 / ID-DEMO-3. Off by default so the screen matches the mockup (trusted view) |
 | „Ustawienia” | Menu item | A read-only page with environment information | A menu item does not add scope |
-| Employee screens („Moje raporty”, report, confirmation) | None | The admin shell structure with the employee login's teal palette, file cards and parameter cards | Brief §8, §9.1 asks for them |
+| Employee screens („Moje raporty”, report, confirmation, settings) | None | No sidebar: a teal header in the colours of the employee login holds all links (Moje raporty, Ustawienia, Wyloguj; a menu on phones). Content uses the mockup classes (file cards, parameter cards, badges). Owner request, 2026-11-21 | Brief §8, §9.1 asks for these screens. A one-item sidebar wasted space |
 | Text contrast | Grey secondary text such as `#a092ac` | Unchanged in mockup elements | Kept as designed. Contrast is flagged under limitations |
 
 ## Scenarios covered (brief §9)

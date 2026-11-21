@@ -124,3 +124,36 @@ td a{color:inherit;text-decoration:none}
 .detailgrid>*{min-width:0}
 .x-row a.cta,.x-emp .x-row a.cta{color:#fff}
 @media (max-width: 860px){.login .form,.login:has(.hero.blue) .form,.login:has(.hero:not(.blue)) .form{margin-top:33px}}
+
+/* Employee shell: teal header instead of a one-item sidebar (owner request 2026-11-21). */
+.x-empshell{background:#f8f7fc}
+.x-emphead{position:relative;z-index:5;color:#fff;isolation:isolate;overflow:visible;background:radial-gradient(ellipse at 100% 38%,#118b91 0,transparent 68%),linear-gradient(145deg,#063f4a,#075e68 65%,#087b80)}
+.x-emphead::before{content:'';position:absolute;inset:0;z-index:-1;background:url('../assets/pattern-flow.svg') right center/650px 1000px no-repeat;opacity:.8;pointer-events:none}
+.x-empinner{max-width:1320px;margin:0 auto;padding:0 44px;min-height:92px;display:flex;align-items:center;gap:36px}
+.x-emphead .brand{color:#fff;font-size:25px}
+.x-emphead .brand img{width:45px;height:45px}
+.x-emplinks{display:flex;gap:6px;margin-right:auto}
+.x-emplink{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 16px;border-radius:12px;border:0;background:none;color:#d3eded;font:inherit;font-size:15px;text-decoration:none;cursor:pointer}
+.x-emplink .ico{width:20px;height:20px}
+.x-emplink:hover{background:#ffffff14}
+.x-emplink.active{background:linear-gradient(180deg,#168c91,#107c83);border-bottom:3px solid #07555e;color:#fff;font-weight:700}
+.x-empuser{display:flex;align-items:center;gap:16px}
+.x-empname{text-align:right;font-size:13px;line-height:1.35}
+.x-empname b{display:block}
+.x-empname small{color:#a3d8dc;font-size:11px}
+.x-empuser .x-emplink{border:1px solid #ffffff30}
+.x-empmenu{display:none}
+.x-empmain{max-width:1320px;margin:0 auto;width:100%}
+.x-empfoot{text-align:right;padding:40px 0 27px;font-size:12px;color:#a295ac}
+.x-emphead .menudrawer summary{background:#ffffff1c}
+.x-emphead .drawer{top:82px}
+@media (max-width: 860px){
+  .x-empinner{padding:0 20px;min-height:82px;gap:12px;justify-content:space-between}
+  .x-emphead .brand{font-size:23px}
+  .x-emphead .brand img{width:41px;height:41px}
+  .x-emplinks,.x-empuser{display:none}
+  .x-empmenu{display:block}
+  .x-empmain{padding:0 20px}
+  .x-empfoot{padding:22px 0 27px;font-size:11px}
+}
+.x-empmain a.cta{font-weight:700}

@@ -71,7 +71,9 @@ function forgot() {
           <p>Wyślij e-mail z poleceniem na adres:</p>
           <b class="address">{{ DEMO_MAILBOX }}</b>
           <p>Przykład: Przygotuj raport sprzedaży<br />za październik 2026.</p>
-          <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi. Konto demo: <b>{{ creds.email }}</b> / <b>{{ creds.password }}</b></p>
+          <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi.</p>
+          <p style="margin-top: 18px">Przykładowe dane logowania</p>
+          <p style="margin-top: 12px">E-mail: <b>{{ creds.email }}</b><br />Hasło: <b>{{ creds.password }}</b></p>
         </template>
       </div>
       <div class="herofoot">TABULARIUS &nbsp; / &nbsp; WERSJA DEMONSTRACYJNA</div>
@@ -122,7 +124,9 @@ function forgot() {
           <p>Wyślij e-mail z poleceniem na adres:</p>
           <b class="address">{{ DEMO_MAILBOX }}</b>
           <p>Przykład: Przygotuj raport sprzedaży<br />za październik 2026.</p>
-          <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi. Konto demo: <b>{{ creds.email }}</b> / <b>{{ creds.password }}</b></p>
+          <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi.</p>
+          <p style="margin-top: 18px">Przykładowe dane logowania</p>
+          <p style="margin-top: 12px">E-mail: <b>{{ creds.email }}</b><br />Hasło: <b>{{ creds.password }}</b></p>
         </template>
       </div>
       <div class="formfooter"><span>© 2026 Tabularius</span></div>

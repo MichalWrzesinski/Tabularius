@@ -10,8 +10,7 @@ export const router = createRouter({
     { path: '/admin/logowanie', component: () => import('./views/LoginView.vue'), props: { role: 'admin' }, meta: { title: 'Logowanie administratora' } },
     {
       path: '/moje-raporty',
-      component: () => import('./components/AppShell.vue'),
-      props: { role: 'employee' },
+      component: () => import('./components/EmployeeShell.vue'),
       meta: { role: 'employee' },
       children: [
         { path: '', component: () => import('./views/employee/MyReportsView.vue'), meta: { title: 'Moje raporty' } },

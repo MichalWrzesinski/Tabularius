@@ -77,3 +77,14 @@ The prototype is ready for the owner's assessment. Feedback will be handled as a
 - **Trade-off reopened:** the first version raised low-contrast mockup greys to WCAG AA. The second keeps the mockup values and asks the owner.
 - **Lesson:** when supplied mockups have sources, compare against them screen by screen before asking for acceptance. Passing functional checks does not show the design was followed.
 - Publication angle (optional): „Green checks, rejected prototype” — automated checks verified behaviour but not fidelity to the design input.
+
+## Owner corrections to the second version (2026-11-21)
+
+- **Human intervention (owner):**
+  1. Show the employee demo credentials in the same format as on the admin login.
+  2. Remove the employee panel's one-item left column and use a header in its teal colours with all links. This takes the idea from the first version but keeps the current content design.
+- **Agent:**
+  - added the „Przykładowe dane logowania” block to the employee demo box (desktop and phone);
+  - added `EmployeeShell.vue` (teal header with Moje raporty, Ustawienia, user and Wyloguj, and a menu below 860 px);
+  - kept the content views unchanged.
+- **Evidence:** `prototype-screens.mjs` — 57 checks, no horizontal page scroll at 1440 or 360 px, no console errors. Screens: `screens/*-01-login-employee.png`, `*-22-my-reports.png`, `*-21-employee-report.png`.
