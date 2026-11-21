@@ -1,0 +1,2 @@
+# CSV samples must keep CRLF and BOM byte-for-byte (RPT-OUT-2)
+*.csv -text
