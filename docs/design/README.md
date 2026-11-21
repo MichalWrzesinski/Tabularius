@@ -1,6 +1,6 @@
 # Design direction
 
-Status: mockups received from the owner (2026-11-16, desktop v8 / mobile v8); working prototype built 2026-11-21 and awaiting the owner's assessment — [prototype](prototype/README.md). Source mockups: [desktop](mockups/desktop/index.html), [mobile](mockups/mobile/index.html) with their READMEs. The HTML/CSS sources are the reference; PNGs are previews.
+Status: mockups received from the owner (2026-11-16, desktop v8 / mobile v8); working prototype accepted by the owner on 2026-11-21 — [prototype](prototype/README.md). Source mockups: [desktop](mockups/desktop/index.html), [mobile](mockups/mobile/index.html) with their READMEs. The HTML/CSS sources are the reference; PNGs are previews.
 
 ## Kept from the mockups
 

@@ -88,3 +88,7 @@ The prototype is ready for the owner's assessment. Feedback will be handled as a
   - added `EmployeeShell.vue` (teal header with Moje raporty, Ustawienia, user and Wyloguj, and a menu below 860 px);
   - kept the content views unchanged.
 - **Evidence:** `prototype-screens.mjs` — 57 checks, no horizontal page scroll at 1440 or 360 px, no console errors. Screens: `screens/*-01-login-employee.png`, `*-22-my-reports.png`, `*-21-employee-report.png`.
+
+## Outcome
+
+Owner accepted the prototype on 2026-11-21 („Accepted”) after one rejection and one round of two corrections. Open, non-blocking: admin login heading „Odbierz raport” and mockup text contrast below WCAG AA (kept as designed until the owner decides).

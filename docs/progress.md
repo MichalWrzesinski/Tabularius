@@ -1,14 +1,14 @@
 # Progress
 
 As of: 2026-11-21 Europe/Warsaw | scope: first release (public demo on synthetic data)
-Stage: prototype assessment | increment: 1 (discovery, threat model, prototype)
+Stage: technical decisions and setup | increment: 1 done (prototype accepted 2026-11-21)
 Tasks: none yet — increments below are goals, not `READY` tasks
 Release: no code, no CI, no hosting | production: not planned before separate approval
 Metrics: agent usage not measured (no tool export configured); application LLM cost: none incurred
 
 | # | Increment (brief §11) | State | Depends on |
 |---|---|---|---|
-| 1 | Discovery: vocabulary, financial and access rules, threat model, prototype | discovery drafted, owner decisions recorded; prototype v1 rejected by owner (did not match mockups), v2 rebuilt on mockup sources 2026-11-21, waiting for owner assessment | — |
+| 1 | Discovery: vocabulary, financial and access rules, threat model, prototype | discovery drafted, owner decisions recorded; prototype v1 rejected (did not match mockups); v2 on mockup sources accepted 2026-11-21 | — |
 | 2 | Deterministic report engine on seeded demo business system, API, login, dashboard | planned | 1, technical decisions, setup |
 | 3 | Mail ingestion, secure identity, durable tickets | planned | 2; mailbox details for the real adapter |
 | 4 | LLM interpretation, evaluation, attack tests | planned | 3; OpenAI key and evaluation budget for real runs |

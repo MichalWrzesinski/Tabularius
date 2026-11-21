@@ -1,6 +1,6 @@
 # Prototype (increment 1)
 
-Run instructions: [client/README.md](../../../client/README.md). Status: **second version (2026-11-21) waiting for the owner's assessment.** The owner rejected the first version the same day because it did not look like the mockups (for example, the home page had different content).
+Run instructions: [client/README.md](../../../client/README.md). Status: **accepted by the owner on 2026-11-21** (second version with the corrections listed below; open questions: admin login heading, mockup text contrast — kept as in the mockups until decided). The owner rejected the first version the same day because it did not look like the mockups (for example, the home page had different content).
 
 ## How the second version is built
 

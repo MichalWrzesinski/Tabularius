@@ -11,7 +11,7 @@ Standards: `docs/standards/` — AppStandards suite 5.0.0, copied 2026-11-21 fro
 - Owner's input brief (input material; findings move into `docs/product/`): [docs/input/brief.md](docs/input/brief.md)
 - Progress view: [docs/progress.md](docs/progress.md)
 - Case-study source material (required deliverable, facts only, never published by the agent): [docs/case-study/README.md](docs/case-study/README.md)
-- Technical profile, architecture, decisions, API contract: added in the technical-decisions stage.
+- Technical profile: [docs/technical-profile.md](docs/technical-profile.md); architecture: [docs/architecture.md](docs/architecture.md); decisions: `docs/decisions/`; API contract (generated, from increment 2): `docs/api/openapi.yaml`
 
 ## Project overrides of standards
 
