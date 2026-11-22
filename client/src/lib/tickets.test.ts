@@ -92,6 +92,7 @@ describe('tickets API', () => {
     expect(sizeLabel({ sizeBytes: 1679 })).toBe('CSV · 2 KB')
     expect(sizeLabel({ sizeBytes: 10 })).toBe('CSV · 1 KB')
     expect(reasonLabel('data_source_error')).toContain('Błąd źródła danych')
+    expect(reasonLabel('text_too_long')).toContain('za długi')
     expect(reasonLabel('other')).toBe('other')
     expect(reasonLabel(null)).toBe('')
     expect(RETRYABLE.has('internal_error')).toBe(true)

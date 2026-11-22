@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs in GitHub Actions (deploy-staging): uploads the stack files of one commit to the server, logs the server in to
 # GHCR with the workflow's read-only token, runs deploy.sh there and checks the site from outside.
-#   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN
+#   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN [MAILBOX_DSN]
 set -euo pipefail
 
 fail() { echo "::error::$*"; exit 1; }
@@ -12,6 +12,10 @@ fail() { echo "::error::$*"; exit 1; }
 [[ "${SSH_USER:-}" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] || fail "invalid SSH user"
 [[ "${APP_DIR:-}" =~ ^/srv/[A-Za-z0-9._-]+$ ]] || fail "the app directory must be a directory directly in /srv"
 [[ "${GHCR_USER:-}" =~ ^[A-Za-z0-9-]+$ ]] || fail "invalid GHCR user"
+if [[ -n "${MAILBOX_DSN:-}" ]]; then
+  [[ "$MAILBOX_DSN" =~ ^imaps?://[^[:space:]\']+@[A-Za-z0-9.-]+(:[0-9]{2,5})?(/[^[:space:]\']*)?$ ]] \
+    || fail "MAILBOX_DSN must look like imaps://user:password@host:993/INBOX (URL-encoded, no quotes)"
+fi
 
 install -d -m 700 ~/.ssh
 printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
@@ -28,6 +32,13 @@ printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\
   scp -q infra/server/compose.yml infra/server/Caddyfile infra/server/deploy.sh "server:$APP_DIR/releases/$SHA/"
   scp -q infra/postgres/init/01-roles-and-databases.sh "server:$APP_DIR/releases/$SHA/postgres-init/"
   echo "::endgroup::"
+
+  # Runtime secret of the mailbox: a file of its own on the server (mode 600), removed when the secret is unset.
+  if [[ -n "${MAILBOX_DSN:-}" ]]; then
+    printf "MAILBOX_DSN='%s'\n" "$MAILBOX_DSN" | ssh server "umask 077 && cat > '$APP_DIR/.env.mail'"
+  else
+    ssh server "rm -f '$APP_DIR/.env.mail'"
+  fi
 
   printf '%s' "$GHCR_TOKEN" | ssh server "docker login ghcr.io -u '$GHCR_USER' --password-stdin" >/dev/null
   trap 'ssh server "docker logout ghcr.io" >/dev/null 2>&1 || true' EXIT

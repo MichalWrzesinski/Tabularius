@@ -1,7 +1,7 @@
 name: Deploy staging
 
 # After CI succeeds on main (images published by the CI `publish` job), or manually for a commit on main.
-# Secrets: STAGING_SSH_HOST, STAGING_SSH_KEY, STAGING_SSH_KNOWN_HOSTS. Variables: STAGING_DOMAIN, optional
+# Secrets: STAGING_SSH_HOST, STAGING_SSH_KEY, STAGING_SSH_KNOWN_HOSTS, optional STAGING_MAILBOX_DSN. Variables: STAGING_DOMAIN, optional
 # STAGING_SSH_USER, STAGING_APP_DIR (docs/runbook.md, Staging). Until they exist the job stops with a notice.
 on:
   workflow_run:
@@ -78,6 +78,7 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+          MAILBOX_DSN: ${{ secrets.STAGING_MAILBOX_DSN }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
         run: bash "$RUNNER_TEMP/deploy-remote.sh"

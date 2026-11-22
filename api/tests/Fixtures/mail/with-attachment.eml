@@ -1,0 +1,18 @@
+From: jan@example.com
+To: tabularius@gitpush.app
+Subject: Raport w załączniku
+Message-ID: <att-001@example.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="m1"
+
+--m1
+Content-Type: text/plain; charset=utf-8
+
+Proszę o katalog Bosch, szczegóły w załączniku.
+--m1
+Content-Type: application/pdf; name="zamowienie.pdf"
+Content-Disposition: attachment; filename="zamowienie.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKJcfsj6IKMSAwIG9iago8PC9UeXBlL0NhdGFsb2c+PgplbmRvYmoK
+--m1--

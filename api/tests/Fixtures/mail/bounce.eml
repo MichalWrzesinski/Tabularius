@@ -1,0 +1,18 @@
+From: MAILER-DAEMON@mail.example.com
+To: tabularius@gitpush.app
+Subject: Undelivered Mail Returned to Sender
+Message-ID: <dsn-001@mail.example.com>
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status; boundary="b1"
+
+--b1
+Content-Type: text/plain
+
+The message could not be delivered.
+--b1
+Content-Type: message/delivery-status
+
+Final-Recipient: rfc822; nobody@example.com
+Action: failed
+Status: 5.1.1
+--b1--

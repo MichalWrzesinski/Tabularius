@@ -46,7 +46,10 @@ PREV=""
 
 compose() {  # compose <tag> <args…>
   local tag="$1"; shift
-  IMAGE_TAG="$tag" docker compose --env-file "$APP_DIR/.env" --project-directory "$APP_DIR/releases/$tag" \
+  local env_files=(--env-file "$APP_DIR/.env")
+  # Mailbox credentials (written by the deploy workflow from the STAGING_MAILBOX_DSN secret), when configured.
+  [[ -f "$APP_DIR/.env.mail" ]] && env_files+=(--env-file "$APP_DIR/.env.mail")
+  IMAGE_TAG="$tag" docker compose "${env_files[@]}" --project-directory "$APP_DIR/releases/$tag" \
     -f "$APP_DIR/releases/$tag/compose.yml" "$@"
 }
 

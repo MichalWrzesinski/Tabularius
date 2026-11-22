@@ -79,7 +79,7 @@ function confirmReject() {
 }
 
 const canRetry = computed(() => ticket.value?.status === 'needs_intervention' && RETRYABLE.has(ticket.value.reason ?? ''))
-const canReject = computed(() => ['needs_intervention', 'queued'].includes(ticket.value?.status ?? ''))
+const canReject = computed(() => ['needs_intervention', 'queued', 'received'].includes(ticket.value?.status ?? ''))
 const authState = computed(() => {
   const t = ticket.value
   if (!t) return ''
@@ -134,6 +134,9 @@ async function download() {
           ticket.status === 'interpreting' ? 'Trwa interpretacja wiadomości…' : 'Raport jest przygotowywany…'
         }}</span>
       </div>
+      <div v-else-if="ticket.status === 'received'" class="x-alert neutral" role="status">
+        <Ico name="mail" /><span><b>Przyjęte ze skrzynki.</b> Czeka na przypisanie nadawcy i interpretację prośby.</span>
+      </div>
       <div v-else-if="ticket.status === 'awaiting_confirmation'" class="x-alert wait" role="status">
         <Ico name="shield" /><span><b>Czeka na potwierdzenie</b> pracownika po zalogowaniu (tryb produkcyjny).</span>
       </div>
@@ -168,7 +171,25 @@ async function download() {
       <div class="detailgrid">
         <div>
           <div v-if="tab === 'messages'" id="panel-msg" role="tabpanel" aria-labelledby="tab-msg">
-            <article class="card message">
+            <article v-if="ticket.source === 'mail'" class="card message">
+              <div class="messageheader">
+                <div class="avatar" aria-hidden="true">@</div>
+                <div>
+                  <b>Wiadomość e-mail</b>
+                  <small>{{ ticket.employeeName }}</small>
+                </div>
+                <time :datetime="ticket.receivedAt">{{ formatDateTime(ticket.receivedAt) }}</time>
+              </div>
+              <div class="mailbody">
+                <p>
+                  <i
+                    >Treść, temat i adres nadawcy nie są pokazywane w panelu demo. Wiadomość czeka na przypisanie nadawcy i
+                    interpretację.</i
+                  >
+                </p>
+              </div>
+            </article>
+            <article v-else class="card message">
               <div class="messageheader">
                 <div class="avatar" aria-hidden="true">A</div>
                 <div>

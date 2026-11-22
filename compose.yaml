@@ -49,7 +49,7 @@ services:
   # Background jobs (report execution). Restarts hourly to pick up code changes and release memory.
   worker:
     <<: *php
-    command: ["php", "bin/console", "messenger:consume", "async", "--time-limit=3600", "--memory-limit=128M", "-v"]
+    command: ["php", "bin/console", "messenger:consume", "async", "scheduler_mail", "--time-limit=3600", "--memory-limit=128M", "-v"]
     restart: unless-stopped
     volumes:
       - ./api:/app

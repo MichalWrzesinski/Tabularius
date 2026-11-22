@@ -1,0 +1,8 @@
+From: jan@example.com
+To: tabularius@gitpush.app
+Subject: Katalog
+Message-ID: <html-001@example.com>
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><head><style>p{color:red}</style><script>alert(1)</script></head><body><p>Wyślij katalog <b>Bosch</b>.</p><img src="https://tracker.example.com/pixel.gif"><div>Pozdrawiam</div></body></html>

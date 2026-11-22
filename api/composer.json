@@ -24,9 +24,11 @@
         "symfony/monolog-bundle": "^4.1",
         "symfony/rate-limiter": "7.4.*",
         "symfony/runtime": "7.4.*",
+        "symfony/scheduler": "7.4.*",
         "symfony/security-bundle": "7.4.*",
         "symfony/uid": "7.4.*",
-        "symfony/yaml": "7.4.*"
+        "symfony/yaml": "7.4.*",
+        "zbateson/mail-mime-parser": "^4.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95",
