@@ -87,6 +87,29 @@ final class OpenAiInterpreterTest extends IdentityTestCase
         self::assertSame([null, [], ['out_of_catalog']], [$outside->operation, $outside->parameters, $outside->issues], 'no duplicate code');
     }
 
+    public function testRequiredParametersLeftEmptyAreAskedFor(): void
+    {
+        $sales = $this->interpreter([self::answer(['intent' => 'operation', 'operation' => 'sales_report', 'parameters' => self::params([]), 'issues' => []])])
+            ->interpret('sprzedaż moich klientów', self::context());
+        self::assertSame(['missing_period'], $sales->issues);
+
+        $discount = $this->interpreter([self::answer(['intent' => 'operation', 'operation' => 'customer_discount_simulation', 'parameters' => self::params(['period' => ['type' => 'previous_month', 'month' => null, 'quarter' => null, 'year' => null, 'n' => null, 'start' => null, 'end' => null]]), 'issues' => ['ambiguous_customer']])])
+            ->interpret('rabat dla Alfa za zeszły miesiąc', self::context());
+        self::assertSame(['ambiguous_customer'], $discount->issues, 'the reason the field is empty is kept, nothing added');
+    }
+
+    public function testCustomersSharingTheFirstWordAreMarkedForTheModel(): void
+    {
+        $context = new InterpretationContext(
+            [new Customer('K-001', 'Alfa Motors Sp. z o.o.', true), new Customer('K-002', 'Alfa-Tech Hurtownia', true), new Customer('K-004', 'Moto-Lux Gdańsk', true)],
+            [], [], new \DateTimeImmutable('2026-11-15', new \DateTimeZone('Europe/Warsaw')),
+        );
+        $user = self::dig($this->interpreter([])->request('sprzedaż Alfa', $context), 'input.1.content');
+        self::assertIsString($user);
+        self::assertStringContainsString('"kod":"K-001","nazwa":"Alfa Motors Sp. z o.o.","aktywny":true,"ta_sama_pierwsza_czesc_nazwy_co":["K-002"]', $user);
+        self::assertStringContainsString('"kod":"K-004","nazwa":"Moto-Lux Gdańsk","aktywny":true}', $user);
+    }
+
     public function testAnswersAreMappedOntoThePlanOfTheChosenOperation(): void
     {
         $sales = $this->interpreter([self::answer(['intent' => 'operation', 'operation' => 'sales_report', 'parameters' => self::params(['period' => ['type' => 'month', 'month' => 10, 'quarter' => null, 'year' => null, 'n' => null, 'start' => null, 'end' => null], 'manufacturer' => 'BOSCH', 'customer' => 'K-001']), 'issues' => []])])

@@ -26,7 +26,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class OpenAiInterpreter implements Interpreter
 {
-    public const string PROMPT_VERSION = 'prompt-v2';
+    public const string PROMPT_VERSION = 'prompt-v3';
     private const string ENDPOINT = 'https://api.openai.com/v1/responses';
 
     public function __construct(
@@ -134,7 +134,7 @@ final class OpenAiInterpreter implements Interpreter
         }
         $lists = [
             'operacje' => $operations,
-            'klienci_pracownika' => array_map(static fn ($c): array => ['kod' => $c->code, 'nazwa' => $c->name, 'aktywny' => $c->active], $context->customers),
+            'klienci_pracownika' => self::customers($context),
             'producenci' => array_map(static fn ($m): array => ['kod' => $m->code, 'nazwa' => $m->name, 'aliasy' => $m->aliases], $context->manufacturers),
             'kategorie' => $context->categories,
         ];
@@ -173,8 +173,10 @@ final class OpenAiInterpreter implements Interpreter
         Klienci, producenci, kategorie
         5. Wskazujesz je wyłącznie kodami z list. Dopasuj odmianę, literówki i skróty („Boscha” → BOSCH,
            „Serwisu Bielany” → K-005).
-        6. Gdy podana nazwa pasuje do więcej niż jednej pozycji (np. wspólne pierwsze słowo w nazwach dwóch klientów),
-           NIE wybieraj żadnej: pole zostaw null i dodaj „ambiguous_customer” (lub „ambiguous_manufacturer”).
+        6. Gdy podana nazwa pasuje do więcej niż jednej pozycji, NIE wybieraj żadnej: pole zostaw null i dodaj
+           „ambiguous_customer” (lub „ambiguous_manufacturer”). Klient z polem „ta_sama_pierwsza_czesc_nazwy_co” ma
+           wspólny początek nazwy z innymi: samo to słowo (np. „Alfa”) jest niejednoznaczne — wybierz go tylko, gdy
+           wiadomość podaje też dalszą część nazwy (np. „Alfa Motors”, „Alfa-Tech”). Dotyczy też listy „customers”.
            Gdy nie pasuje do żadnej: null i „unknown_customer” (lub „unknown_manufacturer”). Nigdy nie zgaduj.
         7. Raport sprzedaży: „customers” = null oznacza wszystkich klientów pracownika (także „moi klienci”); nie
            zgłaszaj wtedy „missing_customer”. Listę kodów podaj tylko dla wyraźnie wskazanych klientów.
@@ -240,6 +242,33 @@ final class OpenAiInterpreter implements Interpreter
     }
 
     /**
+     * The owner's customers; names sharing their first word are marked, so the model can see that a bare „Alfa”
+     * fits more than one entry (data for the model, not a matching rule).
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function customers(InterpretationContext $context): array
+    {
+        $first = static fn (string $name): string => 1 === preg_match('/[\pL\pN]+/u', $name, $m) ? mb_strtolower($m[0]) : '';
+        $out = [];
+        foreach ($context->customers as $c) {
+            $row = ['kod' => $c->code, 'nazwa' => $c->name, 'aktywny' => $c->active];
+            $shared = [];
+            foreach ($context->customers as $other) {
+                if ($other->code !== $c->code && '' !== $first($c->name) && $first($c->name) === $first($other->name)) {
+                    $shared[] = $other->code;
+                }
+            }
+            if ([] !== $shared) {
+                $row['ta_sama_pierwsza_czesc_nazwy_co'] = $shared;
+            }
+            $out[] = $row;
+        }
+
+        return $out;
+    }
+
+    /**
      * Response → plan; only the fields of the chosen operation are kept, nulls dropped.
      *
      * @param array<array-key, mixed> $data
@@ -289,6 +318,14 @@ final class OpenAiInterpreter implements Interpreter
         $implied = ['multiple_operations' => 'multiple_operations', 'unclear' => 'unknown_operation', 'out_of_catalog' => 'out_of_catalog'][$plan['intent']] ?? null;
         if (null !== $implied && !\in_array($implied, $issues, true)) {
             $issues[] = $implied;
+        }
+        // A required parameter left empty must be asked for (unless the model already said why it is empty).
+        foreach ('operation' === $plan['intent'] && null !== $definition ? $definition->parameters : [] as $name => $required) {
+            $subject = ['period' => 'period', 'customer' => 'customer', 'manufacturer' => 'manufacturer'][$name] ?? null;
+            if ($required && null !== $subject && !\array_key_exists($name, $parameters)
+                && [] === array_intersect(['missing_'.$subject, 'ambiguous_'.$subject, 'unknown_'.$subject], $issues)) {
+                $issues[] = 'missing_'.$subject;
+            }
         }
         if ('out_of_catalog' === $plan['intent'] || 'multiple_operations' === $plan['intent']) {
             return new InterpretedPlan($plan['intent'], null, [], $issues);
