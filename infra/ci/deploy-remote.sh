@@ -40,13 +40,16 @@ printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\
 [[ "$status" == 0 ]] || fail "deployment failed (deploy.sh exit $status); see the log above"
 
 echo "::group::External smoke tests"
-for path in /api/ready / /admin/logowanie; do
+code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN/api/ready") || true
+[[ "$code" == 200 ]] || fail "/api/ready returned $code"
+# Private staging: everything else needs the environment login (the server's deploy.sh tests behind it).
+for path in / /admin/logowanie /api/v1/admin/tickets; do
   code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN$path") || true
-  [[ "$code" == 200 ]] || fail "$path returned $code"
+  [[ "$code" == 401 ]] || fail "$path without the staging login returned $code (expected 401)"
 done
 headers=$(curl -sS -D - -o /dev/null --max-time 15 "http://$DOMAIN/") || true
 grep -qi '^location: https://' <<<"$headers" || fail "HTTP does not redirect to HTTPS"
-secure=$(curl -sS -D - -o /dev/null --max-time 15 "https://$DOMAIN/") || true
+secure=$(curl -sS -D - -o /dev/null --max-time 15 "https://$DOMAIN/api/ready") || true
 for h in strict-transport-security content-security-policy x-content-type-options referrer-policy; do
   grep -qi "^$h:" <<<"$secure" || fail "missing header $h"
 done

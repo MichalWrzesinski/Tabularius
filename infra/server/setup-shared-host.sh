@@ -38,7 +38,7 @@ rm -f "$key_file"
 echo "==> Checks on the shared host"
 NET16="$(cut -d. -f1-2 <<<"${GATEWAY%.1}")."
 while read -r net; do
-  [[ "$net" == tabularius_internal ]] && continue
+  [[ "$net" == tabularius-staging_internal ]] && continue
   if docker network inspect "$net" --format '{{range .IPAM.Config}}{{.Subnet}} {{end}}' | grep -q "^$NET16\| $NET16"; then
     fail "Docker network '$net' uses addresses in ${NET16}0.0/16; pass another subnet as the 6th argument"
   fi
@@ -47,7 +47,7 @@ if ip -4 route | grep -v "br-" | grep -q "^$NET16"; then
   fail "a host route already uses ${NET16}0.0/16; pass another subnet as the 6th argument"
 fi
 if ss -Htln "sport = :$PROXY_PORT" | grep -q .; then
-  docker ps --format '{{.Names}} {{.Ports}}' | grep -q "^tabularius-edge.*127.0.0.1:$PROXY_PORT->" \
+  docker ps --format '{{.Names}} {{.Ports}}' | grep -q "^tabularius-staging-edge.*127.0.0.1:$PROXY_PORT->" \
     || fail "port $PROXY_PORT is already used on this server; pass another port as the 5th argument"
 fi
 
