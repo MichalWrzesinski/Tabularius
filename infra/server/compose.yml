@@ -92,7 +92,7 @@ services:
     mem_limit: 128m
     image: ghcr.io/michalwrzesinski/tabularius-api:${IMAGE_TAG:?}
     restart: unless-stopped
-    command: ["sh", "-c", "while true; do php bin/console app:files:purge --no-interaction; php bin/console app:mail:purge --no-interaction; sleep 86400; done"]
+    command: ["sh", "-c", "while true; do php bin/console app:files:purge --no-interaction; php bin/console app:mail:purge --no-interaction; php bin/console app:tickets:expire --no-interaction; sleep 86400; done"]
     environment: *api-env
     volumes:
       - reports:/app/var/storage/reports
