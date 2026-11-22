@@ -76,3 +76,8 @@ Commands use `SERVER` for the server's address (151.240.121.172) and the SSH ali
 - **Reseed the demo data:** delete `/srv/Tabularius/.seeded` and deploy again. This replaces all business data and does not remove tickets.
 - **Recovery:** dumps before each deployment are in `/srv/Tabularius/backups/` (`pg_dumpall`, gzip).
 - **Undo the nginx change:** copy `/root/tabularius.nginx.before` over the site file, then `sudo nginx -t` and reload.
+
+### Known gaps
+
+- The 401 response of the environment login is produced by Caddy's error path and carries no security headers (HSTS, CSP); pages behind the login do. Fix with a `handle_errors` block.
+- No backup off the server, monitoring or alerting (requirements of the public release, not of staging).
