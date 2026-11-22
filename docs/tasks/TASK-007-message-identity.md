@@ -1,6 +1,6 @@
 # TASK-007 — Message identity, portal confirmation and the demo exception
 
-Status: DONE (PR pending CI) · Priority: high · Increment: 3 · Depends on: TASK-006
+Status: DONE (PR #25) · Priority: high · Increment: 3 · Depends on: TASK-006
 
 ## Goal and scope
 Decide on whose behalf a message may run, without trusting headers (ID-1 to ID-5, ID-DEMO-1 to ID-DEMO-3; CP-003 spoofed sender).
