@@ -46,6 +46,9 @@ final class InterpretTicketHandler
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
         private readonly \App\Module\Notification\Outbox $outbox,
+        private readonly \App\Module\Interpretation\Guard\RequestScreen $screen,
+        private readonly \App\Module\Interpretation\Guard\PlanGuard $guard,
+        private readonly \App\Module\Audit\AuditLog $audit,
         #[Autowire(env: 'APP_MODE')]
         private readonly string $mode = 'demo',
     ) {
@@ -88,7 +91,31 @@ final class InterpretTicketHandler
             return;
         }
 
+        // Business-scope guard, layer 1 (ADR 0005): an instruction outside the concept never reaches the interpreter.
+        $category = $this->screen->screen($text);
+        if (null !== $category) {
+            $this->audit->record('system', 'security.request_refused', 'ticket:'.$job->ticketId, ['category' => $category]);
+            $this->finish($job->ticketId, new InterpretedPlan('out_of_catalog', null, [], ['out_of_catalog']), TicketStatus::Rejected, 'outside_business_scope', \sprintf('Prośba poza zakresem usługi (%s); nic nie wykonano, interpreter nie był użyty', $category));
+
+            return;
+        }
+
         $plan = $this->interpreter->interpret($text, $context);
+        // Layer 2: whatever the interpreter returned, only closed typed values in the owner's scope may be routed.
+        $violations = $this->guard->violations($plan, $context);
+        if (['customer_out_of_scope'] === $violations) {
+            // A request for someone else's customer is an ordinary refusal (tickets.md), not a manipulated output.
+            $this->audit->record('system', 'security.scope_refused', 'ticket:'.$job->ticketId, ['interpreter' => $this->interpreter->version()]);
+            $this->finish($job->ticketId, new InterpretedPlan($plan->intent, $plan->operation, $plan->parameters, [...$plan->issues, 'out_of_scope']), TicketStatus::Rejected, 'out_of_scope', 'Klient spoza zakresu pracownika; nic nie ujawniono');
+
+            return;
+        }
+        if ([] !== $violations) {
+            $this->audit->record('system', 'security.plan_rejected', 'ticket:'.$job->ticketId, ['violations' => implode(',', $violations), 'interpreter' => $this->interpreter->version()]);
+            $this->finish($job->ticketId, new InterpretedPlan('unclear', null, [], ['unknown_operation']), TicketStatus::NeedsIntervention, 'model_output_rejected', 'Wynik interpretacji odrzucony przez kontrolę zakresu ('.implode(', ', $violations).'); nic nie wykonano');
+
+            return;
+        }
         if ('out_of_catalog' === $plan->intent) {
             $this->finish($job->ticketId, $plan, TicketStatus::Rejected, 'out_of_catalog', 'Prośba spoza katalogu operacji; nic nie wykonano');
 

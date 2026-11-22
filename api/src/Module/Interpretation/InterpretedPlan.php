@@ -14,10 +14,20 @@ final readonly class InterpretedPlan
     /** Issues that do not block execution; they are recorded and answered by the normal route. */
     public const array NON_BLOCKING = ['recipient_change_requested'];
 
+    public const array INTENTS = ['operation', 'multiple_operations', 'out_of_catalog', 'unclear'];
+
+    /** Closed set of issue codes an interpreter may return (they select backend templates; never free text). */
+    public const array ISSUES = [
+        'missing_period', 'ambiguous_period', 'missing_customer', 'ambiguous_customer', 'unknown_customer',
+        'missing_manufacturer', 'ambiguous_manufacturer', 'unknown_manufacturer', 'ambiguous_category',
+        'unknown_operation', 'multiple_operations', 'out_of_catalog', 'recipient_change_requested',
+    ];
+
     /**
-     * @param 'operation'|'multiple_operations'|'out_of_catalog'|'unclear' $intent
-     * @param array<string, mixed>                                         $parameters
-     * @param list<string>                                                 $issues
+     * Any string is accepted here on purpose: an LLM may return anything, and PlanGuard decides (INTENTS).
+     *
+     * @param array<string, mixed> $parameters
+     * @param list<string>         $issues
      */
     public function __construct(
         public string $intent,

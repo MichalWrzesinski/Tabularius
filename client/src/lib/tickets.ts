@@ -73,6 +73,8 @@ export const REASON_LABEL: Record<string, string> = {
   clarification_needed: 'Prośba wymaga uzupełnienia parametrów',
   out_of_catalog: 'Prośba spoza katalogu operacji',
   interpretation_unavailable: 'Interpretacja niemożliwa — ustaw parametry ręcznie',
+  outside_business_scope: 'Prośba poza zakresem usługi (kontrola bezpieczeństwa)',
+  model_output_rejected: 'Wynik interpretacji odrzucony przez kontrolę zakresu',
 }
 
 export const reasonLabel = (code: string | null | undefined) => (code ? (REASON_LABEL[code] ?? code) : '')
