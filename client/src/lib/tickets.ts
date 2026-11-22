@@ -70,6 +70,9 @@ export const REASON_LABEL: Record<string, string> = {
   identity_unverified: 'Nadawca nierozpoznany — tożsamość niepotwierdzona',
   cancelled_by_owner: 'Anulowane przez pracownika („to nie ja”)',
   confirmation_expired: 'Wygasło bez potwierdzenia pracownika',
+  clarification_needed: 'Prośba wymaga uzupełnienia parametrów',
+  out_of_catalog: 'Prośba spoza katalogu operacji',
+  interpretation_unavailable: 'Interpretacja niemożliwa — ustaw parametry ręcznie',
 }
 
 export const reasonLabel = (code: string | null | undefined) => (code ? (REASON_LABEL[code] ?? code) : '')

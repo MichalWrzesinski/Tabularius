@@ -96,7 +96,12 @@ const authState = computed(() => {
     return 'Autoryzowano w zakresie właściciela; ponowna kontrola przed wykonaniem i przy każdym pobraniu'
   return 'Jeszcze nie sprawdzano — plan niekompletny'
 })
-const authorLabel = { system: 'System', model: 'Interpretacja (model)', employee: 'Pracownik', admin: 'Administrator' }
+const authorLabel = {
+  system: 'System (interpreter regułowy)',
+  model: 'Interpretacja (model)',
+  employee: 'Pracownik',
+  admin: 'Administrator',
+}
 async function download() {
   actionError.value = null
   try {
@@ -190,8 +195,9 @@ async function download() {
               <div class="mailbody">
                 <p>
                   <i
-                    >Treść, temat i adres nadawcy nie są pokazywane w panelu demo. Wiadomość czeka na przypisanie nadawcy i
-                    interpretację.</i
+                    >Treść, temat i adres nadawcy nie są pokazywane w panelu demo.{{
+                      ticket.plans.length ? ' Rozpoznaną prośbę pokazują parametry raportu.' : ' Wiadomość czeka na interpretację.'
+                    }}</i
                   >
                 </p>
               </div>
