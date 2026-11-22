@@ -39,7 +39,8 @@ Close the loop „e-mail → report → e-mail with a link” without an LLM, sa
 ## 6. Criteria and evidence
 | Criterion | Evidence | Result | Limitation |
 |---|---|---|---|
-| Duplicate ingestion, restarts | `MailIngestionTest` (UID, Message-ID, poller high-water mark, mid-batch failure) | one ticket | Real IMAP server not yet used |
+| Duplicate ingestion, restarts | `MailIngestionTest` (UID, Message-ID, poller high-water mark, mid-batch failure) | one ticket | — |
+| Real mailbox | staging, 2026-11-22: the owner's test e-mail to tabularius@gitpush.app | ticket created and completed with a report; earlier mailbox contents skipped (`before_start`, PR #28) | One message; no load test |
 | Auto-replies and bounces never answered | parser and ingestion tests | no ticket | Bounce ↔ outbox correlation not done |
 | CP-003 spoofed sender | `MessageIdentityTest` (production services) | nothing runs before the real owner confirms; others 404 | No environment runs in production mode yet |
 | ID-DEMO-3 | endpoint-wide test of the shared accounts | no address, subject or body | — |
@@ -49,6 +50,8 @@ Close the loop „e-mail → report → e-mail with a link” without an LLM, sa
 
 ## 7. Measurements
 Agent time, tokens and cost: unavailable. Application LLM cost: none (no LLM).
+
+- Observation: before connecting the real mailbox, the agent noticed that the first poll would ingest everything already in it, possibly real, non-synthetic mail. A start time (`MAIL_INGEST_SINCE`) now records such messages without contents (PR #28).
 
 ## 8. Outcome and next stage
 The mail loop works end to end on test doubles and is deployed to staging, where real mail is off. Remaining before real mail: IMAP details and Brevo credentials as GitHub secrets, plus the owner's list of test addresses. Next: increment 4 (LLM interpretation and evaluation), which needs the OpenAI key and the agreed evaluation budget.

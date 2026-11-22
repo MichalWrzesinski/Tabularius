@@ -53,6 +53,6 @@ Unit tests for MIME and edge cases (synthetic `.eml` fixtures: multipart, charse
   - Functional tests: outcomes per fixture, duplicates by UID and Message-ID, intervention cases, demo and global limits, the poller's high-water mark and failure in mid-batch, admin API without contents, the inject command and retention.
   - Local stack: 7 fixtures injected; the worker runs the mail schedule (`debug:scheduler`).
 - Limitations:
-  - The IMAP client is tested against a scripted server, not yet a real one. The first real check comes when the owner supplies the mailbox details (`STAGING_MAILBOX_DSN`).
+  - ~~The IMAP client is tested against a scripted server, not yet a real one.~~ Verified on staging on 2026-11-22 against the real mailbox (`mail.gitpush.app:993`, after PR #28): the owner's test e-mail became a ticket and completed with a report. Earlier mailbox contents were skipped (`before_start`).
   - A message without a declared charset is read as ISO-8859-1, as MIME prescribes.
   - Tickets wait in `received` until identity (TASK-007) and interpretation (TASK-008).

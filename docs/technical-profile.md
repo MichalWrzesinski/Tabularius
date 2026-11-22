@@ -45,7 +45,7 @@ As of 2026-11-21 (TASK-001 foundation). Versions are checked against registries 
 - Server: the owner's VPS `151.240.121.172`. Application directory `/srv/Tabularius`, which currently holds the placeholder page; those files are removed only with the owner's confirmation at the first deployment. TLS is already set up on the host. The agent deploys when verification requires it, not at a fixed stage.
 - Mailbox: `tabularius@gitpush.app`. Outgoing mail from the server goes through Brevo, which the owner has configured and tested for this address. SMTP credentials come only from secrets.
 - Still to verify at the first deployment (needed for increment 3):
-  - IMAP host, port and TLS for incoming mail;
+  - ~~IMAP host, port and TLS for incoming mail~~ — `mail.gitpush.app:993` (implicit TLS, valid certificate; 143 closed), verified 2026-11-22;
   - the Brevo SMTP port that works from this server (on the Profilo staging host, 25, 465 and 587 are blocked; 2525 works);
   - free resources for two databases, a worker and report files.
 - Staging setup (2026-11-22, [runbook](runbook.md#staging-owners-shared-vps)): the host's nginx forwards the domain to the stack's Caddy on `127.0.0.1:8091` (Docker network 172.29.0.0/24). The placeholder page is moved to `/srv/Tabularius-placeholder`, not deleted. A dedicated `tabularius_deploy` user is restricted to key login. GitHub Actions deploys the GHCR images of each green commit on `main`. Server secrets are generated on the server. No real mail yet (demo capture transport is `null://`).
