@@ -1,7 +1,7 @@
 # Shared PHP image for api/ and business/ (build context: the app directory).
 FROM composer:2.11.1@sha256:8de2184c6de224f4689e8f80ed5f5edaf0030b6b8b7839a22a2bcb6722ac87d0 AS composer
 
-FROM php:8.5.12-fpm-alpine@sha256:951fb5b1780219b81d5daffa4cebef8e0077c537f3893d9790a5dfcd66ca334d AS base
+FROM php:8.6.0RC3-fpm-alpine@sha256:481010776c273096841ff202f56e6c98ffbdf7ca41483d389b6a3dfa5b236ebe AS base
 RUN apk add --no-cache icu-libs libpq libzip fcgi \
     && apk add --no-cache --virtual .build $PHPIZE_DEPS icu-dev postgresql-dev libzip-dev linux-headers \
     && docker-php-ext-install -j"$(nproc)" intl pdo_pgsql zip \
