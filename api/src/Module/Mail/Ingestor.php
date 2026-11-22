@@ -46,6 +46,8 @@ final class Ingestor
         private readonly int $perSenderDay = 20,
         #[Autowire(env: 'int:MAIL_LIMIT_GLOBAL_DAY')]
         private readonly int $globalDay = 200,
+        #[Autowire(env: 'MAIL_INGEST_SINCE')]
+        private readonly string $since = '',
     ) {
     }
 
@@ -54,6 +56,10 @@ final class Ingestor
     {
         if (null !== $message->uid && null !== $message->uidValidity && $this->mail->knownUid($message->mailbox, $message->uidValidity, $message->uid)) {
             return 'duplicate';
+        }
+        // Mail that was already in the mailbox when it was connected: recorded (so polling moves on), never read.
+        if ('' !== $this->since && $message->receivedAt < new \DateTimeImmutable($this->since)) {
+            return $this->record($message, null, null, 'before_start');
         }
         try {
             $parsed = $this->parser->parse($message->raw);
