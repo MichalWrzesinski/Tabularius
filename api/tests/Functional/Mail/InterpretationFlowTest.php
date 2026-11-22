@@ -166,7 +166,7 @@ final class InterpretationFlowTest extends IdentityTestCase
     {
         $c = self::getContainer();
 
-        return new InterpretTicketHandler($c->get(TicketStore::class), $c->get(TicketService::class), new RuleInterpreter(), $c->get(BusinessApi::class), $c->get(IntegrationProfile::class), $c->get(MessageBusInterface::class), new MockClock('2026-11-15 09:42:00+00:00'), new NullLogger(), $mode);
+        return new InterpretTicketHandler($c->get(TicketStore::class), $c->get(TicketService::class), new RuleInterpreter(), $c->get(BusinessApi::class), $c->get(IntegrationProfile::class), $c->get(MessageBusInterface::class), new MockClock('2026-11-15 09:42:00+00:00'), new NullLogger(), $c->get(\App\Module\Notification\Outbox::class), $mode);
     }
 
     private function ticketStatus(string $id): mixed

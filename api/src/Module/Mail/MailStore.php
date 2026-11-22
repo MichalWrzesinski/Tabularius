@@ -50,7 +50,7 @@ final class MailStore
     }
 
     /**
-     * @param array{id: string, mailbox: string, uid_validity: ?int, uid: ?int, message_id_hash: ?string, received_at: string, sender_hash: ?string, sender: ?string, subject: ?string, header_block: ?string, text_body: ?string, size_bytes: int, attachment_count: int, outcome: string, ticket_id: ?string, created_at: string} $row
+     * @param array{id: string, mailbox: string, uid_validity: ?int, uid: ?int, message_id_hash: ?string, message_id: ?string, received_at: string, sender_hash: ?string, sender: ?string, subject: ?string, header_block: ?string, text_body: ?string, size_bytes: int, attachment_count: int, outcome: string, ticket_id: ?string, created_at: string} $row
      */
     public function insert(array $row): void
     {
@@ -61,7 +61,7 @@ final class MailStore
     public function purgeContents(\DateTimeImmutable $before, \DateTimeImmutable $now): int
     {
         return (int) $this->db->executeStatement(
-            'UPDATE mail_message SET sender = NULL, subject = NULL, header_block = NULL, text_body = NULL, purged_at = ? WHERE purged_at IS NULL AND received_at < ?',
+            'UPDATE mail_message SET sender = NULL, subject = NULL, header_block = NULL, text_body = NULL, message_id = NULL, purged_at = ? WHERE purged_at IS NULL AND received_at < ?',
             [TicketStore::ts($now), TicketStore::ts($before)],
         );
     }
