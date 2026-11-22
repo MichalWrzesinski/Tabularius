@@ -1,6 +1,6 @@
 # TASK-005 — Manual ticket → report → authorized download (no mail, no LLM)
 
-Status: DONE (PR pending CI) · Priority: high · Increment: 2 · Depends on: TASK-003, TASK-004
+Status: DONE (PR #18) · Priority: high · Increment: 2 · Depends on: TASK-003, TASK-004
 
 ## Goal and scope
 Close the first end-to-end loop before mail and the LLM:
