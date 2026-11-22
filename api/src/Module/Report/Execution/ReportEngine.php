@@ -54,9 +54,33 @@ final class ReportEngine
     }
 
     /**
-     * @param array<array-key, mixed> $p
+     * Validates a plan without reading report data: the same parsing, period resolution, catalog and scope checks as
+     * run(), so a plan accepted here fails at execution only if the data or the scope changed in between.
+     *
+     * @param array<array-key, mixed> $parameters
+     *
+     * @throws InvalidParametersException
+     * @throws \App\Module\Report\Period\PeriodException
+     * @throws OutOfScopeException
+     * @throws \App\Module\Report\Business\DataSourceException
      */
-    private function salesReport(array $p, Scope $scope, \DateTimeImmutable $reference): ReportResult
+    public function check(string $operation, array $parameters, Scope $scope, \DateTimeImmutable $reference): void
+    {
+        $this->profile->operation($operation);
+        match ($operation) {
+            'sales_report' => $this->salesParams($parameters, $scope, $reference),
+            'parts_catalog' => $this->catalogParams($parameters),
+            'customer_discount_simulation' => $this->discountParams($parameters, $scope, $reference),
+            default => throw new \OutOfBoundsException('Operation without an executor: '.$operation),
+        };
+    }
+
+    /**
+     * @param array<array-key, mixed> $p
+     *
+     * @return array{period: DateRange, codes: list<string>, manufacturer: ?string, category: ?string, inScope: list<\App\Module\Report\Business\Customer>}
+     */
+    private function salesParams(array $p, Scope $scope, \DateTimeImmutable $reference): array
     {
         self::allowOnly($p, ['period', 'customers', 'manufacturer', 'category']);
         $period = $this->periods->resolve(PeriodExpression::fromArray(self::map($p, 'period')), $reference);
@@ -77,7 +101,17 @@ final class ReportEngine
             throw new OutOfScopeException('Requested customer outside the owner\'s scope');
         }
         $inScope = [] === $codes ? $assigned : array_values(array_filter($assigned, static fn ($c): bool => \in_array($c->code, $codes, true)));
-        $lines = $this->business->salesLines($scope->salesRep, $period, $codes, $manufacturer, \is_string($category) ? $category : null);
+
+        return ['period' => $period, 'codes' => $codes, 'manufacturer' => $manufacturer, 'category' => \is_string($category) ? $category : null, 'inScope' => $inScope];
+    }
+
+    /**
+     * @param array<array-key, mixed> $p
+     */
+    private function salesReport(array $p, Scope $scope, \DateTimeImmutable $reference): ReportResult
+    {
+        ['period' => $period, 'codes' => $codes, 'manufacturer' => $manufacturer, 'category' => $category, 'inScope' => $inScope] = $this->salesParams($p, $scope, $reference);
+        $lines = $this->business->salesLines($scope->salesRep, $period, $codes, $manufacturer, $category);
 
         $op = $this->profile->operation('sales_report');
         $width = \count($op->columns);
@@ -88,7 +122,7 @@ final class ReportEngine
         if (null !== $manufacturer) {
             $rows[] = Row::meta('Producent', $manufacturer, $width);
         }
-        if (\is_string($category)) {
+        if (null !== $category) {
             $rows[] = Row::meta('Kategoria', $category, $width);
         }
 
@@ -113,7 +147,10 @@ final class ReportEngine
         }
         $rows[] = self::totalRow(['suma_calkowita'], NumberCell::money($grand), $width);
 
-        return new ReportResult('sales_report', \sprintf('%s_%s_%s.csv', $op->fileName, $period->start->format('Y-m-d'), $period->end->format('Y-m-d')), $op->columns, $rows, $period->label(), $scopeLabel, [] === $lines);
+        // Every customer whose data the file may contain: the scope, plus any line's customer (defensive).
+        $customers = array_values(array_unique([...array_map(static fn ($c): string => $c->code, $inScope), ...array_keys($totals)]));
+
+        return new ReportResult('sales_report', \sprintf('%s_%s_%s.csv', $op->fileName, $period->start->format('Y-m-d'), $period->end->format('Y-m-d')), $op->columns, $rows, $period->label(), $scopeLabel, [] === $lines, array_map('strval', $customers));
     }
 
     /**
@@ -121,9 +158,7 @@ final class ReportEngine
      */
     private function partsCatalog(array $p): ReportResult
     {
-        self::allowOnly($p, ['manufacturer']);
-        $code = self::optional($p, 'manufacturer', self::MANUFACTURER) ?? throw new InvalidParametersException('missing_manufacturer');
-        $manufacturer = $this->assertManufacturer($code);
+        ['code' => $code, 'name' => $manufacturer] = $this->catalogParams($p);
         $op = $this->profile->operation('parts_catalog');
         $width = \count($op->columns);
         $rows = [
@@ -137,7 +172,20 @@ final class ReportEngine
             $rows[] = new Row('pozycja', ['pozycja', $part->manufacturerName, $part->partNumber, $part->name, $part->category, $part->unit, NumberCell::money($part->listPriceNet)]);
         }
 
-        return new ReportResult('parts_catalog', \sprintf('%s_%s_%s.csv', $op->fileName, strtolower($code), $this->clock->now()->setTimezone(DateRange::zone())->format('Y-m-d')), $op->columns, $rows, 'nie dotyczy', $manufacturer, [] === $parts);
+        return new ReportResult('parts_catalog', \sprintf('%s_%s_%s.csv', $op->fileName, strtolower($code), $this->clock->now()->setTimezone(DateRange::zone())->format('Y-m-d')), $op->columns, $rows, 'nie dotyczy', $manufacturer, [] === $parts, []);
+    }
+
+    /**
+     * @param array<array-key, mixed> $p
+     *
+     * @return array{code: string, name: string}
+     */
+    private function catalogParams(array $p): array
+    {
+        self::allowOnly($p, ['manufacturer']);
+        $code = self::optional($p, 'manufacturer', self::MANUFACTURER) ?? throw new InvalidParametersException('missing_manufacturer');
+
+        return ['code' => $code, 'name' => $this->assertManufacturer($code)];
     }
 
     /**
@@ -145,22 +193,8 @@ final class ReportEngine
      */
     private function discountSimulation(array $p, Scope $scope, \DateTimeImmutable $reference): ReportResult
     {
-        self::allowOnly($p, ['customer', 'period', 'policy']);
-        $code = self::optional($p, 'customer', self::CUSTOMER) ?? throw new InvalidParametersException('missing_customer');
-        $period = $this->periods->resolve(PeriodExpression::fromArray(self::map($p, 'period')), $reference);
-        $version = self::optional($p, 'policy', '/^[0-9A-Za-z.-]{1,20}$/');
-
-        $customer = null;
-        foreach ($this->business->customersOf($scope->salesRep) as $candidate) {
-            if ($candidate->code === $code) {
-                $customer = $candidate;
-            }
-        }
-        if (null === $customer) {
-            throw new OutOfScopeException('Customer outside the owner\'s scope');
-        }
-        $policy = $this->discounts->applicable($this->business->discountPolicies(), $reference, $version)
-            ?? throw new InvalidParametersException('unknown_policy');
+        ['customer' => $customer, 'period' => $period, 'policy' => $policy] = $this->discountParams($p, $scope, $reference);
+        $code = $customer->code;
         $lines = $this->business->salesLines($scope->salesRep, $period, [$code]);
 
         $invoices = BigDecimal::of('0.00');
@@ -209,7 +243,35 @@ final class ReportEngine
             $period->label(),
             $customer->name,
             [] === $lines,
+            [$code],
         );
+    }
+
+    /**
+     * @param array<array-key, mixed> $p
+     *
+     * @return array{customer: \App\Module\Report\Business\Customer, period: DateRange, policy: \App\Module\Report\Business\DiscountPolicy}
+     */
+    private function discountParams(array $p, Scope $scope, \DateTimeImmutable $reference): array
+    {
+        self::allowOnly($p, ['customer', 'period', 'policy']);
+        $code = self::optional($p, 'customer', self::CUSTOMER) ?? throw new InvalidParametersException('missing_customer');
+        $period = $this->periods->resolve(PeriodExpression::fromArray(self::map($p, 'period')), $reference);
+        $version = self::optional($p, 'policy', '/^[0-9A-Za-z.-]{1,20}$/');
+
+        $customer = null;
+        foreach ($this->business->customersOf($scope->salesRep) as $candidate) {
+            if ($candidate->code === $code) {
+                $customer = $candidate;
+            }
+        }
+        if (null === $customer) {
+            throw new OutOfScopeException('Customer outside the owner\'s scope');
+        }
+        $policy = $this->discounts->applicable($this->business->discountPolicies(), $reference, $version)
+            ?? throw new InvalidParametersException('unknown_policy');
+
+        return ['customer' => $customer, 'period' => $period, 'policy' => $policy];
     }
 
     /**

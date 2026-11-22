@@ -1,0 +1,23 @@
+﻿typ_wiersza;data;dokument;rodzaj;klient_kod;klient;nr_czesci;producent;kategoria;ilosc;netto_pln
+meta;Operacja;Raport sprzedaży;;;;;;;;
+meta;Zakres;Przypisani klienci (7);;;;;;;;
+meta;Okres;2026-10-01 – 2026-10-31 (Europe/Warsaw);;;;;;;;
+meta;Waluta;PLN, netto po korektach, bez dokumentów anulowanych;;;;;;;;
+meta;Wersje;profil demo-autoparts v1 · dane 2026.11-1;;;;;;;;
+meta;Wygenerowano;2026-11-15 10:42;;;;;;;;
+pozycja;2026-10-02;FV/2026/10/0001;Faktura;K-001;Alfa Motors Sp. z o.o.;BO-01074;Bosch;Oświetlenie;4;519,60
+pozycja;2026-10-02;FV/2026/10/0001;Faktura;K-001;Alfa Motors Sp. z o.o.;MA-01111;Mann-Filter;Wycieraczki;10;234,50
+pozycja;2026-10-03;FV/2026/10/0005;Faktura;K-004;Moto-Lux Gdańsk;VA-01222;Valeo;Zapłon;50;30000,00
+pozycja;2026-10-07;FV/2026/10/0004;Faktura;K-003;'+48 Auto Części;BO-01111;Bosch;Zawieszenie;8;319,20
+pozycja;2026-10-14;FV/2026/10/0002;Faktura;K-002;Alfa-Tech Hurtownia;TR-01148;TRW;Łożyska;6;894,00
+pozycja;2026-10-21;FV/2026/10/0007;Faktura;K-005;Serwis Bielany;SK-01296;SKF;Wycieraczki;1;1289,00
+pozycja;2026-10-23;KOR/2026/10/0001;Korekta;K-002;Alfa-Tech Hurtownia;TR-01148;TRW;Łożyska;-1;-149,00
+pozycja;2026-10-28;FV/2026/10/0006;Faktura;K-004;Moto-Lux Gdańsk;VA-01259;Valeo;Oświetlenie;20;20000,10
+suma_klienta;;;;K-003;'+48 Auto Części;;;;;319,20
+suma_klienta;;;;K-001;Alfa Motors Sp. z o.o.;;;;;754,10
+suma_klienta;;;;K-002;Alfa-Tech Hurtownia;;;;;745,00
+suma_klienta;;;;K-007;Auto-Kombi Radom;;;;;0,00
+suma_klienta;;;;K-004;Moto-Lux Gdańsk;;;;;50000,10
+suma_klienta;;;;K-005;Serwis Bielany;;;;;1289,00
+suma_klienta;;;;K-006;Warsztat Pod Lipami;;;;;0,00
+suma_calkowita;;;;;;;;;;53107,40

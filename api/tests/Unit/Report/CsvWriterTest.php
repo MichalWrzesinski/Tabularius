@@ -43,7 +43,7 @@ final class CsvWriterTest extends TestCase
             Row::meta('Zakres', 'Klient; "Alfa"', 3),
             new Row('pozycja', ['pozycja', '-x', NumberCell::money(BigDecimal::of('-149.00'))]),
             new Row('pozycja', ['pozycja', "dwie\nlinie", NumberCell::quantity(BigDecimal::of('4.000'))]),
-        ], '', '', false);
+        ], '', '', false, []);
 
         self::assertSame(
             "\u{FEFF}a;b;c\r\nmeta;Zakres;\"Klient; \"\"Alfa\"\"\"\r\npozycja;'-x;-149,00\r\npozycja;\"dwie\nlinie\";4\r\n",

@@ -11,6 +11,7 @@ use App\Module\Report\Execution\DiscountCalculator;
 use App\Module\Report\Execution\ReportEngine;
 use App\Module\Report\Period\PeriodResolver;
 use App\Module\Report\Profile\IntegrationProfile;
+use App\Tests\Double\FixtureBusinessHttp;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Console\Application;
