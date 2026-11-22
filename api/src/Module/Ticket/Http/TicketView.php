@@ -48,6 +48,8 @@ final class TicketView
             'operationLabel' => null === $t['operation'] ? null : ($this->profile->operations[$t['operation']]->label ?? $t['operation']),
             'planVersion' => $t['plan_version'],
             'fileId' => $t['file_id'],
+            // The current plan only; details carry every version.
+            'plans' => null === $t['plan'] ? [] : [$this->plan($t['plan'], DateRange::date($t['reference_date']))],
         ];
     }
 
@@ -62,16 +64,10 @@ final class TicketView
     {
         $reference = DateRange::date($t['reference_date']);
 
-        return $this->summary($t) + [
+        return [
+            ...$this->summary($t),
             'referenceDate' => $t['reference_date'],
-            'plans' => array_map(fn (array $p): array => [
-                'version' => $p['version'],
-                'author' => $p['author'],
-                'at' => self::iso($p['created_at']),
-                'operation' => $p['operation'],
-                'params' => $this->params($p, $reference),
-                'issues' => $p['issues'],
-            ], $plans),
+            'plans' => array_map(fn (array $p): array => $this->plan($p, $reference), $plans),
             'events' => array_map(static fn (array $e): array => [
                 'at' => self::iso($e['at']),
                 'actor' => $e['actor'],
@@ -80,6 +76,23 @@ final class TicketView
             ], $events),
             'messages' => [],
             'clarificationRounds' => 0,
+        ];
+    }
+
+    /**
+     * @param PlanRow $p
+     *
+     * @return array<string, mixed>
+     */
+    private function plan(array $p, \DateTimeImmutable $reference): array
+    {
+        return [
+            'version' => $p['version'],
+            'author' => $p['author'],
+            'at' => self::iso($p['created_at']),
+            'operation' => $p['operation'],
+            'params' => $this->params($p, $reference),
+            'issues' => $p['issues'],
         ];
     }
 

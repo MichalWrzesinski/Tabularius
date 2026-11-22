@@ -10,7 +10,7 @@ use Symfony\Component\Uid\Uuid;
 /**
  * Persistence of tickets, plan versions and ticket events (DBAL; jsonb and row locks are explicit).
  *
- * @phpstan-type TicketRow array{id: string, number: int, owner_account_id: string, owner_name: string, owner_email: string, owner_rep_code: ?string, owner_status: string, source: string, status: string, reason: ?string, plan_version: int, reference_date: string, received_at: string, updated_at: string, operation: ?string, file_id: ?string}
+ * @phpstan-type TicketRow array{id: string, number: int, owner_account_id: string, owner_name: string, owner_email: string, owner_rep_code: ?string, owner_status: string, source: string, status: string, reason: ?string, plan_version: int, reference_date: string, received_at: string, updated_at: string, operation: ?string, file_id: ?string, plan: ?PlanRow}
  * @phpstan-type PlanRow array{version: int, author: string, author_ref: string, created_at: string, operation: ?string, parameters: array<array-key, mixed>, issues: list<string>}
  * @phpstan-type EventRow array{at: string, actor: string, actor_name: string, text: string}
  */
@@ -19,7 +19,8 @@ final class TicketStore
     private const string SELECT = <<<'SQL'
         SELECT t.id, t.number, t.owner_account_id, a.name AS owner_name, a.email AS owner_email, a.rep_code AS owner_rep_code,
                a.status AS owner_status, t.source, t.status, t.reason, t.plan_version, t.reference_date, t.received_at, t.updated_at,
-               p.operation,
+               p.operation, p.version AS p_version, p.author AS p_author, p.author_ref AS p_author_ref, p.created_at AS p_created_at,
+               p.parameters AS p_parameters, p.issues AS p_issues,
                (SELECT f.id FROM report_file f WHERE f.ticket_id = t.id AND f.deleted_at IS NULL ORDER BY f.created_at DESC LIMIT 1) AS file_id
         FROM ticket t
         JOIN account a ON a.id = t.owner_account_id
@@ -185,6 +186,10 @@ final class TicketStore
             'updated_at' => self::str($r['updated_at']),
             'operation' => null === $r['operation'] ? null : self::str($r['operation']),
             'file_id' => null === $r['file_id'] ? null : self::str($r['file_id']),
+            'plan' => null === $r['p_version'] ? null : self::planRow([
+                'version' => $r['p_version'], 'author' => $r['p_author'], 'author_ref' => $r['p_author_ref'], 'created_at' => $r['p_created_at'],
+                'operation' => $r['operation'], 'parameters' => $r['p_parameters'], 'issues' => $r['p_issues'],
+            ]),
         ];
     }
 
