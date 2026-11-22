@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import AsyncBlock from '../../components/AsyncBlock.vue'
 import Ico from '../../components/Ico.vue'
-import { csvSizeLabel, downloadCsv } from '../../lib/download'
 import { formatDateTime } from '../../lib/format'
 import { OPERATION_LABEL } from '../../lib/status'
 import { useAsync } from '../../lib/useAsync'
-import { listFiles } from '../../mock/api'
+import { ref } from 'vue'
+import { errorMessage } from '../../lib/http'
+import { downloadFile, listFiles, sizeLabel } from '../../lib/tickets'
+import type { FileMeta } from '../../lib/types'
 
 const { data, loading, error, reload } = useAsync(listFiles)
+const downloadError = ref<string | null>(null)
+async function download(f: FileMeta) {
+  downloadError.value = null
+  try {
+    await downloadFile(f)
+  } catch (e) {
+    downloadError.value = errorMessage(e)
+  }
+}
 </script>
 
 <template>
@@ -17,6 +28,9 @@ const { data, loading, error, reload } = useAsync(listFiles)
         <h1>Pliki</h1>
         <p>Wygenerowane raporty. Po terminie ważności pliki są usuwane.</p>
       </div>
+    </div>
+    <div v-if="downloadError" class="x-alert error" role="alert">
+      <Ico name="alert" /><span>{{ downloadError }}</span>
     </div>
     <AsyncBlock :loading="loading && !data" :error="error" @retry="reload">
       <div v-if="data && !data.length" class="card x-empty">
@@ -31,11 +45,12 @@ const { data, loading, error, reload } = useAsync(listFiles)
             <b>{{ f.name }}</b>
             <span>{{ OPERATION_LABEL[f.operation] }} · {{ f.periodLabel }} · {{ f.scopeLabel }}</span>
             <small
-              >{{ csvSizeLabel(f) }} · zgłoszenie <RouterLink :to="`/admin/zgloszenia/${f.ticketId}`">#{{ f.ticketId }}</RouterLink> · ważny
-              do {{ formatDateTime(f.expiresAt) }}</small
+              >{{ sizeLabel(f) }} · {{ f.ownerName }} · zgłoszenie
+              <RouterLink :to="`/admin/zgloszenia/${f.ticketId}`">#{{ f.ticketNumber }}</RouterLink> · ważny do
+              {{ formatDateTime(f.expiresAt) }}</small
             >
           </div>
-          <button class="cta" type="button" @click="downloadCsv(f)">
+          <button class="cta" type="button" @click="download(f)">
             <Ico name="download" /> Pobierz CSV<span class="sr-only"> {{ f.name }}</span>
           </button>
         </li>

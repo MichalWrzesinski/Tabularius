@@ -47,6 +47,7 @@ migrate: .env | $(CACHE_DIRS)
 seed: .env | $(CACHE_DIRS) ## (re)load synthetic business data around REF=YYYY-MM-DD (default: today) and the shared demo accounts
 	$(DC) run --rm business bin/console app:seed $(if $(REF),--reference-date=$(REF))
 	$(DC) run --rm api bin/console app:accounts:demo
+	$(DC) run --rm api bin/console app:tickets:demo
 
 csv-samples: .env ## regenerate docs/qa/csv samples (seed for REF=2026-11-15 first: make seed REF=2026-11-15)
 	$(DC) run --rm api sh -c 'mkdir -p var/csv && \

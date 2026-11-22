@@ -27,6 +27,7 @@ services:
         arguments: ['%kernel.project_dir%/config/integration/demo-autoparts.v1.yaml']
 
     App\Module\Report\Business\BusinessApi: '@App\Module\Report\Business\RestBusinessApi'
+    App\Module\File\FileStore: '@App\Module\File\LocalFileStore'
 
     tabularius.session_handler:
         class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
@@ -37,4 +38,12 @@ when@test:
     services:
         App\Module\Report\Business\BusinessApi:
             class: App\Tests\Double\StubBusinessApi
+            public: true
+        # Frozen at the reference date of the business fixtures (tests/Fixtures/business).
+        clock:
+            class: Symfony\Component\Clock\MockClock
+            arguments: ['2026-11-15 10:42:00', 'Europe/Warsaw']
+            public: true
+        App\Module\File\FileStore:
+            alias: App\Module\File\LocalFileStore
             public: true

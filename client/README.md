@@ -35,4 +35,5 @@ docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD/scripts":/
 ```
 
 - `e2e-cp004.mjs` runs critical path CP-004 through the UI and Mailpit, and deletes its own account afterwards.
-- `prototype-screens.mjs` runs the walkthrough with screenshots and overflow checks (see above).
+- `e2e-cp001.mjs` runs CP-001 without mail and the file part of CP-003: manual ticket → worker → representative downloads at 360 px → another representative gets 404. Needs the worker (`make up` starts it).
+- `prototype-screens.mjs` is the prototype-era walkthrough (mocked tickets `T-10xx`, accepted 2026-11-21). Since TASK-005 tickets and files come from the API, so its ticket and report steps no longer apply; its screenshots in `docs/design/prototype/screens` remain the record of the accepted prototype.

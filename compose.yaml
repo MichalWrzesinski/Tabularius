@@ -31,7 +31,7 @@ services:
     volumes:
       - ./api:/app
       - ./.cache/composer:/cache/composer
-    environment:
+    environment: &api-env
       <<: *php-env
       APP_SECRET: ${API_APP_SECRET}
       DATABASE_URL: postgresql://tabularius_app:${TABULARIUS_APP_PASSWORD}@db:5432/tabularius?serverVersion=18&charset=utf8
@@ -45,6 +45,21 @@ services:
       # Local: every e-mail lands in Mailpit (http://127.0.0.1:8025), nothing is delivered.
       MAILER_DSN: smtp://mailpit:1025
       MAILER_CAPTURE_DSN: smtp://mailpit:1025
+
+  # Background jobs (report execution). Restarts hourly to pick up code changes and release memory.
+  worker:
+    <<: *php
+    command: ["php", "bin/console", "messenger:consume", "async", "--time-limit=3600", "--memory-limit=128M", "-v"]
+    restart: unless-stopped
+    volumes:
+      - ./api:/app
+    environment:
+      <<: *api-env
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started
 
   business:
     <<: *php

@@ -1,3 +1,4 @@
+# Manual tickets: per administrator account (the shared demo admin shares one budget).
 # Password reset is public and replaces the password, so it is limited per address and per client IP (threat model
 # SEC-LIM). Exceeding either limit answers 429 for any address, existing or not, so it reveals nothing.
 framework:
@@ -9,4 +10,8 @@ framework:
         password_reset_ip:
             policy: sliding_window
             limit: 10
+            interval: '1 hour'
+        manual_ticket:
+            policy: sliding_window
+            limit: 60
             interval: '1 hour'

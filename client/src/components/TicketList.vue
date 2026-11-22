@@ -6,11 +6,11 @@ import { formatDate, formatTime } from '../lib/format'
 import { STATUS, STATUS_ORDER } from '../lib/status'
 import { ticketPerson, ticketTitle } from '../lib/ticket'
 import { proto } from '../mock/api'
-import type { Ticket, TicketStatus } from '../mock/types'
+import type { TicketStatus, TicketSummary } from '../lib/types'
 import Ico from './Ico.vue'
 import StatusBadge from './StatusBadge.vue'
 
-const props = defineProps<{ tickets: Ticket[]; perPage?: number; initialStatus?: TicketStatus | '' }>()
+const props = defineProps<{ tickets: TicketSummary[]; perPage?: number; initialStatus?: TicketStatus | '' }>()
 const router = useRouter()
 const query = ref('')
 const status = ref<TicketStatus | ''>(props.initialStatus ?? '')
@@ -27,7 +27,7 @@ const filtered = computed(() => {
   return props.tickets.filter(
     (t) =>
       (!status.value || t.status === status.value) &&
-      (!q || [t.id, ticketPerson(t), ticketTitle(t)].some((v) => v.toLowerCase().includes(q))),
+      (!q || [t.number, ticketPerson(t), ticketTitle(t)].some((v) => v.toLowerCase().includes(q))),
   )
 })
 const pages = computed(() => Math.max(1, Math.ceil(filtered.value.length / per.value)))
@@ -39,8 +39,9 @@ const pageList = computed(() => {
   return Array.from({ length: Math.min(3, n) }, (_, i) => start + i)
 })
 const personCol = computed(() => (proto.anonymize ? 'UCZESTNIK' : 'PRACOWNIK'))
-const when = (iso: string) => (formatDate(iso) === '15.11.2026' ? formatTime(iso) : formatDate(iso))
-const open = (t: Ticket) => void router.push(`/admin/zgloszenia/${t.id}`)
+const today = formatDate(new Date().toISOString())
+const when = (iso: string) => (formatDate(iso) === today ? formatTime(iso) : formatDate(iso))
+const open = (t: TicketSummary) => void router.push(`/admin/zgloszenia/${t.id}`)
 </script>
 
 <template>
@@ -68,7 +69,13 @@ const open = (t: Ticket) => void router.push(`/admin/zgloszenia/${t.id}`)
     <div v-if="!filtered.length" class="card x-empty">
       <span class="sym"><Ico name="mail" /></span>
       <h3>Brak zgłoszeń</h3>
-      <p>{{ query || status ? 'Żadne zgłoszenie nie pasuje do filtrów.' : 'Nowe zgłoszenia pojawią się tu po odebraniu wiadomości.' }}</p>
+      <p>
+        {{
+          query || status
+            ? 'Żadne zgłoszenie nie pasuje do filtrów.'
+            : 'Nowe zgłoszenia pojawią się tu po odebraniu wiadomości lub po utworzeniu ręcznie.'
+        }}
+      </p>
     </div>
 
     <template v-else>
@@ -89,7 +96,7 @@ const open = (t: Ticket) => void router.push(`/admin/zgloszenia/${t.id}`)
           <tbody>
             <tr v-for="t in visible" :key="t.id" @click="open(t)">
               <td>
-                <RouterLink :to="`/admin/zgloszenia/${t.id}`" @click.stop>#{{ t.id }}</RouterLink>
+                <RouterLink :to="`/admin/zgloszenia/${t.id}`" @click.stop>#{{ t.number }}</RouterLink>
               </td>
               <td>{{ ticketPerson(t) }}</td>
               <td>{{ ticketTitle(t) }}</td>
@@ -120,7 +127,7 @@ const open = (t: Ticket) => void router.push(`/admin/zgloszenia/${t.id}`)
       <div class="ticketcards">
         <RouterLink v-for="t in visible" :key="t.id" class="ticketcard" :to="`/admin/zgloszenia/${t.id}`">
           <div class="ticketmeta">
-            <b>#{{ t.id }}</b
+            <b>#{{ t.number }}</b
             ><time :datetime="t.receivedAt">{{ when(t.receivedAt) }}</time>
           </div>
           <h3>{{ ticketTitle(t) }}</h3>

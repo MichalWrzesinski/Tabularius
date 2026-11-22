@@ -4,9 +4,10 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'
-import { listTickets, proto } from '../mock/api'
+import { listTickets } from '../lib/tickets'
+import { proto } from '../mock/api'
 import { logout, session } from '../lib/session'
-import { initials } from '../lib/ticket'
+import { initials, openTicketNumber } from '../lib/ticket'
 import Ico from './Ico.vue'
 
 const props = defineProps<{ role: 'admin' | 'employee' }>()
@@ -47,7 +48,8 @@ function active(item: { to: string; exact?: boolean }) {
   return route.path.startsWith(item.to) && !route.path.startsWith(settingsTo.value)
 }
 const crumb = computed(() => {
-  if (route.params.id) return `Zgłoszenia / #${String(route.params.id)}`
+  if (route.params.id) return `Zgłoszenia / ${openTicketNumber.value ? '#' + openTicketNumber.value : 'Szczegóły'}`
+  if (route.path === '/admin/zgloszenia/nowe') return 'Zgłoszenia / Nowe'
   return (route.meta.title as string) ?? ''
 })
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Report;
+namespace App\Tests\Double;
 
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -30,7 +30,7 @@ final class FixtureBusinessHttp
                 throw new \LogicException('No fixture for '.$url);
             }
 
-            return new MockResponse((string) file_get_contents(\dirname(__DIR__, 2).'/Fixtures/business/'.$file.'.json'), ['http_code' => 200]);
+            return new MockResponse((string) file_get_contents(\dirname(__DIR__).'/Fixtures/business/'.$file.'.json'), ['http_code' => 200]);
         }, 'http://business.test');
     }
 

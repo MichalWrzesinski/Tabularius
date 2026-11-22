@@ -1,4 +1,4 @@
-import type { Operation, TicketStatus } from '../mock/types'
+import type { Operation, TicketStatus } from './types'
 
 export const STATUS: Record<TicketStatus, { label: string; tone: 'done' | 'progress' | 'wait' | 'error' | 'neutral' }> = {
   received: { label: 'Przyjęte', tone: 'neutral' },
@@ -41,8 +41,12 @@ export const ISSUE_LABEL: Record<string, string> = {
   recipient_change_requested: 'Prośba o zmianę odbiorcy (zignorowana)',
 }
 
+/** Technical failure codes; the mockup shows „Błąd” for them, other interventions read „Do sprawdzenia”. */
+const ERROR_REASONS = new Set(['data_source_error', 'internal_error', 'ai_provider_error', 'ai_limit'])
+
 /** Mockup shows „Błąd” for technical failures; other interventions read „Do sprawdzenia”. Same status. */
-export function statusLabel(status: TicketStatus, reason?: string): string {
-  if (status === 'needs_intervention' && reason && /błąd|niedostępn|limit dostawcy/i.test(reason)) return 'Błąd'
+export function statusLabel(status: TicketStatus, reason?: string | null): string {
+  if (status === 'needs_intervention' && reason && (ERROR_REASONS.has(reason) || /błąd|niedostępn|limit dostawcy/i.test(reason)))
+    return 'Błąd'
   return STATUS[status].label
 }

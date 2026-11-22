@@ -5,6 +5,8 @@ describe('statusLabel', () => {
   it('reads „Błąd” only for technical interventions', () => {
     expect(statusLabel('needs_intervention', 'Błąd dostawcy AI — brak odpowiedzi')).toBe('Błąd')
     expect(statusLabel('needs_intervention', 'Limit pytań wyczerpany')).toBe('Do sprawdzenia')
+    expect(statusLabel('needs_intervention', 'data_source_error')).toBe('Błąd')
+    expect(statusLabel('needs_intervention', 'out_of_scope')).toBe('Do sprawdzenia')
     expect(statusLabel('completed')).toBe('Ukończone')
   })
 })

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Module\Shared\Http;
 
-use App\Module\Identity\AccountException;
+use App\Module\Shared\Refusal;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -47,7 +47,7 @@ final class ApiSubscriber implements EventSubscriberInterface
             return;
         }
         $e = $event->getThrowable();
-        if ($e instanceof AccountException) {
+        if ($e instanceof Refusal) {
             $event->setResponse(Problem::response($e->status, $e->reason, 'Request refused'));
         } elseif ($e instanceof HttpExceptionInterface) {
             $status = $e->getStatusCode();

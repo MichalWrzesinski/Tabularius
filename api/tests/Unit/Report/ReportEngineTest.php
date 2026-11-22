@@ -16,6 +16,7 @@ use App\Module\Report\Period\DateRange;
 use App\Module\Report\Period\PeriodException;
 use App\Module\Report\Period\PeriodResolver;
 use App\Module\Report\Profile\IntegrationProfile;
+use App\Tests\Double\FixtureBusinessHttp;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
@@ -76,6 +77,8 @@ final class ReportEngineTest extends TestCase
             "suma_calkowita;;;;;;;;;;53107,40\r\n",
             (new CsvWriter())->write($report),
         );
+        // The same bytes are the expected download in the end-to-end ticket test (tests/Functional/Ticket).
+        self::assertStringEqualsFile(\dirname(__DIR__, 2).'/Fixtures/expected/sales_PH-01_2026-10.csv', (new CsvWriter())->write($report));
     }
 
     public function testEmptyPeriodIsAValidResultWithZeroTotals(): void

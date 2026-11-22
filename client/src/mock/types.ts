@@ -1,29 +1,8 @@
-// PROTOTYPE: shapes for the mocked API. The real contract is defined in increment 2 (docs/api).
+// PROTOTYPE: shapes of the remaining mocked flows (confirmation, mail correspondence). Real contract: lib/types.ts.
 
-export type TicketStatus =
-  | 'received'
-  | 'interpreting'
-  | 'needs_clarification'
-  | 'awaiting_confirmation'
-  | 'queued'
-  | 'running'
-  | 'completed'
-  | 'rejected'
-  | 'needs_intervention'
+import type { Actor, Operation, PlanVersion, TicketStatus } from '../lib/types'
 
-export type Operation = 'sales_report' | 'parts_catalog' | 'customer_discount_simulation'
-
-export type Actor = 'system' | 'model' | 'employee' | 'admin'
-
-export interface PlanVersion {
-  version: number
-  author: Actor
-  at: string
-  operation: Operation | null
-  /** Display-ready, resolved parameters (labels in Polish). */
-  params: { label: string; value: string }[]
-  issues: string[]
-}
+export type { Actor, Operation, PlanVersion, TicketStatus }
 
 export type MessageKind = 'request' | 'reply' | 'question' | 'notification' | 'refusal' | 'confirmation_request'
 

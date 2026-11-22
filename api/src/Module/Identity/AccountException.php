@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Module\Identity;
 
+use App\Module\Shared\Refusal;
+
 /**
- * Expected refusal in account management; `reason` is a stable code for the API (Problem Details `code`).
+ * Expected refusal in account management.
  */
-final class AccountException extends \RuntimeException
+final class AccountException extends Refusal
 {
-    public function __construct(public readonly string $reason, public readonly int $status = 422)
-    {
-        parent::__construct($reason);
-    }
 }

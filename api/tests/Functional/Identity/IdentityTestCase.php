@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Identity;
 
 use App\Module\Identity\Account;
 use App\Module\Identity\Role;
+use App\Tests\Double\StubBusinessApi;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -23,10 +24,11 @@ abstract class IdentityTestCase extends WebTestCase
     {
         $this->client = self::createClient();
         $db = self::getContainer()->get(Connection::class);
-        foreach (['account_session', 'sessions', 'audit_event', 'account'] as $table) {
+        foreach (['messenger_messages', 'report_file', 'ticket_event', 'ticket_plan', 'ticket', 'account_session', 'sessions', 'audit_event', 'account'] as $table) {
             $db->executeStatement("DELETE FROM $table");
         }
         self::getContainer()->get('cache.rate_limiter')->clear();
+        StubBusinessApi::reset();
     }
 
     protected function account(string $email, Role $role = Role::Rep, ?string $rep = 'PH-02', string $password = self::PASSWORD, bool $shared = false): Account

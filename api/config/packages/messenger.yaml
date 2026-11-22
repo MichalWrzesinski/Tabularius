@@ -1,0 +1,19 @@
+# Durable jobs in PostgreSQL (ADR 0001, MAIL-3). The worker service runs `messenger:consume async`.
+# Retries are for transient failures only; handlers turn business failures into ticket states and never throw them.
+framework:
+    messenger:
+        failure_transport: failed
+
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: 3
+                    delay: 2000
+                    multiplier: 3
+            failed: '%env(MESSENGER_TRANSPORT_DSN)%&queue_name=failed'
+
+        routing:
+            App\Module\Ticket\Job\ExecutePlan: async
+
+# Tests use the same Doctrine queue (it survives kernel reboots between requests) and run the handler explicitly.

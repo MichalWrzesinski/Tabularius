@@ -1,13 +1,13 @@
 <script setup lang="ts">
 // Opened from the e-mail link after login; download only on click (brief §8). Patterns from 04-zgloszenie.html.
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import CsvPreview from '../../components/CsvPreview.vue'
 import Ico from '../../components/Ico.vue'
-import { csvSizeLabel, downloadCsv } from '../../lib/download'
 import { formatDateTime } from '../../lib/format'
 import { OPERATION_LABEL } from '../../lib/status'
 import { useAsync } from '../../lib/useAsync'
-import { getFile } from '../../mock/api'
+import { errorMessage } from '../../lib/http'
+import { downloadFile, getFile, sizeLabel } from '../../lib/tickets'
 
 const props = defineProps<{ fileId: string }>()
 const { data: file, loading, error, reload } = useAsync(() => getFile(props.fileId))
@@ -15,6 +15,15 @@ watch(
   () => props.fileId,
   () => void reload(),
 )
+const downloadError = ref<string | null>(null)
+async function download() {
+  downloadError.value = null
+  try {
+    if (file.value) await downloadFile(file.value)
+  } catch (e) {
+    downloadError.value = errorMessage(e)
+  }
+}
 </script>
 
 <template>
@@ -32,6 +41,7 @@ watch(
     <div v-else-if="error" class="card x-empty" role="alert">
       <span class="sym"><Ico name="lock" /></span>
       <h3>Ten raport jest niedostępny</h3>
+      <p>{{ error }}</p>
       <p>Raport nie istnieje, wygasł albo nie należy do Ciebie. Jeśli to Twój raport, wyślij prośbę ponownie.</p>
       <RouterLink class="cta blue" to="/moje-raporty" style="margin-top: 18px">Moje raporty</RouterLink>
     </div>
@@ -54,14 +64,20 @@ watch(
             <div class="fileicon"><Ico name="file" :width="2" /></div>
             <div>
               <b>{{ file.name }}</b
-              ><small>{{ csvSizeLabel(file) }}</small>
+              ><small>{{ sizeLabel(file) }}</small>
             </div>
-            <button class="cta blue" type="button" @click="downloadCsv(file)"><Ico name="download" /> Pobierz CSV</button>
+            <button class="cta blue" type="button" @click="download"><Ico name="download" /> Pobierz CSV</button>
           </div>
-          <div class="successline"><Ico name="check" />Raport jest gotowy do pobrania.</div>
+          <div v-if="downloadError" class="x-alert error x-section" role="alert">
+            <Ico name="alert" /><span>{{ downloadError }}</span>
+          </div>
+          <div v-else class="successline"><Ico name="check" />Raport jest gotowy do pobrania.</div>
           <section class="card x-card-pad x-section" aria-labelledby="prev-h">
             <h3 id="prev-h" class="x-h3">Podgląd</h3>
             <CsvPreview :file="file" />
+            <p v-if="file.previewTruncated" class="x-muted" style="margin-top: 12px">
+              Podgląd pokazuje pierwsze 200 pozycji; pełny raport jest w pliku CSV.
+            </p>
             <p class="x-muted" style="margin-top: 12px">
               Kwoty w PLN netto. Pola tekstowe zaczynające się od znaków formuły są poprzedzone apostrofem.
             </p>
