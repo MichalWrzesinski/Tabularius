@@ -10,6 +10,7 @@ final readonly class Operation
      * @param list<string>        $columns
      * @param list<string>        $permittedFields
      * @param array<string, bool> $parameters      name => required
+     * @param list<string>        $synonyms        everyday words for this operation (interpreter hint, not a rule)
      */
     public function __construct(
         public string $id,
@@ -18,6 +19,8 @@ final readonly class Operation
         public array $columns,
         public array $permittedFields,
         public array $parameters,
+        public string $description = '',
+        public array $synonyms = [],
     ) {
     }
 }
