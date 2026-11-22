@@ -6,19 +6,24 @@ namespace App\Module\Identity\Http;
 
 use App\Module\Identity\Account;
 use App\Module\Identity\AccountService;
+use App\Module\Shared\Http\Problem;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 #[Route('/api/v1/auth')]
 final class AuthController
 {
-    public function __construct(private readonly AccountService $accounts)
-    {
+    public function __construct(
+        private readonly AccountService $accounts,
+        private readonly RateLimiterFactoryInterface $passwordResetEmailLimiter,
+        private readonly RateLimiterFactoryInterface $passwordResetIpLimiter,
+    ) {
     }
 
     /** Handled by the json_login authenticator; reached only for a malformed request. */
@@ -61,11 +66,17 @@ final class AuthController
 
     /**
      * Always 202, the same for unknown addresses; the reset runs after the response is sent (no timing hint).
+     * Limited per address and per IP (config/packages/rate_limiter.yaml); 429 does not depend on the address existing.
      */
     #[Route('/password-reset', name: 'api_password_reset', methods: ['POST'])]
     public function requestReset(Request $request, EventDispatcherInterface $dispatcher): JsonResponse
     {
         $email = self::str(self::json($request), 'email');
+        $byIp = $this->passwordResetIpLimiter->create($request->getClientIp() ?? 'unknown')->consume();
+        $byEmail = $this->passwordResetEmailLimiter->create(mb_strtolower(trim($email)))->consume();
+        if (!$byIp->isAccepted() || !$byEmail->isAccepted()) {
+            return Problem::response(429, 'too_many_attempts', 'Too many password reset requests, try again later');
+        }
         $dispatcher->addListener(KernelEvents::TERMINATE, function () use ($email): void {
             $this->accounts->resetPassword($email);
         });

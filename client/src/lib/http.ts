@@ -48,7 +48,7 @@ export function errorMessage(e: unknown): string {
   const messages: Record<string, string> = {
     network: e.message,
     invalid_credentials: 'Nieprawidłowy e-mail lub hasło.',
-    too_many_attempts: 'Zbyt wiele prób logowania. Spróbuj ponownie za kilka minut.',
+    too_many_attempts: 'Zbyt wiele prób. Spróbuj ponownie później.',
     unauthenticated: 'Sesja wygasła. Zaloguj się ponownie.',
     forbidden: 'Nie masz dostępu do tej funkcji.',
     csrf: 'Żądanie odrzucone ze względów bezpieczeństwa. Odśwież stronę.',

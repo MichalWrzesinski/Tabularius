@@ -127,6 +127,28 @@ final class AuthTest extends IdentityTestCase
         self::assertSame(401, $this->login('anna@example.com'), 'old password no longer works');
     }
 
+    public function testPasswordResetIsLimitedPerAddressRegardlessOfExistence(): void
+    {
+        $this->account('anna@example.com');
+
+        foreach (['anna@example.com', 'nobody@example.com'] as $email) {
+            for ($i = 0; $i < 3; ++$i) {
+                self::assertSame(202, $this->api('POST', '/api/v1/auth/password-reset', ['email' => $email]));
+            }
+            self::assertSame(429, $this->api('POST', '/api/v1/auth/password-reset', ['email' => ' '.strtoupper($email)]));
+            $this->assertProblemCode('too_many_attempts');
+            self::assertEmailCount(0, message: 'a refused request sends no mail');
+        }
+    }
+
+    public function testPasswordResetIsLimitedPerClient(): void
+    {
+        for ($i = 0; $i < 10; ++$i) {
+            self::assertSame(202, $this->api('POST', '/api/v1/auth/password-reset', ['email' => "user{$i}@example.com"]));
+        }
+        self::assertSame(429, $this->api('POST', '/api/v1/auth/password-reset', ['email' => 'another@example.com']));
+    }
+
     public function testMalformedBodiesAreBadRequests(): void
     {
         $this->client->request('POST', '/api/v1/auth/password-reset', server: ['CONTENT_TYPE' => 'application/json', 'HTTP_X_TABULARIUS_REQUEST' => '1'], content: '{oops');

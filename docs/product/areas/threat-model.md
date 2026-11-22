@@ -35,6 +35,8 @@ Configurable; defaults for the demo (to be tuned with evidence):
 | Demo per-sender tickets | 5 per hour, 20 per day |
 | Demo global tickets | 200 per day |
 | Daily LLM spend guard | configurable; when reached → new tickets wait in `needs_intervention` (`ai_limit`) |
+| Login attempts | 5 per 15 minutes per address and client (Symfony login throttling) |
+| Password reset requests | 3 per hour per address, 10 per hour per client IP; answer 429 whether or not the account exists |
 | Report rows / query time | 50 000 / 10 s |
 | File availability | 7 days in demo; production configurable (default 30 days) |
 
