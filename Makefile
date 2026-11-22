@@ -9,6 +9,12 @@ CLIENT := $(DC) run --rm --no-deps client
 
 .PHONY: up down logs install migrate seed test check check-backend check-frontend secrets hooks ci build clean-db
 
+# Download caches are bind-mounted into the containers; create them as the current user first,
+# otherwise Docker creates them as root and npm/composer cannot write (CI runners).
+CACHE_DIRS := .cache/composer .cache/npm
+$(CACHE_DIRS):
+	mkdir -p $@
+
 .env:
 	cp .env.example .env
 	printf 'UID=%s\nGID=%s\n' "$$(id -u)" "$$(id -g)" >> .env
@@ -23,7 +29,7 @@ up: .env build install ## start everything from scratch
 build: .env
 	$(DC) build
 
-install: .env
+install: .env | $(CACHE_DIRS)
 	$(API) composer install --no-interaction --no-progress
 	$(BUSINESS) composer install --no-interaction --no-progress
 	$(CLIENT) npm ci --no-audit --no-fund
@@ -34,14 +40,14 @@ down:
 logs:
 	$(DC) logs -f --tail=100
 
-migrate: .env
+migrate: .env | $(CACHE_DIRS)
 	$(DC) run --rm api sh -c 'DATABASE_URL="$$MIGRATIONS_DATABASE_URL" bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration'
 	$(DC) run --rm business sh -c 'DATABASE_URL="$$MIGRATIONS_DATABASE_URL" bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration'
 
-seed: .env ## (re)load synthetic business data around REF=YYYY-MM-DD (default: today, Europe/Warsaw)
+seed: .env | $(CACHE_DIRS) ## (re)load synthetic business data around REF=YYYY-MM-DD (default: today, Europe/Warsaw)
 	$(DC) run --rm business bin/console app:seed $(if $(REF),--reference-date=$(REF))
 
-test: .env
+test: .env | $(CACHE_DIRS)
 	$(DC) up -d --wait db
 	$(DC) run --rm api vendor/bin/phpunit
 	$(DC) run --rm business vendor/bin/phpunit
@@ -49,7 +55,7 @@ test: .env
 
 check: check-backend check-frontend secrets ## full set of checks (same as CI)
 
-check-backend: .env
+check-backend: .env | $(CACHE_DIRS)
 	$(DC) up -d --wait db
 	@for app in api business; do \
 	  echo "== $$app" && \
@@ -61,7 +67,7 @@ check-backend: .env
 	    composer audit --no-interaction --locked' || exit 1; \
 	done
 
-check-frontend: .env
+check-frontend: .env | $(CACHE_DIRS)
 	$(CLIENT) sh -c 'npm run lint && npm run typecheck && npm run test:coverage && npm run build && npm audit --omit=dev'
 
 secrets:
