@@ -1,6 +1,6 @@
 # TASK-008 — Rule-based interpreter (baseline) closing the mail loop without an LLM
 
-Status: DONE (PR pending CI) · Priority: high · Increment: 3 · Depends on: TASK-006
+Status: DONE (PR #26) · Priority: high · Increment: 3 · Depends on: TASK-006
 
 ## Goal and scope
 A deterministic interpreter that turns the text of simple requests into the typed plan (TKT-PLAN) behind the same `Interpreter` interface the OpenAI one will use in increment 4. It closes the e-mail → report loop now, and it is the evaluation baseline the brief requires (§10).
