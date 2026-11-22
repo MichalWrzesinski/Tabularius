@@ -1,0 +1,295 @@
+{
+    "items": [
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01037",
+            "name": "Cewka zapłonowa",
+            "category": "Zapłon",
+            "unit": "szt.",
+            "listPriceNet": "31.81"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01074",
+            "name": "Lampa tylna",
+            "category": "Oświetlenie",
+            "unit": "szt.",
+            "listPriceNet": "539.02"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01111",
+            "name": "Sprężyna zawieszenia",
+            "category": "Zawieszenie",
+            "unit": "szt.",
+            "listPriceNet": "157.55"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01148",
+            "name": "Pióro wycieraczki 600 mm",
+            "category": "Wycieraczki",
+            "unit": "szt.",
+            "listPriceNet": "822.51"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01185",
+            "name": "Łożysko oporowe",
+            "category": "Sprzęgła",
+            "unit": "szt.",
+            "listPriceNet": "341.98"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01222",
+            "name": "Piasta koła",
+            "category": "Łożyska",
+            "unit": "szt.",
+            "listPriceNet": "625.29"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01259",
+            "name": "@Serwis zestaw klocków hamulcowych",
+            "category": "Hamulce",
+            "unit": "szt.",
+            "listPriceNet": "617.55"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01296",
+            "name": "-20% Wkład filtra powietrza (wyprzedaż)",
+            "category": "Filtry",
+            "unit": "szt.",
+            "listPriceNet": "398.91"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01333",
+            "name": "Cewka zapłonowa",
+            "category": "Zapłon",
+            "unit": "szt.",
+            "listPriceNet": "916.61"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01370",
+            "name": "Lampa tylna",
+            "category": "Oświetlenie",
+            "unit": "szt.",
+            "listPriceNet": "906.04"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01407",
+            "name": "Sprężyna zawieszenia",
+            "category": "Zawieszenie",
+            "unit": "szt.",
+            "listPriceNet": "231.04"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01444",
+            "name": "Pióro wycieraczki 600 mm",
+            "category": "Wycieraczki",
+            "unit": "szt.",
+            "listPriceNet": "26.25"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01481",
+            "name": "Łożysko oporowe",
+            "category": "Sprzęgła",
+            "unit": "szt.",
+            "listPriceNet": "332.93"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01518",
+            "name": "Piasta koła",
+            "category": "Łożyska",
+            "unit": "szt.",
+            "listPriceNet": "375.78"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01555",
+            "name": "Przewód hamulcowy",
+            "category": "Hamulce",
+            "unit": "szt.",
+            "listPriceNet": "16.41"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01592",
+            "name": "Filtr oleju",
+            "category": "Filtry",
+            "unit": "szt.",
+            "listPriceNet": "274.58"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01666",
+            "name": "Lampa tylna",
+            "category": "Oświetlenie",
+            "unit": "szt.",
+            "listPriceNet": "562.89"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01703",
+            "name": "Sprężyna zawieszenia",
+            "category": "Zawieszenie",
+            "unit": "szt.",
+            "listPriceNet": "755.16"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01740",
+            "name": "Pióro wycieraczki 600 mm",
+            "category": "Wycieraczki",
+            "unit": "szt.",
+            "listPriceNet": "959.06"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01777",
+            "name": "Łożysko oporowe",
+            "category": "Sprzęgła",
+            "unit": "szt.",
+            "listPriceNet": "350.66"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01814",
+            "name": "Piasta koła",
+            "category": "Łożyska",
+            "unit": "szt.",
+            "listPriceNet": "405.02"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01851",
+            "name": "Przewód hamulcowy",
+            "category": "Hamulce",
+            "unit": "szt.",
+            "listPriceNet": "199.54"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01888",
+            "name": "Filtr oleju",
+            "category": "Filtry",
+            "unit": "szt.",
+            "listPriceNet": "615.69"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01925",
+            "name": "Cewka zapłonowa",
+            "category": "Zapłon",
+            "unit": "szt.",
+            "listPriceNet": "823.81"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01962",
+            "name": "Lampa tylna",
+            "category": "Oświetlenie",
+            "unit": "szt.",
+            "listPriceNet": "63.06"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-01999",
+            "name": "Sprężyna zawieszenia",
+            "category": "Zawieszenie",
+            "unit": "szt.",
+            "listPriceNet": "640.21"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02036",
+            "name": "Pióro wycieraczki 600 mm",
+            "category": "Wycieraczki",
+            "unit": "szt.",
+            "listPriceNet": "43.60"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02073",
+            "name": "Łożysko oporowe",
+            "category": "Sprzęgła",
+            "unit": "szt.",
+            "listPriceNet": "156.48"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02110",
+            "name": "Piasta koła",
+            "category": "Łożyska",
+            "unit": "szt.",
+            "listPriceNet": "515.27"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02147",
+            "name": "Przewód hamulcowy",
+            "category": "Hamulce",
+            "unit": "szt.",
+            "listPriceNet": "345.53"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02184",
+            "name": "Filtr oleju",
+            "category": "Filtry",
+            "unit": "szt.",
+            "listPriceNet": "879.70"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02221",
+            "name": "Cewka zapłonowa",
+            "category": "Zapłon",
+            "unit": "szt.",
+            "listPriceNet": "278.53"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02295",
+            "name": "Sprężyna zawieszenia",
+            "category": "Zawieszenie",
+            "unit": "szt.",
+            "listPriceNet": "37.71"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02332",
+            "name": "Pióro wycieraczki 600 mm",
+            "category": "Wycieraczki",
+            "unit": "szt.",
+            "listPriceNet": "546.75"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02369",
+            "name": "Łożysko oporowe",
+            "category": "Sprzęgła",
+            "unit": "szt.",
+            "listPriceNet": "842.72"
+        },
+        {
+            "manufacturerName": "Bosch",
+            "partNumber": "BO-02406",
+            "name": "Piasta koła",
+            "category": "Łożyska",
+            "unit": "szt.",
+            "listPriceNet": "548.47"
+        }
+    ],
+    "page": 1,
+    "perPage": 1000,
+    "total": 36
+}

@@ -1,0 +1,20 @@
+{
+    "items": [
+        {
+            "documentNumber": "FV/2026/05/0001",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-05-05",
+            "customerCode": "K-007",
+            "customerName": "Auto-Kombi Radom",
+            "partNumber": "MA-01148",
+            "manufacturerCode": "MANN",
+            "manufacturerName": "Mann-Filter",
+            "category": "Sprzęgła",
+            "quantity": "3.000",
+            "netValue": "1200.00"
+        }
+    ],
+    "page": 1,
+    "perPage": 1000,
+    "total": 1
+}

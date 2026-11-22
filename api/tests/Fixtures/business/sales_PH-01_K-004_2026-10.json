@@ -1,0 +1,33 @@
+{
+    "items": [
+        {
+            "documentNumber": "FV/2026/10/0005",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-03",
+            "customerCode": "K-004",
+            "customerName": "Moto-Lux Gdańsk",
+            "partNumber": "VA-01222",
+            "manufacturerCode": "VALEO",
+            "manufacturerName": "Valeo",
+            "category": "Zapłon",
+            "quantity": "50.000",
+            "netValue": "30000.00"
+        },
+        {
+            "documentNumber": "FV/2026/10/0006",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-28",
+            "customerCode": "K-004",
+            "customerName": "Moto-Lux Gdańsk",
+            "partNumber": "VA-01259",
+            "manufacturerCode": "VALEO",
+            "manufacturerName": "Valeo",
+            "category": "Oświetlenie",
+            "quantity": "20.000",
+            "netValue": "20000.10"
+        }
+    ],
+    "page": 1,
+    "perPage": 1000,
+    "total": 2
+}
