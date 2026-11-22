@@ -11,6 +11,7 @@ return (new PhpCsFixer\Config())
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'declare_strict_types' => true,
+        'phpdoc_to_comment' => ['ignored_tags' => ['var']], // keep inline @var for PHPStan
     ])
     ->setRiskyAllowed(true)
     ->setFinder($finder)

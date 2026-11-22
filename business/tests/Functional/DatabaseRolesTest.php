@@ -4,35 +4,28 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
+use App\Db\Value;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception\DriverException;
-use Doctrine\DBAL\Tools\DsnParser;
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
- * The API runtime role business_reader must not change the schema or data, and sees nothing that is not granted
- * explicitly (ADR 0002). Runs against business_test.
+ * business_reader (API runtime) must not change schema or data and reads only the granted v_* views (ADR 0002).
  */
-final class DatabaseRolesTest extends TestCase
+final class DatabaseRolesTest extends KernelTestCase
 {
-    private Connection $owner;
     private Connection $reader;
 
     protected function setUp(): void
     {
-        $this->owner = self::connect('BUSINESS_OWNER_TEST_URL');
-        $this->reader = self::connect('BUSINESS_READER_TEST_URL');
-        $this->owner->executeStatement('DROP TABLE IF EXISTS role_probe');
-        $this->owner->executeStatement('CREATE TABLE role_probe (id int PRIMARY KEY)');
-        $this->owner->executeStatement('INSERT INTO role_probe VALUES (1)');
+        self::bootKernel();
+        $reader = self::getContainer()->get('doctrine.dbal.default_connection');
+        $this->reader = $reader;
     }
 
-    protected function tearDown(): void
+    public function testReaderIsTheBusinessReaderRole(): void
     {
-        $this->owner->executeStatement('DROP TABLE IF EXISTS role_probe');
-        $this->owner->close();
-        $this->reader->close();
+        self::assertSame('business_reader', $this->reader->fetchOne('SELECT current_user'));
     }
 
     public function testReaderCannotCreateTables(): void
@@ -41,9 +34,17 @@ final class DatabaseRolesTest extends TestCase
         $this->reader->executeStatement('CREATE TABLE reader_probe (id int)');
     }
 
-    public function testReaderCannotWriteOrReadUngrantedTables(): void
+    public function testReaderCannotTouchTables(): void
     {
-        foreach (['INSERT INTO role_probe VALUES (2)', 'DELETE FROM role_probe', 'SELECT * FROM role_probe', 'DROP TABLE role_probe'] as $sql) {
+        foreach ([
+            'SELECT * FROM part',
+            'SELECT purchase_price_net FROM part',
+            'INSERT INTO sales_rep VALUES (99, \'PH-99\', \'x\')',
+            'DELETE FROM sales_line',
+            'UPDATE customer SET active = false',
+            'TRUNCATE seed_meta',
+            'DROP VIEW v_sales_line',
+        ] as $sql) {
             try {
                 $this->reader->executeQuery($sql);
                 self::fail('business_reader was allowed to run: '.$sql);
@@ -53,11 +54,17 @@ final class DatabaseRolesTest extends TestCase
         }
     }
 
-    private static function connect(string $env): Connection
+    public function testReaderCanReadGrantedViews(): void
     {
-        $url = $_SERVER[$env] ?? $_ENV[$env] ?? getenv($env);
-        self::assertIsString($url, $env.' must be set for this test');
+        foreach (['v_sales_line', 'v_customer', 'v_sales_rep', 'v_manufacturer', 'v_part_catalog', 'v_discount_policy', 'v_seed_meta'] as $view) {
+            self::assertGreaterThan(0, Value::int($this->reader->fetchOne("SELECT count(*) FROM $view")), $view);
+        }
+    }
 
-        return DriverManager::getConnection((new DsnParser(['postgresql' => 'pdo_pgsql']))->parse($url));
+    public function testCatalogViewHasNoPurchaseDataColumns(): void
+    {
+        $columns = $this->reader->fetchFirstColumn("SELECT column_name FROM information_schema.columns WHERE table_name = 'v_part_catalog'");
+        self::assertNotContains('purchase_price_net', $columns);
+        self::assertNotContains('supplier_id', $columns);
     }
 }

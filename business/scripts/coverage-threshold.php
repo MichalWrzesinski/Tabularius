@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 // Fails when line coverage in a PHPUnit --coverage-text summary is below the threshold.
 [, $file, $threshold] = $argv + [null, null, null];
+if (!is_string($file) || !is_string($threshold) || !is_numeric($threshold)) {
+    fwrite(STDERR, "Usage: coverage-threshold.php <coverage.txt> <minimum line coverage %>\n");
+    exit(1);
+}
 $text = (string) preg_replace("/\e\[[\d;]*m/", "", (string) @file_get_contents((string) $file));
 if (!preg_match('/^\s*Lines:\s+([\d.]+)%/m', $text, $m)) {
     fwrite(STDERR, "No line coverage found in {$file}\n");

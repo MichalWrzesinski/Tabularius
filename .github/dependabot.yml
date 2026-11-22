@@ -6,6 +6,10 @@ updates:
     cooldown: { default-days: 14 }
     groups:
       minor-and-patch: { update-types: [minor, patch] }
+    ignore:
+      # Symfony 7.4 is the chosen LTS line (docs/technical-profile.md); moving to 8.x is a separate task.
+      - dependency-name: "symfony/*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /client
     schedule: { interval: weekly }
@@ -13,14 +17,25 @@ updates:
     groups:
       minor-and-patch: { update-types: [minor, patch] }
       vitest: { patterns: ["vitest", "@vitest/*"] }
+    ignore:
+      # vue-tsc 3.3 does not run on TypeScript 7 (AGENTS.md pitfalls).
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
     directories: ["/infra/php", "/client"]
     schedule: { interval: weekly }
     cooldown: { default-days: 14 }
+    ignore:
+      # PHP minor/major upgrades (and their RC tags) are planned changes, not routine updates.
+      - dependency-name: "php"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
   - package-ecosystem: docker-compose
     directory: /
     schedule: { interval: weekly }
     cooldown: { default-days: 14 }
+    ignore:
+      - dependency-name: "postgres"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
