@@ -32,6 +32,13 @@ describe('session', () => {
     server({ 'GET /api/v1/auth/session': json(200, { me: null }) })
     await expect(loadSession(true)).resolves.toBeNull()
     expect(session.loaded).toBe(true)
+    expect([session.mode, session.mailbox]).toEqual(['demo', ''])
+  })
+
+  it('takes the environment and the mailbox address from the server', async () => {
+    server({ 'GET /api/v1/auth/session': json(200, { me: null, mode: 'production', mailbox: 'tabularius@gitpush.app' }) })
+    await loadSession(true)
+    expect([session.mode, session.mailbox]).toEqual(['production', 'tabularius@gitpush.app'])
   })
 
   it('propagates unexpected errors when loading', async () => {

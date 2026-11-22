@@ -79,6 +79,13 @@ function confirmReject() {
 }
 
 const canRetry = computed(() => ticket.value?.status === 'needs_intervention' && RETRYABLE.has(ticket.value.reason ?? ''))
+// A ticket with an owner but no executable plan (mail waiting for interpretation, or in intervention).
+const canSetPlan = computed(
+  () =>
+    !!ticket.value?.ownerId &&
+    ['received', 'interpreting', 'needs_intervention'].includes(ticket.value.status) &&
+    ticket.value.reason !== 'identity_unverified',
+)
 const canReject = computed(() => ['needs_intervention', 'queued', 'received'].includes(ticket.value?.status ?? ''))
 const authState = computed(() => {
   const t = ticket.value
@@ -267,7 +274,7 @@ async function download() {
             </div>
           </aside>
 
-          <section v-if="canRetry || canReject" class="card params x-section" aria-labelledby="act-h">
+          <section v-if="canRetry || canReject || canSetPlan" class="card params x-section" aria-labelledby="act-h">
             <h3 id="act-h">Działania</h3>
             <p class="x-muted" style="margin: -14px 0 18px">Wykonywane w zakresie właściciela zgłoszenia i zapisywane w historii.</p>
             <div v-if="actionError" class="x-alert error" role="alert">
@@ -276,10 +283,13 @@ async function download() {
             <button v-if="canRetry" class="cta" type="button" :disabled="busy" @click="act(() => retryTicket(ticket!.id))">
               <Ico name="refresh" />Ponów wykonanie
             </button>
+            <RouterLink v-else-if="canSetPlan" class="cta" :to="`/admin/zgloszenia/${ticket.id}/parametry`"
+              ><Ico name="check" />Ustaw parametry</RouterLink
+            >
             <button
               v-if="canReject"
               class="x-btn2 danger x-block"
-              :style="canRetry ? 'margin-top: 16px' : ''"
+              :style="canRetry || canSetPlan ? 'margin-top: 16px' : ''"
               type="button"
               :disabled="busy"
               @click="confirmReject"

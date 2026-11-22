@@ -6,7 +6,7 @@ import { formatDateTime } from '../../lib/format'
 import { OPERATION_LABEL, STATUS } from '../../lib/status'
 import { myFiles, myTickets } from '../../lib/tickets'
 import { useAsync } from '../../lib/useAsync'
-import { DEMO_MAILBOX } from '../../mock/data'
+import { session } from '../../lib/session'
 
 const files = useAsync(myFiles)
 const pending = useAsync(myTickets)
@@ -45,7 +45,7 @@ const soon = (iso: string) => new Date(iso).getTime() - Date.now() < 2 * 8640000
         <span class="sym"><Ico name="mail" /></span>
         <h3>Nie masz jeszcze raportów</h3>
         <p>
-          Wyślij prośbę na <b>{{ DEMO_MAILBOX }}</b
+          Wyślij prośbę na <b>{{ session.mailbox }}</b
           >, np. „Przygotuj raport sprzedaży za październik 2026”.
         </p>
       </div>

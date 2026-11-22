@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // No mockup for this form: built from the mockups' pagehead, params card, field and cta patterns (same as „Pracownicy”).
 // Manual ticket (TASK-005): the administrator picks the owner, an operation from the catalog and its parameters.
+// With `ticketId` (TASK-007) it sets the parameters of an existing ticket; the owner comes from the ticket and is fixed.
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AsyncBlock from '../../components/AsyncBlock.vue'
@@ -8,16 +9,24 @@ import Ico from '../../components/Ico.vue'
 import { listAccounts } from '../../lib/accounts'
 import { errorMessage } from '../../lib/http'
 import { emptyForm, formProblem, MONTHS, parametersOf, PERIOD_OPTIONS } from '../../lib/ticketForm'
-import { createTicket, getCatalog, ownerCustomers } from '../../lib/tickets'
+import { createTicket, getCatalog, getTicket, ownerCustomers, setTicketPlan } from '../../lib/tickets'
 import type { CustomerRef } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
 
+const props = defineProps<{ ticketId?: string }>()
 const router = useRouter()
+const existing = useAsync(() => (props.ticketId ? getTicket(props.ticketId) : Promise.resolve(null)))
 const catalog = useAsync(getCatalog)
 const accounts = useAsync(listAccounts)
 const owners = computed(() => (accounts.data.value ?? []).filter((a) => a.role === 'rep' && a.status === 'active'))
 
 const ownerId = ref('')
+watch(
+  () => existing.data.value?.ownerId,
+  (id) => {
+    if (id) ownerId.value = id
+  },
+)
 const form = ref(emptyForm())
 const customers = ref<CustomerRef[]>([])
 const customersError = ref<string | null>(null)
@@ -47,7 +56,9 @@ async function submit() {
   if (problem.value) return
   busy.value = true
   try {
-    const ticket = await createTicket(ownerId.value, form.value.operation, parametersOf(form.value))
+    const ticket = props.ticketId
+      ? await setTicketPlan(props.ticketId, form.value.operation, parametersOf(form.value))
+      : await createTicket(ownerId.value, form.value.operation, parametersOf(form.value))
     void router.push(`/admin/zgloszenia/${ticket.id}`)
   } catch (e) {
     problem.value = errorMessage(e)
@@ -60,18 +71,23 @@ async function submit() {
 <template>
   <div>
     <div class="tickethead">
-      <RouterLink class="back" to="/admin/zgloszenia"><Ico name="arrow" />Wróć do zgłoszeń</RouterLink>
+      <RouterLink class="back" :to="ticketId ? `/admin/zgloszenia/${ticketId}` : '/admin/zgloszenia'"
+        ><Ico name="arrow" />{{ ticketId ? 'Wróć do zgłoszenia' : 'Wróć do zgłoszeń' }}</RouterLink
+      >
     </div>
     <div class="pagehead">
       <div>
-        <h1>Nowe zgłoszenie</h1>
-        <p>Zgłoszenie bez wiadomości e-mail: wybierz pracownika, operację z katalogu i parametry.</p>
+        <h1>{{ ticketId ? 'Ustaw parametry' : 'Nowe zgłoszenie' }}</h1>
+        <p v-if="ticketId">
+          Zgłoszenie #{{ existing.data.value?.number }} ({{ existing.data.value?.employeeName }}): wybierz operację z katalogu i parametry.
+        </p>
+        <p v-else>Zgłoszenie bez wiadomości e-mail: wybierz pracownika, operację z katalogu i parametry.</p>
       </div>
     </div>
 
     <AsyncBlock
       :loading="(catalog.loading.value && !catalog.data.value) || (accounts.loading.value && !accounts.data.value)"
-      :error="catalog.error.value ?? accounts.error.value"
+      :error="catalog.error.value ?? accounts.error.value ?? existing.error.value"
       @retry="() => (catalog.reload(), accounts.reload())"
     >
       <form v-if="catalog.data.value" class="card params" novalidate @submit.prevent="submit">
@@ -84,7 +100,7 @@ async function submit() {
         </div>
 
         <div class="x-grid2">
-          <div class="field">
+          <div v-if="!ticketId" class="field">
             <label for="nt-owner">Pracownik</label>
             <select id="nt-owner" v-model="ownerId" class="x-native" style="height: 62px">
               <option value="" disabled>{{ owners.length ? 'Wybierz pracownika' : 'Brak aktywnych kont handlowców' }}</option>
@@ -193,7 +209,9 @@ async function submit() {
           </select>
         </div>
 
-        <button class="cta" type="submit" :disabled="busy"><Ico name="check" />{{ busy ? 'Tworzenie…' : 'Utwórz i uruchom' }}</button>
+        <button class="cta" type="submit" :disabled="busy">
+          <Ico name="check" />{{ busy ? 'Zapisywanie…' : ticketId ? 'Zapisz parametry' : 'Utwórz i uruchom' }}
+        </button>
       </form>
     </AsyncBlock>
   </div>

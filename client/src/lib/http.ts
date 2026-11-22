@@ -87,6 +87,7 @@ export function errorMessage(e: unknown): string {
     file_expired: 'Plik wygasł i został usunięty.',
     scope_changed: 'Raport obejmuje klientów, którzy nie są już w Twoim zakresie.',
     scope_unavailable: 'Nie można teraz sprawdzić uprawnień do raportu. Spróbuj ponownie za chwilę.',
+    no_owner: 'Nadawca nie jest przypisany do konta pracownika — zgłoszenie można tylko odrzucić.',
   }
   return messages[e.code] ?? 'Nie udało się wykonać operacji. Spróbuj ponownie.'
 }
