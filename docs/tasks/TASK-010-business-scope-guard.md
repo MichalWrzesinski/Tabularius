@@ -1,6 +1,6 @@
 # TASK-010 — Business-scope guard: abusive instructions never reach the model or the data
 
-Status: DONE (PR pending CI) · Priority: highest (owner requirement) · Increment: 4 · Depends on: TASK-008 · Decision: [ADR 0005](../decisions/0005-business-scope-guard.md)
+Status: DONE (PR #32) · Priority: highest (owner requirement) · Increment: 4 · Depends on: TASK-008 · Decision: [ADR 0005](../decisions/0005-business-scope-guard.md)
 
 ## Goal and scope
 Every message is checked against the business concept: Tabularius only prepares reports from the closed catalog for the requester's own scope. Two deterministic layers apply, independent of the interpreter:
