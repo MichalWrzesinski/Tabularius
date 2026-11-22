@@ -100,7 +100,17 @@ final class InterpretTicketHandler
             return;
         }
 
-        $plan = $this->interpreter->interpret($text, $context);
+        try {
+            $plan = $this->interpreter->interpret($text, $context);
+        } catch (\App\Module\Interpretation\OpenAi\AiUnavailableException $e) {
+            // CP-005 / AC-6: the ticket is kept for manual handling, never reported as success.
+            $this->logger->warning('Interpretation unavailable', ['ticket' => $job->ticketId, 'reason' => $e->reason, 'error' => $e->getMessage()]);
+            $this->finish($job->ticketId, null, TicketStatus::NeedsIntervention, $e->reason, 'ai_limit' === $e->reason
+                ? 'Limit interpretacji AI wyczerpany; parametry może ustawić administrator'
+                : 'Błąd dostawcy AI; zgłoszenie zachowane, parametry może ustawić administrator');
+
+            return;
+        }
         // Layer 2: whatever the interpreter returned, only closed typed values in the owner's scope may be routed.
         $violations = $this->guard->violations($plan, $context);
         if (['customer_out_of_scope'] === $violations) {

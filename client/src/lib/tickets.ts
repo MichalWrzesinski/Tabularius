@@ -75,6 +75,8 @@ export const REASON_LABEL: Record<string, string> = {
   interpretation_unavailable: 'Interpretacja niemożliwa — ustaw parametry ręcznie',
   outside_business_scope: 'Prośba poza zakresem usługi (kontrola bezpieczeństwa)',
   model_output_rejected: 'Wynik interpretacji odrzucony przez kontrolę zakresu',
+  ai_provider_error: 'Błąd dostawcy AI — ustaw parametry ręcznie',
+  ai_limit: 'Limit interpretacji AI wyczerpany — ustaw parametry ręcznie',
 }
 
 export const reasonLabel = (code: string | null | undefined) => (code ? (REASON_LABEL[code] ?? code) : '')

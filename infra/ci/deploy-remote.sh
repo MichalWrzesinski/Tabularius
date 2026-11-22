@@ -2,7 +2,8 @@
 # Runs in GitHub Actions (deploy-staging): uploads the stack files of one commit to the server, logs the server in to
 # GHCR with the workflow's read-only token, runs deploy.sh there and checks the site from outside.
 #   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN
-#   optional: MAILBOX_DSN (IMAP), MAILER_DSN (SMTP, e.g. Brevo), MAIL_ALLOWED_RECIPIENTS (controlled test addresses)
+#   optional: MAILBOX_DSN (IMAP), MAILER_DSN (SMTP, e.g. Brevo), MAIL_ALLOWED_RECIPIENTS (controlled test addresses),
+#   OPENAI_API_KEY, OPENAI_MODEL
 set -euo pipefail
 
 fail() { echo "::error::$*"; exit 1; }
@@ -27,6 +28,8 @@ if [[ -n "${MAILER_DSN:-}" ]]; then
   [[ "$MAILER_DSN" == *@* ]] || fail "MAILER_DSN has no user:password@ part"
   [[ "$host" =~ ^[A-Za-z0-9.-]+(:[0-9]{2,5})?(\?.*)?$ ]] || fail "MAILER_DSN: host part must be host:port (got '${host:0:60}')"
 fi
+[[ -z "${OPENAI_API_KEY:-}" || "$OPENAI_API_KEY" =~ ^sk-[A-Za-z0-9_-]{20,}$ ]] || fail "OPENAI_API_KEY must look like sk-… (no spaces or quotes)"
+[[ "${OPENAI_MODEL:-}" =~ ^[A-Za-z0-9._:-]*$ ]] || fail "OPENAI_MODEL: letters, digits, . _ : - only"
 [[ "${MAIL_INGEST_SINCE:-}" =~ ^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}(Z|[+-][0-9]{2}:[0-9]{2}))?$ ]] || fail "MAIL_INGEST_SINCE must be ISO 8601, e.g. 2026-11-22T18:00:00Z"
 [[ "${MAIL_ALLOWED_RECIPIENTS:-}" =~ ^[A-Za-z0-9.@_+,\ -]*$ ]] || fail "MAIL_ALLOWED_RECIPIENTS: addresses or @domains separated by commas"
 
@@ -46,12 +49,14 @@ printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\
   scp -q infra/postgres/init/01-roles-and-databases.sh "server:$APP_DIR/releases/$SHA/postgres-init/"
   echo "::endgroup::"
 
-  # Mail settings and secrets: a file of their own on the server (mode 600), rewritten at every deployment.
+  # Mail and LLM settings and secrets: a file of their own on the server (mode 600), rewritten at every deployment.
   {
     if [[ -n "${MAILBOX_DSN:-}" ]]; then printf "MAILBOX_DSN='%s'\n" "$MAILBOX_DSN"; fi
     if [[ -n "${MAILER_DSN:-}" ]]; then printf "MAILER_DSN='%s'\n" "$MAILER_DSN"; fi
     printf "MAIL_ALLOWED_RECIPIENTS='%s'\n" "${MAIL_ALLOWED_RECIPIENTS:-}"
     printf "MAIL_INGEST_SINCE='%s'\n" "${MAIL_INGEST_SINCE:-}"
+    if [[ -n "${OPENAI_API_KEY:-}" ]]; then printf "OPENAI_API_KEY='%s'\n" "$OPENAI_API_KEY"; fi
+    if [[ -n "${OPENAI_MODEL:-}" ]]; then printf "OPENAI_MODEL='%s'\n" "$OPENAI_MODEL"; fi
   } | ssh server "umask 077 && cat > '$APP_DIR/.env.mail'"
 
   printf '%s' "$GHCR_TOKEN" | ssh server "docker login ghcr.io -u '$GHCR_USER' --password-stdin" >/dev/null

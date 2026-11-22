@@ -1,6 +1,6 @@
 # TASK-011 — OpenAI interpreter behind the guard
 
-Status: PLANNED · Priority: high · Increment: 4 · Depends on: TASK-010 · Decision: [ADR 0004](../decisions/0004-llm-interprets-into-closed-plan-only.md)
+Status: IMPLEMENTED with test doubles (PR pending CI); real-model check pending the owner's key · Priority: high · Increment: 4 · Depends on: TASK-010 · Decision: [ADR 0004](../decisions/0004-llm-interprets-into-closed-plan-only.md)
 
 ## Goal and scope
 The LLM maps the free text of a request to the database's closed lists: operations, the owner's customers, manufacturers with aliases, categories, and period expressions. It returns a schema-constrained plan; the backend never trusts it (TASK-010 PlanGuard, engine check, scope).
@@ -12,3 +12,32 @@ The LLM maps the free text of a request to the database's closed lists: operatio
 ## Acceptance
 - With the double: the contract, the limits and the failure paths are tested.
 - With the real model (owner's key): the e-mail loop works on staging, and inflections and typos („katalog Boscha”) are resolved by the model.
+
+## Report (part 1: implementation with doubles)
+- `api/src/Module/Interpretation/OpenAi/OpenAiInterpreter`: Responses API with `store: false`, `temperature: 0`, no tools, and a strict JSON schema built per request.
+  - The schema's enums are the profile's operations, the owner's customer codes, the manufacturer codes, the categories, the period types and the closed issue codes. The model can only point at values that exist; it matches inflections, typos and informal names to them.
+  - The system prompt (Polish, `prompt-v1`) states the business boundary and that the delimited text is data, never instructions. The delimiter cannot be closed from inside the message.
+  - The prompt holds only the catalog and the owner's own customers: no secrets, no other representatives.
+- The answer is mapped to the chosen operation's fields only; nulls are dropped and `customers: null` means all assigned. A refusal by the model becomes `out_of_catalog`. The plan then goes through PlanGuard (ADR 0005) like any other.
+- Limits:
+  - timeout 30 s;
+  - 2 retries with backoff for 5xx, rate limits and transport errors;
+  - a daily spend guard (`OPENAI_DAILY_BUDGET_USD`, default 2) checked before every call;
+  - usage per call in `ai_usage`: model, prompt version, tokens, cost, latency and outcome, never text.
+- Failures become `AiUnavailableException`:
+  - `ai_limit` when the budget or the provider quota is exhausted;
+  - `ai_provider_error` for anything else.
+  
+  The ticket goes to `needs_intervention` with that reason and the admin sets the parameters (CP-005, AC-6); there is no plan that pretends success.
+- `SelectedInterpreter` uses the LLM when `OPENAI_API_KEY` is set and the rule-based baseline otherwise (local stack, CI).
+- Staging: optional secret `STAGING_OPENAI_API_KEY` and variable `STAGING_OPENAI_MODEL` (default `gpt-4.1-mini`, configurable), written to the server's 600 file.
+- Evidence: `OpenAiInterpreterTest`, against an HTTP double:
+  - the request contract (no tools, store off, enums from the trusted lists, no key, secrets or foreign data in the prompt, undelimitable message);
+  - mapping of three operations and the model's refusal;
+  - retries; quota → `ai_limit`; bad key, invalid output, incomplete answer, unreachable → `ai_provider_error`;
+  - the budget guard stops the call before it is sent;
+  - usage and cost recorded;
+  - a provider failure keeps the ticket for manual handling.
+  
+  API: 400 tests, 96.26 % lines.
+- Pending (part 2): a real-model check on staging with the owner's key — the e-mail loop, and inflections and typos resolved by the model. Model choice and prices to be confirmed against the provider's current list.
