@@ -24,7 +24,7 @@ abstract class IdentityTestCase extends WebTestCase
     {
         $this->client = self::createClient();
         $db = self::getContainer()->get(Connection::class);
-        foreach (['messenger_messages', 'outbox', 'mail_message', 'report_file', 'ticket_event', 'ticket_plan', 'ticket', 'account_session', 'sessions', 'audit_event', 'account'] as $table) {
+        foreach (['messenger_messages', 'ai_usage', 'outbox', 'mail_message', 'report_file', 'ticket_event', 'ticket_plan', 'ticket', 'account_session', 'sessions', 'audit_event', 'account'] as $table) {
             $db->executeStatement("DELETE FROM $table");
         }
         self::getContainer()->get('cache.rate_limiter')->clear();

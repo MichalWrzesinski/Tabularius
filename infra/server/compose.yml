@@ -32,6 +32,10 @@ x-api-env: &api-env
   REPORT_STORAGE_DIR: /app/var/storage/reports
   # Real mailbox (imaps://…); empty until the owner supplies the IMAP details (TASK-006).
   MAILBOX_DSN: ${MAILBOX_DSN:-}
+  # LLM interpretation (TASK-011): empty key = rule-based baseline. Daily spend guard in USD.
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+  OPENAI_DAILY_BUDGET_USD: ${OPENAI_DAILY_BUDGET_USD:-2}
   # Mail already in the mailbox before this moment is never read (set when the mailbox is connected).
   MAIL_INGEST_SINCE: ${MAIL_INGEST_SINCE:-}
   REPORT_FILE_TTL_DAYS: "7"

@@ -3,7 +3,8 @@ name: Deploy staging
 # After CI succeeds on main (images published by the CI `publish` job), or manually for a commit on main.
 # Secrets: STAGING_SSH_HOST, STAGING_SSH_KEY, STAGING_SSH_KNOWN_HOSTS, optional STAGING_MAILBOX_DSN, STAGING_MAILER_DSN.
 # Variables: optional STAGING_MAIL_ALLOWED_RECIPIENTS (controlled test addresses before the public demo is approved),
-# STAGING_MAIL_INGEST_SINCE (ISO 8601; older mail in the mailbox is never read). Variables: STAGING_DOMAIN, optional
+# STAGING_MAIL_INGEST_SINCE (ISO 8601; older mail in the mailbox is never read), STAGING_OPENAI_MODEL.
+# Optional secret STAGING_OPENAI_API_KEY: without it staging interprets with the rule-based baseline. Variables: STAGING_DOMAIN, optional
 # STAGING_SSH_USER, STAGING_APP_DIR (docs/runbook.md, Staging). Until they exist the job stops with a notice.
 on:
   workflow_run:
@@ -84,6 +85,8 @@ jobs:
           MAILER_DSN: ${{ secrets.STAGING_MAILER_DSN }}
           MAIL_ALLOWED_RECIPIENTS: ${{ vars.STAGING_MAIL_ALLOWED_RECIPIENTS }}
           MAIL_INGEST_SINCE: ${{ vars.STAGING_MAIL_INGEST_SINCE }}
+          OPENAI_API_KEY: ${{ secrets.STAGING_OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.STAGING_OPENAI_MODEL }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
         run: bash "$RUNNER_TEMP/deploy-remote.sh"
