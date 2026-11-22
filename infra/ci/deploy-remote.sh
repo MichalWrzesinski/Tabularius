@@ -49,9 +49,12 @@ for path in / /admin/logowanie /api/v1/admin/tickets; do
 done
 headers=$(curl -sS -D - -o /dev/null --max-time 15 "http://$DOMAIN/") || true
 grep -qi '^location: https://' <<<"$headers" || fail "HTTP does not redirect to HTTPS"
-secure=$(curl -sS -D - -o /dev/null --max-time 15 "https://$DOMAIN/api/ready") || true
-for h in strict-transport-security content-security-policy x-content-type-options referrer-policy; do
-  grep -qi "^$h:" <<<"$secure" || fail "missing header $h"
+# Both an application response and the environment login's 401 (Caddy's error path) carry the security headers.
+for path in /api/ready /; do
+  secure=$(curl -sS -D - -o /dev/null --max-time 15 "https://$DOMAIN$path") || true
+  for h in strict-transport-security content-security-policy x-content-type-options referrer-policy; do
+    grep -qi "^$h:" <<<"$secure" || fail "missing header $h on $path"
+  done
 done
 echo "::endgroup::"
 echo "staging serves $SHA at https://$DOMAIN"
