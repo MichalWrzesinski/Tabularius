@@ -7,14 +7,16 @@ API := $(DC) run --rm --no-deps api
 BUSINESS := $(DC) run --rm --no-deps business
 CLIENT := $(DC) run --rm --no-deps client
 
-.PHONY: up down logs install migrate test check check-backend check-frontend secrets hooks ci build clean-db
+.PHONY: up down logs install migrate seed test check check-backend check-frontend secrets hooks ci build clean-db
 
 .env:
 	cp .env.example .env
+	printf 'UID=%s\nGID=%s\n' "$$(id -u)" "$$(id -g)" >> .env
 
 up: .env build install ## start everything from scratch
 	$(DC) up -d --wait db
 	$(MAKE) migrate
+	$(MAKE) seed
 	$(DC) up -d
 	@echo "Tabularius: http://127.0.0.1:8080  (API health: /api/health)"
 
@@ -35,6 +37,9 @@ logs:
 migrate: .env
 	$(DC) run --rm api sh -c 'DATABASE_URL="$$MIGRATIONS_DATABASE_URL" bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration'
 	$(DC) run --rm business sh -c 'DATABASE_URL="$$MIGRATIONS_DATABASE_URL" bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration'
+
+seed: .env ## (re)load synthetic business data around REF=YYYY-MM-DD (default: today, Europe/Warsaw)
+	$(DC) run --rm business bin/console app:seed $(if $(REF),--reference-date=$(REF))
 
 test: .env
 	$(DC) up -d --wait db
