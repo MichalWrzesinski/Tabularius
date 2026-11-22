@@ -32,6 +32,7 @@ final class Ingestor
         private readonly TicketStore $tickets,
         private readonly MessageParser $parser,
         private readonly MessageIdentity $identity,
+        private readonly \Symfony\Component\Messenger\MessageBusInterface $bus,
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
         #[Autowire(env: 'APP_SECRET')]
@@ -119,6 +120,10 @@ final class Ingestor
                     $this->tickets->event($ticketId, 'system', 'Tożsamość', $this->identityText($owner, $alias), $now);
                     if (null !== $reason && 'identity_unverified' !== $reason) {
                         $this->tickets->event($ticketId, 'system', 'Poczta', self::reasonText($reason), $now);
+                    }
+                    if (TicketStatus::Received === $status) {
+                        // Same connection as the ticket: the job exists exactly when the ticket does.
+                        $this->bus->dispatch(new \App\Module\Interpretation\Job\InterpretTicket($ticketId));
                     }
                 }
                 $this->mail->insert([

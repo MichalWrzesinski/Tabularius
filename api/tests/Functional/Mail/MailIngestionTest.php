@@ -107,9 +107,9 @@ final class MailIngestionTest extends IdentityTestCase
         self::assertSame(0, $this->rowsIn("SELECT count(*) FROM mail_message WHERE outcome = 'rate_limited' AND sender IS NOT NULL"));
 
         $container = self::getContainer();
-        $strict = new Ingestor($container->get(MailStore::class), $container->get(TicketStore::class), new MessageParser(), $container->get(MessageIdentity::class), new MockClock(self::AT), new NullLogger(), 'secret', 'demo', 5, 20, 6);
+        $strict = new Ingestor($container->get(MailStore::class), $container->get(TicketStore::class), new MessageParser(), $container->get(MessageIdentity::class), $container->get(\Symfony\Component\Messenger\MessageBusInterface::class), new MockClock(self::AT), new NullLogger(), 'secret', 'demo', 5, 20, 6);
         self::assertSame('rate_limited', $strict->ingest(new IncomingMessage('local', null, null, "From: new@example.com\r\n\r\nraport", 30, new \DateTimeImmutable(self::AT))), 'global daily limit');
-        $production = new Ingestor($container->get(MailStore::class), $container->get(TicketStore::class), new MessageParser(), $container->get(MessageIdentity::class), new MockClock(self::AT), new NullLogger(), 'secret', 'production', 5, 20, 6);
+        $production = new Ingestor($container->get(MailStore::class), $container->get(TicketStore::class), new MessageParser(), $container->get(MessageIdentity::class), $container->get(\Symfony\Component\Messenger\MessageBusInterface::class), new MockClock(self::AT), new NullLogger(), 'secret', 'production', 5, 20, 6);
         self::assertSame('ticketed', $production->ingest(new IncomingMessage('local', null, null, "From: same@example.com\r\nMessage-ID: <p1@example.com>\r\n\r\nraport", 30, new \DateTimeImmutable(self::AT))), 'demo limits only in demo mode');
     }
 

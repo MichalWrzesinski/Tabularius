@@ -29,6 +29,8 @@ services:
     App\Module\Report\Business\BusinessApi: '@App\Module\Report\Business\RestBusinessApi'
     App\Module\File\FileStore: '@App\Module\File\LocalFileStore'
     App\Module\Mail\MailboxSource: '@App\Module\Mail\Imap\ImapMailbox'
+    # Rule-based baseline until the LLM interpreter (increment 4); the same interface for both.
+    App\Module\Interpretation\Interpreter: '@App\Module\Interpretation\RuleInterpreter'
 
     tabularius.session_handler:
         class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
