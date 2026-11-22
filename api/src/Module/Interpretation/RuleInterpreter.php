@@ -298,16 +298,21 @@ final class RuleInterpreter implements Interpreter
     }
 
     /**
+     * Manufacturers by name or alias: the exact phrase, or for a one-word name of four or more letters an inflected
+     * form (up to three letters added: „Boscha”, „Boschem”) or, from five letters, one typo („Bosh”, „Waleo”).
+     * Short names (SKF, TRW) match exactly only.
+     *
      * @return list<string>
      */
     private function manufacturers(string $t, InterpretationContext $c): array
     {
         $words = ' '.(string) preg_replace('/[^a-z0-9+]+/', ' ', $t).' ';
+        $tokens = array_values(array_filter(explode(' ', $words), static fn (string $w): bool => '' !== $w));
         $found = [];
         foreach ($c->manufacturers as $manufacturer) {
             foreach ([$manufacturer->name, ...$manufacturer->aliases] as $name) {
                 $key = trim((string) preg_replace('/[^a-z0-9+]+/', ' ', self::fold($name)));
-                if ('' !== $key && str_contains($words, ' '.$key.' ')) {
+                if ('' !== $key && (str_contains($words, ' '.$key.' ') || self::nearWord($key, $tokens))) {
                     $found[] = $manufacturer->code;
                     break;
                 }
@@ -315,6 +320,26 @@ final class RuleInterpreter implements Interpreter
         }
 
         return array_values(array_unique($found));
+    }
+
+    /**
+     * @param list<string> $tokens
+     */
+    private static function nearWord(string $key, array $tokens): bool
+    {
+        if (str_contains($key, ' ') || \strlen($key) < 4 || 1 !== preg_match('/^[a-z]+$/', $key)) {
+            return false;
+        }
+        foreach ($tokens as $word) {
+            if (str_starts_with($word, $key) && \strlen($word) - \strlen($key) <= 3 && 1 === preg_match('/^[a-z]+$/', $word)) {
+                return true; // inflection
+            }
+            if (\strlen($key) >= 5 && abs(\strlen($word) - \strlen($key)) <= 1 && 1 === levenshtein($word, $key)) {
+                return true; // one typo
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -58,6 +58,11 @@ final class RuleInterpreterTest extends TestCase
         yield 'unknown customer' => ['Sprzedaż dla klienta Beta za październik', 'operation', 'sales_report', ['period' => ['type' => 'month', 'month' => 10], 'customers' => 'all_assigned'], ['unknown_customer']];
         yield 'manufacturer filter and category' => ['Sprzedaż hamulców Bosch za październik', 'operation', 'sales_report', ['period' => ['type' => 'month', 'month' => 10], 'customers' => 'all_assigned', 'manufacturer' => 'BOSCH', 'category' => 'Hamulce'], []];
         yield 'manufacturer alias' => ['Cennik MANN+HUMMEL', 'operation', 'parts_catalog', ['manufacturer' => 'MANN'], []];
+        yield 'inflected manufacturer' => ['Poproszę katalog Boscha', 'operation', 'parts_catalog', ['manufacturer' => 'BOSCH'], []];
+        yield 'manufacturer with a typo' => ['Katalog Bosh', 'operation', 'parts_catalog', ['manufacturer' => 'BOSCH'], []];
+        yield 'manufacturer typo, other letter' => ['cennik waleo', 'operation', 'parts_catalog', ['manufacturer' => 'VALEO'], []];
+        yield 'manufacturer in the subject line, upper case' => ["KATALOG BOSCH\nDzień dobry, proszę o listę.", 'operation', 'parts_catalog', ['manufacturer' => 'BOSCH'], []];
+        yield 'short names stay exact' => ['Katalog SKFa', 'operation', 'parts_catalog', [], ['missing_manufacturer']];
         yield 'catalog without manufacturer' => ['Proszę o katalog części', 'operation', 'parts_catalog', [], ['missing_manufacturer']];
         yield 'catalog two manufacturers' => ['Katalog Bosch i Valeo', 'operation', 'parts_catalog', [], ['ambiguous_manufacturer']];
         // discount simulation
@@ -113,6 +118,7 @@ final class RuleInterpreterTest extends TestCase
                 new Manufacturer('MANN', 'Mann-Filter', ['Mann', 'MANN+HUMMEL'], true),
                 new Manufacturer('TRW', 'TRW', ['ZF TRW'], true),
                 new Manufacturer('VALEO', 'Valeo', [], true),
+                new Manufacturer('SKF', 'SKF', [], true),
             ],
             ['Hamulce', 'Filtry', 'Zapłon', 'Oświetlenie', 'Zawieszenie', 'Wycieraczki', 'Sprzęgła', 'Łożyska'],
             new \DateTimeImmutable('2026-11-15', new \DateTimeZone('Europe/Warsaw')),
