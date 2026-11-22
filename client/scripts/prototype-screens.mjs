@@ -1,7 +1,7 @@
 // PROTOTYPE check: screenshots at 1440 and 360 px, horizontal-overflow and console-error checks,
 // and the clarification and confirmation walkthroughs. How to run: client/README.md.
 import { chromium } from 'playwright'
-const BASE = 'http://host.docker.internal:5173'
+const BASE = process.env.BASE_URL ?? 'http://host.docker.internal:8080'
 const OUT = '/out'
 const sizes = [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 360, height: 780 }]
 const results = []
@@ -77,7 +77,7 @@ for (const size of sizes) {
   }
 
   // Employee
-  await page.evaluate(() => sessionStorage.clear())
+  await ctx.clearCookies()
   await page.goto(`${BASE}/moje-raporty/f-7c1e9a`)
   await page.waitForURL(/\/logowanie\?next=/)
   await check(page, '20-employee-login-from-link', size)

@@ -4,7 +4,9 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'
-import { listTickets, logout, proto } from '../mock/api'
+import { listTickets, proto } from '../mock/api'
+import { logout, session } from '../lib/session'
+import { initials } from '../lib/ticket'
 import Ico from './Ico.vue'
 
 const props = defineProps<{ role: 'admin' | 'employee' }>()
@@ -35,7 +37,10 @@ const nav = computed(() =>
 )
 const settingsTo = computed(() => (isAdmin.value ? '/admin/ustawienia' : '/moje-raporty/konto'))
 const workspace = computed(() => (isAdmin.value ? 'PANEL ADMINISTRATORA' : 'PANEL PRACOWNIKA'))
-const who = computed(() => (isAdmin.value ? { initials: 'AD', name: 'Administrator' } : { initials: 'HD', name: 'Handlowiec demo' }))
+const who = computed(() => {
+  const name = session.me?.name ?? (isAdmin.value ? 'Administrator' : 'Pracownik')
+  return { name, initials: initials(name) }
+})
 
 function active(item: { to: string; exact?: boolean }) {
   if (item.exact) return route.path === item.to
@@ -60,8 +65,8 @@ function onKey(e: KeyboardEvent) {
   if (drawer.value) drawer.value.open = false
   profileOpen.value = false
 }
-function signOut() {
-  logout()
+async function signOut() {
+  await logout().catch(() => undefined)
   void router.push(isAdmin.value ? '/admin/logowanie' : '/logowanie')
 }
 </script>

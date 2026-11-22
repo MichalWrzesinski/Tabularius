@@ -1,5 +1,5 @@
 import { chromium } from 'playwright'
-const BASE = 'http://host.docker.internal:5173'
+const BASE = process.env.BASE_URL ?? 'http://host.docker.internal:8080'
 const pairs = [
   ['00-strona-glowna', '/', null],
   ['01-logowanie-pracownik', '/logowanie', null],
@@ -17,7 +17,8 @@ for (const s of sizes) {
     await page.waitForTimeout(300)
     await page.screenshot({ path: `/out/${s.n}-${file}-A-mockup.png`, fullPage: s.n === 'mobile' })
     if (role) {
-      await page.goto(BASE + '/'); await page.evaluate(() => sessionStorage.setItem('proto-session', JSON.stringify({ role: 'admin', accountId: 'acc-admin', name: 'Administrator' })))
+      const res = await ctx.request.post(BASE + '/api/v1/auth/login', { headers: { 'X-Tabularius-Request': '1' }, data: { email: 'admin@example.com', password: 'Demo123!' } }) // gitleaks:allow (public demo credential)
+      if (!res.ok()) throw new Error('demo admin login failed: ' + res.status())
     }
     await page.goto(BASE + url)
     await page.waitForTimeout(1200)

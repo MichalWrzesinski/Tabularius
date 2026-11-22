@@ -58,5 +58,7 @@ describe('ticketPerson', () => {
   })
   it('builds initials', () => {
     expect(initials('Anna Kowalska')).toBe('AK')
+    expect(initials('Administrator')).toBe('AD')
+    expect(initials('')).toBe('')
   })
 })

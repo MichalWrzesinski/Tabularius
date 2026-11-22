@@ -50,10 +50,7 @@ export function ticketPerson(t: Ticket): string {
 }
 
 export function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((x) => x[0] ?? '')
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+  const words = name.trim().split(/\s+/).filter(Boolean)
+  const letters = words.length > 1 ? words.map((w) => w[0]).join('') : (words[0] ?? '').slice(0, 2)
+  return letters.slice(0, 2).toUpperCase()
 }

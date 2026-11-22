@@ -1,12 +1,18 @@
-// PROTOTYPE: in-memory mocked API with artificial latency and switchable failures.
-// It imitates backend rules (scope, versioned plans, single execution) only for the walkthrough;
-// none of this is a security boundary. Replace with the real API client in increment 2.
-import { reactive, watch } from 'vue'
+// PROTOTYPE: in-memory mocked tickets and reports with artificial latency and switchable failures, used until
+// TASK-005 connects them to the API. Login, accounts and audit are real (lib/session.ts, lib/http.ts).
+// None of this is a security boundary.
+import { reactive } from 'vue'
+import { session } from '../lib/session'
 import { buildFixtures, discountFile, DEMO_REP_ID, NOW } from './data'
-import type { Account, ReportFile, Ticket, TicketEvent } from './types'
+import type { ReportFile, Ticket, TicketEvent } from './types'
 
 export type Mode = 'demo' | 'production'
-export type Session = { role: 'admin' | 'employee'; accountId: string; name: string } | null
+
+/** Mock data belongs to the shared demo representative (PH-01); other real accounts see none of it. */
+function viewer(): { admin: boolean; owner: string | null } {
+  const me = session.me
+  return { admin: me?.role === 'admin', owner: me?.repCode === 'PH-01' ? DEMO_REP_ID : null }
+}
 
 const fixtures = buildFixtures()
 
@@ -17,34 +23,11 @@ export const proto = reactive({
   latencyMs: 450,
   failLists: false,
   emptyEmployee: false,
-  session: readSession(),
 })
-
-// Prototype stand-in for the real HttpOnly session cookie: survives reloads within the tab only.
-function readSession(): Session {
-  try {
-    const raw = sessionStorage.getItem('proto-session')
-    return raw ? (JSON.parse(raw) as Session) : null
-  } catch {
-    return null
-  }
-}
-watch(
-  () => proto.session,
-  (s) => {
-    try {
-      if (s) sessionStorage.setItem('proto-session', JSON.stringify(s))
-      else sessionStorage.removeItem('proto-session')
-    } catch {
-      /* storage unavailable: session stays in memory */
-    }
-  },
-)
 
 const db = reactive({
   tickets: fixtures.tickets,
   files: fixtures.files,
-  accounts: fixtures.accounts,
   audit: fixtures.audit,
 })
 
@@ -93,31 +76,6 @@ function audit(actor: string, action: string, target: string) {
   db.audit.unshift({ at: now(), actor, action, target })
 }
 
-// ---- auth -------------------------------------------------------------
-
-export const DEMO_CREDENTIALS = {
-  employee: { email: 'handlowiec@example.com', password: 'Demo123!' },
-  admin: { email: 'admin@example.com', password: 'Demo123!' },
-}
-
-export function login(role: 'admin' | 'employee', email: string, password: string) {
-  return wait(() => {
-    const c = DEMO_CREDENTIALS[role]
-    if (email.trim().toLowerCase() !== c.email || password !== c.password) {
-      throw new ApiError('forbidden', 'Nieprawidłowy e-mail lub hasło.')
-    }
-    proto.session =
-      role === 'admin'
-        ? { role, accountId: 'acc-admin', name: 'Administrator' }
-        : { role, accountId: DEMO_REP_ID, name: 'Handlowiec demonstracyjny' }
-    return proto.session
-  }, 600)
-}
-
-export function logout() {
-  proto.session = null
-}
-
 // ---- admin ------------------------------------------------------------
 
 export function listTickets() {
@@ -130,8 +88,8 @@ export function listTickets() {
 export function getTicket(id: string) {
   return wait(() => {
     const t = ticket(id)
-    const s = proto.session
-    if (!s || (s.role === 'employee' && t.ownerId !== s.accountId)) throw new ApiError('forbidden', 'Nie masz dostępu do tego zgłoszenia.')
+    const v = viewer()
+    if (!v.admin && t.ownerId !== v.owner) throw new ApiError('forbidden', 'Nie masz dostępu do tego zgłoszenia.')
     return t
   })
 }
@@ -140,9 +98,9 @@ export function getFile(id: string) {
   return wait(() => {
     const f = db.files.find((x) => x.id === id)
     if (!f) throw new ApiError('not_found', 'Nie znaleziono pliku.')
-    const s = proto.session
+    const v = viewer()
     // ACC-FILE-1 imitation: owner or administrator only.
-    if (!s || (s.role === 'employee' && f.ownerId !== s.accountId)) {
+    if (!v.admin && f.ownerId !== v.owner) {
       throw new ApiError('forbidden', 'Nie masz dostępu do tego raportu.')
     }
     return f
@@ -153,64 +111,6 @@ export function listFiles() {
   return wait(() => {
     failIfConfigured()
     return [...db.files].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  })
-}
-
-export function listAccounts() {
-  return wait(() => {
-    failIfConfigured()
-    return db.accounts
-  })
-}
-
-export function listAudit() {
-  return wait(() => {
-    failIfConfigured()
-    return db.audit
-  })
-}
-
-export function createAccount(name: string, email: string, repCode: string) {
-  return wait(() => {
-    if (db.accounts.some((a) => a.email.toLowerCase() === email.toLowerCase())) {
-      throw new ApiError('conflict', 'Konto z tym adresem już istnieje.')
-    }
-    if (db.accounts.some((a) => a.repCode === repCode)) {
-      throw new ApiError('conflict', 'Ten handlowiec ma już konto.')
-    }
-    const acc: Account = { id: `acc-${db.accounts.length + 1}`, name, email, repCode, customers: 4, status: 'active', lastLogin: null }
-    db.accounts.push(acc)
-    audit(
-      'Administrator',
-      'Utworzenie konta (hasło wysłane do pracownika' + (proto.mode === 'demo' ? ', w demo przechwycone' : '') + ')',
-      `${name} (${repCode})`,
-    )
-    return acc
-  })
-}
-
-export function setAccountStatus(id: string, status: Account['status']) {
-  return wait(() => {
-    const a = db.accounts.find((x) => x.id === id)
-    if (!a) throw new ApiError('not_found', 'Nie znaleziono konta.')
-    if (a.shared) throw new ApiError('forbidden', 'Wspólnego konta demonstracyjnego nie można zablokować.')
-    a.status = status
-    audit(
-      'Administrator',
-      status === 'blocked' ? 'Zablokowanie konta (sesje unieważnione)' : 'Odblokowanie konta',
-      `${a.name} (${a.repCode})`,
-    )
-    return a
-  })
-}
-
-export function deleteAccount(id: string) {
-  return wait(() => {
-    const a = db.accounts.find((x) => x.id === id)
-    if (!a) throw new ApiError('not_found', 'Nie znaleziono konta.')
-    if (a.shared) throw new ApiError('forbidden', 'Wspólnego konta demonstracyjnego nie można usunąć.')
-    db.accounts.splice(db.accounts.indexOf(a), 1)
-    audit('Administrator', 'Usunięcie konta (historia zachowana)', `${a.repCode}`)
   })
 }
 
@@ -382,25 +282,23 @@ export function myFiles() {
   return wait(() => {
     failIfConfigured()
     if (proto.emptyEmployee) return []
-    const s = proto.session
-    return db.files.filter((f) => f.ownerId === s?.accountId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    const owner = viewer().owner
+    return db.files.filter((f) => f.ownerId === owner).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   })
 }
 
 export function myPendingTickets() {
   return wait(() => {
     if (proto.emptyEmployee) return []
-    const s = proto.session
-    return db.tickets.filter(
-      (t) => t.ownerId === s?.accountId && (t.status === 'awaiting_confirmation' || t.status === 'needs_clarification'),
-    )
+    const owner = viewer().owner
+    return db.tickets.filter((t) => t.ownerId === owner && (t.status === 'awaiting_confirmation' || t.status === 'needs_clarification'))
   })
 }
 
 export function confirmTicket(id: string) {
   return wait(() => {
     const t = ticket(id)
-    if (t.ownerId !== proto.session?.accountId) throw new ApiError('forbidden', 'To zgłoszenie nie należy do Ciebie.')
+    if (t.ownerId !== viewer().owner) throw new ApiError('forbidden', 'To zgłoszenie nie należy do Ciebie.')
     if (t.status !== 'awaiting_confirmation') throw new ApiError('conflict', 'Zgłoszenie zostało już obsłużone.')
     event(t, 'employee', 'Pracownik', 'Prośba potwierdzona po zalogowaniu')
     t.status = 'queued'
@@ -412,7 +310,7 @@ export function confirmTicket(id: string) {
 export function cancelTicket(id: string) {
   return wait(() => {
     const t = ticket(id)
-    if (t.ownerId !== proto.session?.accountId) throw new ApiError('forbidden', 'To zgłoszenie nie należy do Ciebie.')
+    if (t.ownerId !== viewer().owner) throw new ApiError('forbidden', 'To zgłoszenie nie należy do Ciebie.')
     t.status = 'rejected'
     t.reason = 'Anulowane przez pracownika'
     event(t, 'employee', 'Pracownik', 'Prośba anulowana — „to nie ja”')

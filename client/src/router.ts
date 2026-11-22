@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { proto } from './mock/api'
+import { guard, loadSession } from './lib/session'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -54,13 +54,18 @@ export const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
-  const role = to.matched.find((r) => r.meta.role)?.meta.role
-  if (!role) return true
-  const s = proto.session
-  if (s?.role === role) return true
+router.beforeEach(async (to) => {
+  const area = to.matched.find((r) => r.meta.role)?.meta.role as 'admin' | 'employee' | undefined
+  if (!area) return true
+  let me = null
+  try {
+    me = await loadSession()
+  } catch {
+    me = null // API unreachable: treat as logged out; the login screen shows the error on submit
+  }
+  if (guard(area === 'admin' ? 'admin' : area === 'employee' ? 'rep' : undefined, me) === 'allow') return true
   // The employee link from an e-mail opens the report after login (no automatic download).
-  return { path: role === 'admin' ? '/admin/logowanie' : '/logowanie', query: { next: to.fullPath } }
+  return { path: area === 'admin' ? '/admin/logowanie' : '/logowanie', query: { next: to.fullPath } }
 })
 
 router.afterEach((to) => {
