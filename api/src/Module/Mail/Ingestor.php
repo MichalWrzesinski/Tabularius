@@ -31,6 +31,7 @@ final class Ingestor
         private readonly MailStore $mail,
         private readonly TicketStore $tickets,
         private readonly MessageParser $parser,
+        private readonly MessageIdentity $identity,
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
         #[Autowire(env: 'APP_SECRET')]
@@ -106,12 +107,17 @@ final class Ingestor
                     $id = Uuid::v7();
                     $ticketId = $id->toRfc4122();
                     $reference = $message->receivedAt->setTimezone(DateRange::zone())->setTime(0, 0);
-                    $this->tickets->insert($id, null, 'mail', $status, $reference, $message->receivedAt, 'mail');
+                    ['owner' => $owner, 'alias' => $alias] = $this->identity->resolve($parsed?->sender, $senderHash);
+                    if (null === $owner && TicketStatus::Received === $status) {
+                        [$status, $reason] = [TicketStatus::NeedsIntervention, 'identity_unverified']; // ID-4
+                    }
+                    $this->tickets->insert($id, $owner, 'mail', $status, $reference, $message->receivedAt, 'mail', $alias);
                     if (null !== $reason) {
                         $this->tickets->setStatus($ticketId, $status, $reason, $now);
                     }
                     $this->tickets->event($ticketId, 'system', 'Poczta', self::receivedText($message, $parsed), $now);
-                    if (null !== $reason) {
+                    $this->tickets->event($ticketId, 'system', 'Tożsamość', $this->identityText($owner, $alias), $now);
+                    if (null !== $reason && 'identity_unverified' !== $reason) {
                         $this->tickets->event($ticketId, 'system', 'Poczta', self::reasonText($reason), $now);
                     }
                 }
@@ -151,6 +157,19 @@ final class Ingestor
             $message->size,
             $attachments > 0 ? \sprintf('; załączniki pominięte: %d', $attachments) : '',
         );
+    }
+
+    private function identityText(?string $owner, ?string $alias): string
+    {
+        if ($this->identity->demo()) {
+            return null === $owner
+                ? 'Tryb demo: brak wspólnego konta handlowca; obsługa ręczna'
+                : \sprintf('Tryb demo: zgłoszenie wykonywane na wspólnym koncie handlowca jako %s', $alias);
+        }
+
+        return null === $owner
+            ? 'Nadawca nierozpoznany lub konto nieaktywne; obsługa ręczna, nic nie ujawniono'
+            : 'Nadawca dopasowany do konta pracownika (tylko kandydat); wymagane potwierdzenie po zalogowaniu';
     }
 
     private static function reasonText(string $reason): string

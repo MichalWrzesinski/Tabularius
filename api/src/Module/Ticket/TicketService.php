@@ -36,6 +36,8 @@ final class TicketService
         private readonly MessageBusInterface $bus,
         private readonly AuditLog $audit,
         private readonly ClockInterface $clock,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'APP_MODE')]
+        private readonly string $mode = 'demo',
     ) {
     }
 
@@ -69,6 +71,91 @@ final class TicketService
         return $id->toRfc4122();
     }
 
+    /**
+     * The administrator sets the parameters of a ticket that has an owner but no executable plan yet (a mail ticket
+     * waiting for interpretation, or one in intervention). A new plan version is validated in the owner's scope.
+     * A mail ticket in production mode then waits for the owner's confirmation in the portal (ID-2); otherwise the
+     * plan is queued.
+     *
+     * @param array<array-key, mixed> $parameters
+     */
+    public function setPlan(Account $admin, string $ticketId, string $operation, array $parameters): void
+    {
+        $this->tickets->connection()->transactional(function () use ($admin, $ticketId, $operation, $parameters): void {
+            $ticket = $this->tickets->lock($ticketId) ?? throw new Refusal('not_found', 404);
+            if (!\in_array($ticket['status'], [TicketStatus::Received, TicketStatus::Interpreting, TicketStatus::NeedsIntervention], true)) {
+                throw new Refusal('invalid_status', 409);
+            }
+            $owner = null === $ticket['owner_account_id'] ? null : $this->em->find(Account::class, Uuid::fromString($ticket['owner_account_id']));
+            if (!$owner instanceof Account || !$owner->isActive() || null === $owner->repCode()) {
+                throw new Refusal('no_owner', 409); // identity_unverified: only rejection is possible (ID-4)
+            }
+            $this->check($operation, $parameters, new Scope($owner->repCode()), DateRange::date($ticket['reference_date']));
+            $now = $this->clock->now();
+            $version = $ticket['plan_version'] + 1;
+            $this->tickets->addPlan($ticketId, $version, 'admin', self::ref($admin), $now, $operation, $parameters);
+            $this->tickets->event($ticketId, 'admin', 'Administrator', \sprintf('Plan v%d ustawiony ręcznie (zakres właściciela zgłoszenia)', $version), $now);
+            $this->audit->record(self::ref($admin), 'ticket.plan', 'ticket:'.$ticketId, ['version' => $version, 'operation' => $operation]);
+            if ('mail' === $ticket['source'] && 'demo' !== $this->mode) {
+                $this->move($ticketId, $ticket['status'], TicketStatus::AwaitingConfirmation, $now);
+                $this->tickets->event($ticketId, 'system', 'System', 'Czeka na potwierdzenie pracownika po zalogowaniu (adres nadawcy nie potwierdza tożsamości)', $now);
+
+                return;
+            }
+            $this->move($ticketId, $ticket['status'], TicketStatus::Queued, $now);
+            $this->tickets->event($ticketId, 'system', 'System', \sprintf('Plan v%d w kolejce (jedno wykonanie na wersję)', $version), $now);
+            $this->bus->dispatch(new ExecutePlan($ticketId, $version));
+        });
+    }
+
+    /** The owner confirms the request after logging in (ID-2); only then is it executed. */
+    public function confirm(Account $owner, string $ticketId): void
+    {
+        $this->tickets->connection()->transactional(function () use ($owner, $ticketId): void {
+            $ticket = $this->ownedAwaiting($owner, $ticketId);
+            $now = $this->clock->now();
+            $this->tickets->setStatus($ticketId, TicketStatus::Queued, null, $now);
+            $this->tickets->event($ticketId, 'employee', 'Pracownik', 'Prośba potwierdzona po zalogowaniu', $now);
+            $this->tickets->event($ticketId, 'system', 'System', \sprintf('Plan v%d w kolejce (jedno wykonanie na wersję)', $ticket['plan_version']), $now);
+            $this->audit->record(self::ref($owner), 'ticket.confirm', 'ticket:'.$ticketId);
+            $this->bus->dispatch(new ExecutePlan($ticketId, $ticket['plan_version']));
+        });
+    }
+
+    /** „To nie ja” — the owner cancels; nothing runs. */
+    public function cancel(Account $owner, string $ticketId): void
+    {
+        $this->tickets->connection()->transactional(function () use ($owner, $ticketId): void {
+            $this->ownedAwaiting($owner, $ticketId);
+            $now = $this->clock->now();
+            $this->tickets->setStatus($ticketId, TicketStatus::Rejected, 'cancelled_by_owner', $now);
+            $this->tickets->event($ticketId, 'employee', 'Pracownik', 'Prośba anulowana przez pracownika („to nie ja”)', $now);
+            $this->audit->record(self::ref($owner), 'ticket.cancel', 'ticket:'.$ticketId);
+        });
+    }
+
+    /** Requests not confirmed within the period expire (tickets.md: awaiting_confirmation → rejected after 7 days). */
+    public function expireUnconfirmed(int $days = 7): int
+    {
+        $now = $this->clock->now();
+        $ids = $this->tickets->connection()->fetchFirstColumn(
+            "SELECT id FROM ticket WHERE status = 'awaiting_confirmation' AND updated_at < ?",
+            [TicketStore::ts($now->modify(\sprintf('-%d days', $days)))],
+        );
+        foreach ($ids as $id) {
+            $this->tickets->connection()->transactional(function () use ($id, $now): void {
+                $ticket = \is_string($id) ? $this->tickets->lock($id) : null;
+                if (null === $ticket || TicketStatus::AwaitingConfirmation !== $ticket['status']) {
+                    return;
+                }
+                $this->tickets->setStatus((string) $id, TicketStatus::Rejected, 'confirmation_expired', $now);
+                $this->tickets->event((string) $id, 'system', 'System', 'Prośba wygasła bez potwierdzenia', $now);
+            });
+        }
+
+        return \count($ids);
+    }
+
     /** Re-run the current plan version after a data-source or technical failure (same parameters). */
     public function retry(Account $admin, string $ticketId): void
     {
@@ -98,6 +185,34 @@ final class TicketService
             $this->tickets->event($ticketId, 'admin', 'Administrator', 'Zgłoszenie odrzucone przez administratora', $now);
             $this->audit->record(self::ref($admin), 'ticket.reject', 'ticket:'.$ticketId);
         });
+    }
+
+    /**
+     * @return array{status: TicketStatus, plan_version: int, owner_account_id: ?string, source: string, reference_date: string}
+     */
+    private function ownedAwaiting(Account $owner, string $ticketId): array
+    {
+        $ticket = $this->tickets->lock($ticketId);
+        if (null === $ticket || $ticket['owner_account_id'] !== $owner->id()->toRfc4122()) {
+            throw new Refusal('not_found', 404); // someone else's ticket looks like a missing one
+        }
+        if (TicketStatus::AwaitingConfirmation !== $ticket['status']) {
+            throw new Refusal('invalid_status', 409);
+        }
+
+        return $ticket;
+    }
+
+    /** Status change along allowed transitions, through `interpreting` when there is no direct one. */
+    private function move(string $ticketId, TicketStatus $from, TicketStatus $to, \DateTimeImmutable $now): void
+    {
+        if (!$from->canBecome($to)) {
+            if (!$from->canBecome(TicketStatus::Interpreting) || !TicketStatus::Interpreting->canBecome($to)) {
+                throw new \LogicException(\sprintf('No transition from %s to %s', $from->value, $to->value));
+            }
+            $this->tickets->setStatus($ticketId, TicketStatus::Interpreting, null, $now);
+        }
+        $this->tickets->setStatus($ticketId, $to, null, $now);
     }
 
     /**

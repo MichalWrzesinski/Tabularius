@@ -65,6 +65,19 @@ final class AdminTicketController
         return new JsonResponse($this->detail($id), 201);
     }
 
+    #[Route('/tickets/{id}/plan', name: 'api_admin_ticket_plan', methods: ['POST'])]
+    public function plan(string $id, Request $request, #[CurrentUser] Account $admin): JsonResponse
+    {
+        $body = AuthController::json($request);
+        $parameters = $body['parameters'] ?? null;
+        if (!\is_array($parameters)) {
+            throw new BadRequestHttpException('Missing field parameters');
+        }
+        $this->service->setPlan($admin, $id, AuthController::str($body, 'operation'), $parameters);
+
+        return new JsonResponse($this->detail($id));
+    }
+
     #[Route('/tickets/{id}/retry', name: 'api_admin_ticket_retry', methods: ['POST'])]
     public function retry(string $id, #[CurrentUser] Account $admin): JsonResponse
     {

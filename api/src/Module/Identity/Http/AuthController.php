@@ -23,6 +23,10 @@ final class AuthController
         private readonly AccountService $accounts,
         private readonly RateLimiterFactoryInterface $passwordResetEmailLimiter,
         private readonly RateLimiterFactoryInterface $passwordResetIpLimiter,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'APP_MODE')]
+        private readonly string $mode = 'demo',
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'MAILER_FROM')]
+        private readonly string $mailbox = '',
     ) {
     }
 
@@ -41,12 +45,13 @@ final class AuthController
     }
 
     /**
-     * Session probe for the SPA: 200 with `me: null` when nobody is logged in (no 401 noise on public pages).
+     * Session probe for the SPA: 200 with `me: null` when nobody is logged in (no 401 noise on public pages), plus the
+     * environment the screens describe (demo or production) and the public mailbox address.
      */
     #[Route('/session', name: 'api_session', methods: ['GET'])]
     public function session(#[CurrentUser] ?Account $account): JsonResponse
     {
-        return new JsonResponse(['me' => null === $account ? null : MeView::of($account)]);
+        return new JsonResponse(['me' => null === $account ? null : MeView::of($account), 'mode' => 'demo' === $this->mode ? 'demo' : 'production', 'mailbox' => $this->mailbox]);
     }
 
     #[Route('/me', name: 'api_me', methods: ['GET'])]

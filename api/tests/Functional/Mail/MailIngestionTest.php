@@ -13,6 +13,7 @@ use App\Module\Mail\Ingestor;
 use App\Module\Mail\MailboxSource;
 use App\Module\Mail\MailPoller;
 use App\Module\Mail\MailStore;
+use App\Module\Mail\MessageIdentity;
 use App\Module\Mail\MessageParser;
 use App\Module\Ticket\TicketStore;
 use App\Tests\Functional\Identity\IdentityTestCase;
@@ -31,6 +32,13 @@ final class MailIngestionTest extends IdentityTestCase
 {
     private const string AT = '2026-11-15 09:00:00+00:00';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Demo mode: every mail ticket runs as the shared demo representative (ID-DEMO-1).
+        $this->account('handlowiec@example.com', rep: 'PH-01', shared: true);
+    }
+
     public function testEachFixtureHasItsDefinedOutcome(): void
     {
         $expected = [
@@ -47,13 +55,16 @@ final class MailIngestionTest extends IdentityTestCase
             self::assertIsArray($row);
             self::assertSame([$status, $reason], [$row['status'], $row['reason']], $fixture);
             if (null !== $status) {
-                self::assertSame(['mail', null, '2026-11-15'], [$row['source'], $row['owner_account_id'], $row['reference_date']], $fixture);
+                self::assertSame(['mail', '2026-11-15'], [$row['source'], $row['reference_date']], $fixture);
+                self::assertIsString($row['owner_account_id'], 'the shared demo representative');
             }
         }
         self::assertSame(4, $this->rowsIn('SELECT count(*) FROM ticket'));
         self::assertSame(0, $this->rowsIn("SELECT count(*) FROM mail_message WHERE outcome = 'auto_reply' AND (sender IS NOT NULL OR text_body IS NOT NULL)"), 'automatic messages keep no contents');
         self::assertSame(['Proszę o katalog Bosch, szczegóły w załączniku.'], $this->db()->fetchFirstColumn('SELECT text_body FROM mail_message WHERE attachment_count = 1'));
-        self::assertSame(['Wiadomość e-mail przyjęta ze skrzynki (501 B; załączniki pominięte: 1)'], $this->db()->fetchFirstColumn('SELECT e.text FROM ticket_event e JOIN mail_message m ON m.ticket_id = e.ticket_id WHERE m.attachment_count = 1'));
+        $events = $this->db()->fetchFirstColumn('SELECT e.text FROM ticket_event e JOIN mail_message m ON m.ticket_id = e.ticket_id WHERE m.attachment_count = 1 ORDER BY e.id');
+        self::assertSame('Wiadomość e-mail przyjęta ze skrzynki (501 B; załączniki pominięte: 1)', $events[0] ?? null);
+        self::assertMatchesRegularExpression('/^Tryb demo: zgłoszenie wykonywane na wspólnym koncie handlowca jako Uczestnik #[0-9A-Z]{4}$/', \is_string($events[1] ?? null) ? $events[1] : '');
     }
 
     public function testDuplicatesByUidAndMessageIdCreateNoSecondTicket(): void
@@ -96,9 +107,9 @@ final class MailIngestionTest extends IdentityTestCase
         self::assertSame(0, $this->rowsIn("SELECT count(*) FROM mail_message WHERE outcome = 'rate_limited' AND sender IS NOT NULL"));
 
         $container = self::getContainer();
-        $strict = new Ingestor($container->get(MailStore::class), $container->get(TicketStore::class), new MessageParser(), new MockClock(self::AT), new NullLogger(), 'secret', 'demo', 5, 20, 6);
+        $strict = new Ingestor($container->get(MailStore::class), $container->get(TicketStore::class), new MessageParser(), $container->get(MessageIdentity::class), new MockClock(self::AT), new NullLogger(), 'secret', 'demo', 5, 20, 6);
         self::assertSame('rate_limited', $strict->ingest(new IncomingMessage('local', null, null, "From: new@example.com\r\n\r\nraport", 30, new \DateTimeImmutable(self::AT))), 'global daily limit');
-        $production = new Ingestor($container->get(MailStore::class), $container->get(TicketStore::class), new MessageParser(), new MockClock(self::AT), new NullLogger(), 'secret', 'production', 5, 20, 6);
+        $production = new Ingestor($container->get(MailStore::class), $container->get(TicketStore::class), new MessageParser(), $container->get(MessageIdentity::class), new MockClock(self::AT), new NullLogger(), 'secret', 'production', 5, 20, 6);
         self::assertSame('ticketed', $production->ingest(new IncomingMessage('local', null, null, "From: same@example.com\r\nMessage-ID: <p1@example.com>\r\n\r\nraport", 30, new \DateTimeImmutable(self::AT))), 'demo limits only in demo mode');
     }
 
@@ -150,7 +161,8 @@ final class MailIngestionTest extends IdentityTestCase
         self::assertSame(200, $this->api('GET', '/api/v1/admin/tickets'));
         $list = (string) $this->client->getResponse()->getContent();
         self::assertStringContainsString('"source":"mail"', $list);
-        self::assertStringContainsString('Nadawca nieprzypisany', $list);
+        self::assertMatchesRegularExpression('/"employeeName":"Uczestnik #[0-9A-Z]{4}","employeeEmail":""/', $list, 'only the alias (ID-DEMO-3)');
+        self::assertStringNotContainsString('handlowiec', $list, 'not even the shared account');
         $id = $this->db()->fetchOne('SELECT id FROM ticket');
         self::assertIsString($id);
         self::assertSame(200, $this->api('GET', '/api/v1/admin/tickets/'.$id));

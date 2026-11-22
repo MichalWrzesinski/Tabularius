@@ -10,14 +10,14 @@ use Symfony\Component\Uid\Uuid;
 /**
  * Persistence of tickets, plan versions and ticket events (DBAL; jsonb and row locks are explicit).
  *
- * @phpstan-type TicketRow array{id: string, number: int, owner_account_id: ?string, owner_name: ?string, owner_email: ?string, owner_rep_code: ?string, owner_status: ?string, source: string, status: string, reason: ?string, plan_version: int, reference_date: string, received_at: string, updated_at: string, operation: ?string, file_id: ?string, plan: ?PlanRow}
+ * @phpstan-type TicketRow array{id: string, number: int, owner_account_id: ?string, participant_alias: ?string, owner_name: ?string, owner_email: ?string, owner_rep_code: ?string, owner_status: ?string, source: string, status: string, reason: ?string, plan_version: int, reference_date: string, received_at: string, updated_at: string, operation: ?string, file_id: ?string, plan: ?PlanRow}
  * @phpstan-type PlanRow array{version: int, author: string, author_ref: string, created_at: string, operation: ?string, parameters: array<array-key, mixed>, issues: list<string>}
  * @phpstan-type EventRow array{at: string, actor: string, actor_name: string, text: string}
  */
 final class TicketStore
 {
     private const string SELECT = <<<'SQL'
-        SELECT t.id, t.number, t.owner_account_id, a.name AS owner_name, a.email AS owner_email, a.rep_code AS owner_rep_code,
+        SELECT t.id, t.number, t.owner_account_id, t.participant_alias, a.name AS owner_name, a.email AS owner_email, a.rep_code AS owner_rep_code,
                a.status AS owner_status, t.source, t.status, t.reason, t.plan_version, t.reference_date, t.received_at, t.updated_at,
                p.operation, p.version AS p_version, p.author AS p_author, p.author_ref AS p_author_ref, p.created_at AS p_created_at,
                p.parameters AS p_parameters, p.issues AS p_issues,
@@ -36,7 +36,7 @@ final class TicketStore
         return $this->db;
     }
 
-    public function insert(Uuid $id, ?string $ownerId, string $source, TicketStatus $status, \DateTimeImmutable $reference, \DateTimeImmutable $now, string $createdBy): void
+    public function insert(Uuid $id, ?string $ownerId, string $source, TicketStatus $status, \DateTimeImmutable $reference, \DateTimeImmutable $now, string $createdBy, ?string $alias = null): void
     {
         $this->db->insert('ticket', [
             'id' => $id->toRfc4122(),
@@ -47,6 +47,7 @@ final class TicketStore
             'received_at' => self::ts($now),
             'updated_at' => self::ts($now),
             'created_by' => $createdBy,
+            'participant_alias' => $alias,
         ]);
     }
 
@@ -82,14 +83,14 @@ final class TicketStore
     /**
      * Row lock for the rest of the current transaction (one writer per ticket).
      *
-     * @return array{status: TicketStatus, plan_version: int, owner_account_id: ?string}|null
+     * @return array{status: TicketStatus, plan_version: int, owner_account_id: ?string, source: string, reference_date: string}|null
      */
     public function lock(string $ticketId): ?array
     {
         if (!Uuid::isValid($ticketId)) {
             return null;
         }
-        $row = $this->db->fetchAssociative('SELECT status, plan_version, owner_account_id FROM ticket WHERE id = ? FOR UPDATE', [$ticketId]);
+        $row = $this->db->fetchAssociative('SELECT status, plan_version, owner_account_id, source, reference_date FROM ticket WHERE id = ? FOR UPDATE', [$ticketId]);
         if (false === $row) {
             return null;
         }
@@ -98,6 +99,8 @@ final class TicketStore
             'status' => TicketStatus::from(self::str($row['status'])),
             'plan_version' => (int) self::str($row['plan_version']),
             'owner_account_id' => null === $row['owner_account_id'] ? null : self::str($row['owner_account_id']),
+            'source' => self::str($row['source']),
+            'reference_date' => self::str($row['reference_date']),
         ];
     }
 
@@ -173,6 +176,7 @@ final class TicketStore
             'id' => self::str($r['id']),
             'number' => (int) self::str($r['number']),
             'owner_account_id' => null === $r['owner_account_id'] ? null : self::str($r['owner_account_id']),
+            'participant_alias' => null === $r['participant_alias'] ? null : self::str($r['participant_alias']),
             'owner_name' => null === $r['owner_name'] ? null : self::str($r['owner_name']),
             'owner_email' => null === $r['owner_email'] ? null : self::str($r['owner_email']),
             'owner_rep_code' => null === $r['owner_rep_code'] ? null : self::str($r['owner_rep_code']),

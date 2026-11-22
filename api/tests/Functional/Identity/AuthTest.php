@@ -23,7 +23,7 @@ final class AuthTest extends IdentityTestCase
     public function testSessionProbeIsPublic(): void
     {
         self::assertSame(200, $this->api('GET', '/api/v1/auth/session'));
-        self::assertSame(['me' => null], $this->body());
+        self::assertSame(['me' => null, 'mode' => 'demo', 'mailbox' => 'tabularius@gitpush.app'], $this->body());
 
         $this->account('anna@example.com');
         $this->login('anna@example.com');
