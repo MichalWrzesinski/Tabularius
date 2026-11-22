@@ -40,6 +40,11 @@ As of 2026-11-21 (TASK-001 foundation). Versions are checked against registries 
 - `vue-tsc` 3.3 does not work with TypeScript 7; keep TypeScript 5.9.
 - Mockup CSS uses `:has()` and fixed artboard sizes; the fluid adjustments are listed in `docs/design/prototype/README.md`.
 
-## Open
+## Hosting and mail (owner, 2026-11-22)
 
-- Hosting for staging and the demo (owner question Q3). The candidate is the owner's shared VPS, which blocks outgoing SMTP ports 25, 465 and 587 (Profilo runbook). Needs an SMTP relay port check and an IMAP 993 reachability check before increment 3.
+- Server: the owner's VPS `151.240.121.172`. Application directory `/srv/Tabularius`, which currently holds the placeholder page; those files are removed only with the owner's confirmation at the first deployment. TLS is already set up on the host. The agent deploys when verification requires it, not at a fixed stage.
+- Mailbox: `tabularius@gitpush.app`. Outgoing mail from the server goes through Brevo, which the owner has configured and tested for this address. SMTP credentials come only from secrets.
+- Still to verify at the first deployment (needed for increment 3):
+  - IMAP host, port and TLS for incoming mail;
+  - the Brevo SMTP port that works from this server (on the Profilo staging host, 25, 465 and 587 are blocked; 2525 works);
+  - free resources for two databases, a worker and report files.

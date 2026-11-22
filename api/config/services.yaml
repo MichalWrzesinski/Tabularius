@@ -27,3 +27,14 @@ services:
         arguments: ['%kernel.project_dir%/config/integration/demo-autoparts.v1.yaml']
 
     App\Module\Report\Business\BusinessApi: '@App\Module\Report\Business\RestBusinessApi'
+
+    tabularius.session_handler:
+        class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+        factory: ['App\Module\Identity\Http\SessionHandlerFactory', 'create']
+        arguments: ['@doctrine.dbal.default_connection']
+
+when@test:
+    services:
+        App\Module\Report\Business\BusinessApi:
+            class: App\Tests\Double\StubBusinessApi
+            public: true

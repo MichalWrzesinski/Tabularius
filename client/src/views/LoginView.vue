@@ -4,14 +4,22 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'
 import Ico from '../components/Ico.vue'
-import { DEMO_CREDENTIALS, login, proto } from '../mock/api'
+import { proto } from '../mock/api'
+import { errorMessage } from '../lib/http'
+import { login, requestPasswordReset } from '../lib/session'
 import { DEMO_MAILBOX } from '../mock/data'
 
 const props = defineProps<{ role: 'admin' | 'employee' }>()
 const route = useRoute()
 const router = useRouter()
 const isAdmin = computed(() => props.role === 'admin')
-const creds = computed(() => DEMO_CREDENTIALS[props.role])
+// Public demo credentials (brief §4.1), shown only in demo mode.
+const DEMO = {
+  employee: { email: 'handlowiec@example.com', password: 'Demo123!' },
+  admin: { email: 'admin@example.com', password: 'Demo123!' },
+}
+const creds = computed(() => DEMO[props.role])
+const info = ref<string | null>(null)
 
 const email = ref('')
 const password = ref('')
@@ -36,14 +44,30 @@ async function submit() {
     const next = typeof route.query.next === 'string' && route.query.next.startsWith('/') ? route.query.next : null
     await router.push(next ?? (isAdmin.value ? '/admin' : '/moje-raporty'))
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Nie udało się zalogować.'
+    const code = (e as { code?: string }).code
+    error.value =
+      code === 'not_admin'
+        ? 'To konto nie ma dostępu do panelu administratora.'
+        : code === 'not_rep'
+          ? 'To konto administratora — zaloguj się w panelu administratora.'
+          : errorMessage(e)
   } finally {
     busy.value = false
   }
 }
-function forgot() {
+async function forgot() {
   error.value = null
-  window.alert('Prototyp: reset wygeneruje nowe hasło i wyśle je na zarejestrowany adres, bez informacji, czy konto istnieje.')
+  info.value = null
+  if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) {
+    emailError.value = 'Wpisz adres e-mail, na który wyślemy nowe hasło.'
+    return
+  }
+  try {
+    await requestPasswordReset(email.value)
+    info.value = 'Jeśli konto o tym adresie istnieje, wyślemy na nie nowe hasło.'
+  } catch (e) {
+    error.value = errorMessage(e)
+  }
 }
 </script>
 

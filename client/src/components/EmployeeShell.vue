@@ -4,7 +4,7 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'
-import { logout, proto } from '../mock/api'
+import { logout, session } from '../lib/session'
 import Ico from './Ico.vue'
 
 const route = useRoute()
@@ -28,8 +28,8 @@ watch(
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape' && drawer.value) drawer.value.open = false
 }
-function signOut() {
-  logout()
+async function signOut() {
+  await logout().catch(() => undefined)
   void router.push('/logowanie')
 }
 </script>
@@ -53,7 +53,8 @@ function signOut() {
         </nav>
         <div class="x-empuser">
           <span class="x-empname"
-            ><b>Handlowiec demo</b><small>{{ proto.mode === 'demo' ? 'Konto demonstracyjne' : 'Panel pracownika' }}</small></span
+            ><b>{{ session.me?.name ?? 'Pracownik' }}</b
+            ><small>{{ session.me?.shared ? 'Konto demonstracyjne' : 'Panel pracownika' }}</small></span
           >
           <button class="x-emplink" type="button" @click="signOut"><Ico name="logout" />Wyloguj</button>
         </div>

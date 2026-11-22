@@ -26,7 +26,7 @@ Opens on http://127.0.0.1:8080 (API health: `/api/health`, readiness: `/api/read
 | `make hooks` | install the gitleaks pre-commit hook |
 | `make clean-db` | drop the local database volume |
 
-Demo logins (prototype screens): `admin@example.com` / `Demo123!`, `handlowiec@example.com` / `Demo123!` — local and public-demo values only. See [docs/progress.md](docs/progress.md).
+Demo logins (created by `make seed`): `admin@example.com` / `Demo123!`, `handlowiec@example.com` / `Demo123!` (shared demo accounts; local and public-demo only, never in production). All local e-mail lands in Mailpit at http://127.0.0.1:8025. See [docs/progress.md](docs/progress.md).
 
 - Product rules, date semantics and request examples: [docs/product/overview.md](docs/product/overview.md), [reports and periods](docs/product/areas/reports.md), [tickets and examples](docs/product/areas/tickets.md)
 - Design: [docs/design/README.md](docs/design/README.md)

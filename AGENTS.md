@@ -35,4 +35,7 @@ Standards: `docs/standards/` — AppStandards suite 5.0.0, copied 2026-11-21 fro
 - DBAL 4 needs `ParameterType::INTEGER` for typed parameters (not `PDO::PARAM_INT`, which throws a TypeError). Narrow DB values with `App\Db\Value` instead of casting `mixed` (PHPStan max).
 - php-cs-fixer keeps inline `/** @var */` (`phpdoc_to_comment` ignores `var`); do not turn them into `/* */` comments.
 - Report engine tests run the real `RestBusinessApi` against captured responses (`api/tests/Fixtures/business`, seed 2026.11-1, REF 2026-11-15); regenerate them when the seed version changes. A test helper must not be called `run()` (final in PHPUnit `TestCase`).
+- Sessions (`PdoSessionHandler`) need their own PDO connection; sharing Doctrine's connection breaks login with „There is already an active transaction”. The session→account index is written on the response (the id changes after login).
+- `api/phpunit.dist.xml` forces `MAILER_DSN`, `APP_MODE` etc. over the container environment, so tests never send mail. Symfony removes the `X-Transport` header when sending; assert transport choice at unit level (`AccountMailerTest`).
+- State-changing API calls need the header `X-Tabularius-Request: 1` (CSRF); `client/src/lib/http.ts` adds it.
 - `vue-tsc` 3.3 does not work with TypeScript 7 (missing `typescript/lib/tsc` export); keep TypeScript 5.9 until vue-tsc supports it.

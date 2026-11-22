@@ -1,55 +1,75 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import AsyncBlock from '../../components/AsyncBlock.vue'
 import Ico from '../../components/Ico.vue'
+import {
+  blockAccount,
+  createAccount,
+  deleteAccount,
+  listAccounts,
+  listSalesReps,
+  unblockAccount,
+  type AdminAccount,
+} from '../../lib/accounts'
 import { formatDateTime } from '../../lib/format'
+import { errorMessage } from '../../lib/http'
 import { initials } from '../../lib/ticket'
 import { useAsync } from '../../lib/useAsync'
-import { createAccount, deleteAccount, listAccounts, proto, setAccountStatus } from '../../mock/api'
-import type { Account } from '../../mock/types'
+import { proto } from '../../mock/api'
 
 const { data, loading, error, reload } = useAsync(listAccounts)
+const reps = useAsync(listSalesReps)
+const freeReps = computed(() => (reps.data.value ?? []).filter((r) => !r.taken))
 const formOpen = ref(false)
 const name = ref('')
 const email = ref('')
-const rep = ref('PH-05')
+const rep = ref('')
 const formError = ref<string | null>(null)
 const notice = ref<string | null>(null)
 const busy = ref(false)
 
 async function submit() {
   formError.value = null
-  if (!name.value.trim() || !/^\S+@\S+\.\S+$/.test(email.value.trim())) {
-    formError.value = 'Podaj imię i nazwisko oraz prawidłowy służbowy adres e-mail.'
+  if (!name.value.trim() || !/^\S+@\S+\.\S+$/.test(email.value.trim()) || !rep.value) {
+    formError.value = 'Podaj imię i nazwisko, prawidłowy służbowy adres e-mail i wybierz handlowca.'
     return
   }
   busy.value = true
   try {
-    await createAccount(name.value.trim(), email.value.trim(), rep.value)
+    const created = await createAccount(name.value.trim(), email.value.trim(), rep.value)
     notice.value =
       proto.mode === 'demo'
-        ? 'Konto utworzone. W demo wiadomość z hasłem jest przechwytywana i nie trafia do adresata.'
-        : 'Konto utworzone. Losowe hasło wysłano pracownikowi; administrator go nie widzi.'
+        ? `Konto ${created.name} utworzone. W demo wiadomość z hasłem jest przechwytywana i nie trafia do adresata.`
+        : `Konto ${created.name} utworzone. Losowe hasło wysłano na ${created.email}; administrator go nie widzi.`
     name.value = ''
     email.value = ''
+    rep.value = ''
     formOpen.value = false
+    await Promise.all([reload(), reps.reload()])
   } catch (e) {
-    formError.value = e instanceof Error ? e.message : 'Nie udało się utworzyć konta.'
+    formError.value = errorMessage(e)
   } finally {
     busy.value = false
   }
 }
-async function toggle(a: Account) {
+
+async function toggle(a: AdminAccount) {
   notice.value = null
   try {
-    await setAccountStatus(a.id, a.status === 'active' ? 'blocked' : 'active')
-    notice.value =
-      a.status === 'blocked' ? `Zablokowano ${a.name}: sesje unieważnione, pobieranie raportów wyłączone.` : `Odblokowano ${a.name}.`
+    if (a.status === 'active') {
+      await blockAccount(a.id)
+      notice.value = `Zablokowano ${a.name}: sesje unieważnione, pobieranie raportów wyłączone.`
+    } else {
+      await unblockAccount(a.id)
+      notice.value = `Odblokowano ${a.name}.`
+    }
+    await reload()
   } catch (e) {
-    notice.value = e instanceof Error ? e.message : 'Operacja nie powiodła się.'
+    notice.value = errorMessage(e)
   }
 }
-async function remove(a: Account) {
+
+async function remove(a: AdminAccount) {
   if (
     !window.confirm(
       `Usunąć konto ${a.name}? Dostęp zostanie odebrany, historia zgłoszeń i dziennik pozostaną. Tej operacji nie można cofnąć.`,
@@ -58,9 +78,10 @@ async function remove(a: Account) {
     return
   try {
     await deleteAccount(a.id)
-    notice.value = `Usunięto konto ${a.repCode}. Historia zachowana zgodnie z polityką przechowywania.`
+    notice.value = `Usunięto konto ${a.name}. Historia zachowana zgodnie z polityką przechowywania.`
+    await Promise.all([reload(), reps.reload()])
   } catch (e) {
-    notice.value = e instanceof Error ? e.message : 'Operacja nie powiodła się.'
+    notice.value = errorMessage(e)
   }
 }
 </script>
@@ -98,8 +119,10 @@ async function remove(a: Account) {
         <div class="field">
           <label for="acc-rep">Handlowiec w systemie danych</label
           ><select id="acc-rep" v-model="rep" class="x-native" style="height: 62px">
-            <option value="PH-05">PH-05 · Wielkopolska (4 klientów)</option>
-            <option value="PH-02">PH-02 · Mazowsze (9 klientów)</option>
+            <option value="" disabled>
+              {{ reps.loading.value ? 'Ładowanie…' : freeReps.length ? 'Wybierz handlowca' : 'Wszyscy handlowcy mają konta' }}
+            </option>
+            <option v-for="r in freeReps" :key="r.code" :value="r.code">{{ r.code }}</option>
           </select>
         </div>
       </div>
@@ -113,15 +136,16 @@ async function remove(a: Account) {
           <div class="x-grow">
             <b>{{ a.name }}</b>
             <span
-              >{{ proto.anonymize && !a.shared ? 'adres ukryty w demo publicznym' : a.email }} · {{ a.repCode }} · klientów:
-              {{ a.customers }}</span
+              >{{ proto.anonymize && !a.shared ? 'adres ukryty w demo publicznym' : a.email }} ·
+              {{ a.role === 'admin' ? 'administrator' : a.repCode }}</span
             >
-            <small>Ostatnie logowanie: {{ a.lastLogin ? formatDateTime(a.lastLogin) : 'nigdy' }}</small>
+            <small>Ostatnie logowanie: {{ a.lastLoginAt ? formatDateTime(a.lastLoginAt) : 'nigdy' }}</small>
           </div>
           <span class="badge" :class="a.status === 'active' ? 'done' : 'error'">{{
             a.status === 'active' ? 'Aktywne' : 'Zablokowane'
           }}</span>
           <span v-if="a.shared" class="badge neutral">Wspólne konto demo</span>
+          <span v-else-if="a.role === 'admin'" class="badge neutral">Administrator</span>
           <template v-else>
             <button class="x-btn2" type="button" @click="toggle(a)">
               <Ico :name="a.status === 'active' ? 'lock' : 'unlock'" />{{ a.status === 'active' ? 'Zablokuj' : 'Odblokuj'

@@ -92,7 +92,8 @@ PDF/XLSX output; profile editor in the dashboard; provider-level identity integr
 - Demo participant data retention: [ID-DEMO-7](areas/identity-access.md#demo-mode-id-demo).
 - Repository: private `MichalWrzesinski/Tabularius`, created at setup.
 
+- Hosting and mail (2026-11-22): the owner's VPS, mailbox `tabularius@gitpush.app`, outgoing mail through Brevo. Details and pending checks: [technical profile](../technical-profile.md#hosting-and-mail-owner-2026-11-22).
+
 ## Open questions
 
-- Mailbox provider, address and IMAP/SMTP hosts (needed for the real adapter in increment 3).
-- Hosting: check the existing shared VPS (outgoing SMTP ports are blocked there for Profilo) and agree cost before provisioning.
+- IMAP access details for `tabularius@gitpush.app` (needed for the real adapter in increment 3).

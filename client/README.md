@@ -1,6 +1,6 @@
 # client — Vue 3 dashboard
 
-**Status: prototype.** Every screen runs against a mocked, in-memory API (`src/mock/`) filled with synthetic data. Nothing is sent or stored outside the browser tab. The prototype checks flows and layout; it says nothing about whether the backend works. Before this code goes into the product, it needs the real API client, tests and quality checks (increment 2).
+**Status:** login, sessions, accounts and the audit log use the real API (`src/lib/http.ts`, `src/lib/session.ts`). Tickets, files and reports still use the in-memory prototype mock (`src/mock/`) until TASK-005. The prototype checks flows and layout; it says nothing about whether the backend works. Before this code goes into the product, it needs the real API client, tests and quality checks (increment 2).
 
 Run it (needs Docker only):
 
@@ -25,3 +25,14 @@ Screenshots and overflow check (while the dev server runs, from `client/`; needs
 ```bash
 docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD/scripts":/pw -v "$PWD/../docs/design/prototype/screens":/out -w /pw mcr.microsoft.com/playwright:v1.64.1-noble node prototype-screens.mjs
 ```
+
+## Scripts against the running stack (`make up`)
+
+From `client/`, after `npm install playwright@1.64.1` in `scripts/`. Both scripts default to `BASE_URL=http://host.docker.internal:8080`.
+
+```bash
+docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD/scripts":/pw -w /pw mcr.microsoft.com/playwright:v1.64.1-noble node e2e-cp004.mjs
+```
+
+- `e2e-cp004.mjs` runs critical path CP-004 through the UI and Mailpit, and deletes its own account afterwards.
+- `prototype-screens.mjs` runs the walkthrough with screenshots and overflow checks (see above).

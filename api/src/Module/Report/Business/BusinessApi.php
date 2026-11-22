@@ -14,6 +14,11 @@ use App\Module\Report\Period\DateRange;
 interface BusinessApi
 {
     /**
+     * @return list<string> representative codes known to the business system
+     */
+    public function salesReps(): array;
+
+    /**
      * @return list<Customer>
      */
     public function customersOf(string $salesRep): array;
