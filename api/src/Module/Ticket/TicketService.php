@@ -203,8 +203,8 @@ final class TicketService
         return $ticket;
     }
 
-    /** Status change along allowed transitions, through `interpreting` when there is no direct one. */
-    private function move(string $ticketId, TicketStatus $from, TicketStatus $to, \DateTimeImmutable $now): void
+    /** Status change along allowed transitions, through `interpreting` when there is no direct one (inside a transaction). */
+    public function move(string $ticketId, TicketStatus $from, TicketStatus $to, \DateTimeImmutable $now): void
     {
         if (!$from->canBecome($to)) {
             if (!$from->canBecome(TicketStatus::Interpreting) || !TicketStatus::Interpreting->canBecome($to)) {
@@ -216,9 +216,13 @@ final class TicketService
     }
 
     /**
+     * Validates a plan in an owner's scope; refusals carry the reason code (unknown_operation, period_*, out_of_scope…).
+     *
      * @param array<array-key, mixed> $parameters
+     *
+     * @throws Refusal
      */
-    private function check(string $operation, array $parameters, Scope $scope, \DateTimeImmutable $reference): void
+    public function check(string $operation, array $parameters, Scope $scope, \DateTimeImmutable $reference): void
     {
         if (!isset($this->profile->operations[$operation])) {
             throw new Refusal('unknown_operation');

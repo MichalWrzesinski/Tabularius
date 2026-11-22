@@ -39,6 +39,18 @@ export const ISSUE_LABEL: Record<string, string> = {
   out_of_catalog: 'Operacja spoza katalogu',
   out_of_scope_customer: 'Klient poza Twoim zakresem',
   recipient_change_requested: 'Prośba o zmianę odbiorcy (zignorowana)',
+  missing_customer: 'Brak klienta',
+  unknown_customer: 'Nieznany klient',
+  missing_manufacturer: 'Brak producenta',
+  ambiguous_manufacturer: 'Kilku producentów — wybierz jednego',
+  ambiguous_category: 'Kilka kategorii — wybierz jedną',
+  ambiguous_period: 'Kilka okresów — wybierz jeden',
+  out_of_scope: 'Klient spoza zakresu pracownika',
+  period_too_long: 'Okres dłuższy niż 366 dni',
+  period_too_early: 'Okres sprzed 2020 roku',
+  no_completed_period: 'Brak zakończonych dni w okresie',
+  invalid_period: 'Nieprawidłowy okres',
+  unknown_manufacturer: 'Nieznany producent',
 }
 
 /** Technical failure codes; the mockup shows „Błąd” for them, other interventions read „Do sprawdzenia”. */

@@ -15,5 +15,6 @@ framework:
 
         routing:
             App\Module\Ticket\Job\ExecutePlan: async
+            App\Module\Interpretation\Job\InterpretTicket: async
 
 # Tests use the same Doctrine queue (it survives kernel reboots between requests) and run the handler explicitly.

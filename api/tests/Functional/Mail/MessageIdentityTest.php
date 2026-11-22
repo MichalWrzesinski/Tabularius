@@ -177,7 +177,7 @@ final class MessageIdentityTest extends IdentityTestCase
     private function ingestProduction(string $from): string
     {
         $c = self::getContainer();
-        $ingestor = new Ingestor($c->get(MailStore::class), $c->get(TicketStore::class), new MessageParser(), new MessageIdentity($c->get(Connection::class), 'production'), new MockClock(self::AT), new NullLogger(), 'secret', 'production');
+        $ingestor = new Ingestor($c->get(MailStore::class), $c->get(TicketStore::class), new MessageParser(), new MessageIdentity($c->get(Connection::class), 'production'), $c->get(MessageBusInterface::class), new MockClock(self::AT), new NullLogger(), 'secret', 'production');
         $n = $this->db()->fetchOne('SELECT count(*) FROM mail_message');
         self::assertIsNumeric($n);
         $ingestor->ingest(new IncomingMessage('local', null, null, "From: $from\r\nMessage-ID: <p{$n}@example.com>\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nRaport", 60, new \DateTimeImmutable(self::AT)));
@@ -204,7 +204,16 @@ final class MessageIdentityTest extends IdentityTestCase
         /** @var TransportInterface $transport */
         $transport = self::getContainer()->get('messenger.transport.async');
 
-        return \count([...$transport->get()]);
+        // Execution jobs only (interpretation jobs are queued for every received mail ticket). get() returns one
+        // message at a time and marks it delivered, so this drains the queue.
+        $count = 0;
+        while ([] !== $batch = [...$transport->get()]) {
+            foreach ($batch as $envelope) {
+                $count += $envelope->getMessage() instanceof ExecutePlan ? 1 : 0;
+            }
+        }
+
+        return $count;
     }
 
     private function db(): Connection
