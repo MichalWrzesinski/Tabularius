@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Runs in GitHub Actions (deploy-staging): uploads the stack files of one commit to the server, logs the server in to
 # GHCR with the workflow's read-only token, runs deploy.sh there and checks the site from outside.
-#   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN [MAILBOX_DSN]
+#   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN
+#   optional: MAILBOX_DSN (IMAP), MAILER_DSN (SMTP, e.g. Brevo), MAIL_ALLOWED_RECIPIENTS (controlled test addresses)
 set -euo pipefail
 
 fail() { echo "::error::$*"; exit 1; }
@@ -16,6 +17,11 @@ if [[ -n "${MAILBOX_DSN:-}" ]]; then
   [[ "$MAILBOX_DSN" =~ ^imaps?://[^[:space:]\']+@[A-Za-z0-9.-]+(:[0-9]{2,5})?(/[^[:space:]\']*)?$ ]] \
     || fail "MAILBOX_DSN must look like imaps://user:password@host:993/INBOX (URL-encoded, no quotes)"
 fi
+if [[ -n "${MAILER_DSN:-}" ]]; then
+  [[ "$MAILER_DSN" =~ ^smtps?://[^[:space:]\']+@[A-Za-z0-9.-]+(:[0-9]{2,5})?(\?[^[:space:]\']*)?$ ]] \
+    || fail "MAILER_DSN must look like smtp://user:password@host:587 (URL-encoded, no quotes)"
+fi
+[[ "${MAIL_ALLOWED_RECIPIENTS:-}" =~ ^[A-Za-z0-9.@_+,\ -]*$ ]] || fail "MAIL_ALLOWED_RECIPIENTS: addresses or @domains separated by commas"
 
 install -d -m 700 ~/.ssh
 printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
@@ -33,12 +39,12 @@ printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\
   scp -q infra/postgres/init/01-roles-and-databases.sh "server:$APP_DIR/releases/$SHA/postgres-init/"
   echo "::endgroup::"
 
-  # Runtime secret of the mailbox: a file of its own on the server (mode 600), removed when the secret is unset.
-  if [[ -n "${MAILBOX_DSN:-}" ]]; then
-    printf "MAILBOX_DSN='%s'\n" "$MAILBOX_DSN" | ssh server "umask 077 && cat > '$APP_DIR/.env.mail'"
-  else
-    ssh server "rm -f '$APP_DIR/.env.mail'"
-  fi
+  # Mail settings and secrets: a file of their own on the server (mode 600), rewritten at every deployment.
+  {
+    if [[ -n "${MAILBOX_DSN:-}" ]]; then printf "MAILBOX_DSN='%s'\n" "$MAILBOX_DSN"; fi
+    if [[ -n "${MAILER_DSN:-}" ]]; then printf "MAILER_DSN='%s'\n" "$MAILER_DSN"; fi
+    printf "MAIL_ALLOWED_RECIPIENTS='%s'\n" "${MAIL_ALLOWED_RECIPIENTS:-}"
+  } | ssh server "umask 077 && cat > '$APP_DIR/.env.mail'"
 
   printf '%s' "$GHCR_TOKEN" | ssh server "docker login ghcr.io -u '$GHCR_USER' --password-stdin" >/dev/null
   trap 'ssh server "docker logout ghcr.io" >/dev/null 2>&1 || true' EXIT
