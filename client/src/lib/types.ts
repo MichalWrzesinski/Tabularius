@@ -39,6 +39,8 @@ export interface TicketSummary {
   ownerId: string
   employeeName: string
   employeeEmail: string
+  /** Demo mail tickets: the synthetic alias shown instead of any person (ID-DEMO-3). */
+  participantAlias: string | null
   source: 'manual' | 'mail'
   receivedAt: string
   updatedAt: string
@@ -59,6 +61,12 @@ export interface Ticket extends TicketSummary {
   messages: never[]
   clarificationRounds: number
 }
+
+/** The representative's view of an own ticket (confirmation screen): no message contents, no history. */
+export type MyTicket = Pick<
+  TicketSummary,
+  'id' | 'number' | 'receivedAt' | 'status' | 'reason' | 'operation' | 'operationLabel' | 'fileId' | 'plans'
+>
 
 export interface FileMeta {
   id: string

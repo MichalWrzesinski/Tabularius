@@ -11,16 +11,25 @@ export interface Me {
   shared: boolean
 }
 
-export const session = reactive({ me: null as Me | null, loaded: false })
+export const session = reactive({
+  me: null as Me | null,
+  loaded: false,
+  /** Environment from the server: demo (public, shared accounts) or production (organization). */
+  mode: 'demo' as 'demo' | 'production',
+  /** Public mailbox address requests are sent to. */
+  mailbox: '',
+})
 
 let loading: Promise<Me | null> | null = null
 
 export function loadSession(force = false): Promise<Me | null> {
   if (session.loaded && !force) return Promise.resolve(session.me)
-  loading ??= api<{ me: Me | null }>('GET', '/auth/session')
-    .then(({ me }) => {
+  loading ??= api<{ me: Me | null; mode?: 'demo' | 'production'; mailbox?: string }>('GET', '/auth/session')
+    .then(({ me, mode, mailbox }) => {
       session.me = me
       session.loaded = true
+      session.mode = mode === 'production' ? 'production' : 'demo'
+      session.mailbox = mailbox ?? ''
       return me
     })
     .finally(() => {

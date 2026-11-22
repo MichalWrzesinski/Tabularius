@@ -43,6 +43,12 @@ export const router = createRouter({
         { path: '', component: () => import('./views/admin/OverviewView.vue'), meta: { title: 'Przegląd' } },
         { path: 'zgloszenia', component: () => import('./views/admin/TicketsView.vue'), meta: { title: 'Zgłoszenia' } },
         { path: 'zgloszenia/nowe', component: () => import('./views/admin/NewTicketView.vue'), meta: { title: 'Nowe zgłoszenie' } },
+        {
+          path: 'zgloszenia/:ticketId/parametry',
+          component: () => import('./views/admin/NewTicketView.vue'),
+          props: true,
+          meta: { title: 'Ustaw parametry' },
+        },
         { path: 'zgloszenia/:id', component: () => import('./views/admin/TicketView.vue'), props: true, meta: { title: 'Zgłoszenie' } },
         { path: 'pliki', component: () => import('./views/admin/FilesView.vue'), meta: { title: 'Pliki' } },
         { path: 'dane', component: () => import('./views/admin/DataView.vue'), meta: { title: 'Dostępne dane' } },

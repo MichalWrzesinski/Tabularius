@@ -1,6 +1,6 @@
 // Tickets and report files on the real API (TASK-005). Downloads go through the authorized endpoint (ACC-FILE-1).
 import { api, ApiError } from './http'
-import type { Catalog, CustomerRef, FileMeta, Operation, ReportPreview, Ticket, TicketSummary } from './types'
+import type { Catalog, CustomerRef, FileMeta, MyTicket, Operation, ReportPreview, Ticket, TicketSummary } from './types'
 
 const items = <T>(r: { items: T[] }) => r.items
 
@@ -8,6 +8,8 @@ export const listTickets = () => api<{ items: TicketSummary[] }>('GET', '/admin/
 export const getTicket = (id: string) => api<Ticket>('GET', `/admin/tickets/${encodeURIComponent(id)}`)
 export const createTicket = (ownerId: string, operation: Operation, parameters: Record<string, unknown>) =>
   api<Ticket>('POST', '/admin/tickets', { ownerId, operation, parameters })
+export const setTicketPlan = (id: string, operation: Operation, parameters: Record<string, unknown>) =>
+  api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/plan`, { operation, parameters })
 export const retryTicket = (id: string) => api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/retry`)
 export const rejectTicket = (id: string) => api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/reject`)
 export const getCatalog = () => api<Catalog>('GET', '/admin/catalog')
@@ -21,6 +23,9 @@ export const myTickets = () =>
     'GET',
     '/me/tickets',
   ).then(items)
+export const getMyTicket = (id: string) => api<MyTicket>('GET', `/me/tickets/${encodeURIComponent(id)}`)
+export const confirmMyTicket = (id: string) => api<MyTicket>('POST', `/me/tickets/${encodeURIComponent(id)}/confirm`)
+export const cancelMyTicket = (id: string) => api<MyTicket>('POST', `/me/tickets/${encodeURIComponent(id)}/cancel`)
 export const getFile = (id: string) => api<ReportPreview>('GET', `/files/${encodeURIComponent(id)}`)
 
 /** Fetches the CSV through the authorized endpoint and saves it; refusals surface as ApiError (no blind navigation). */
@@ -62,6 +67,9 @@ export const REASON_LABEL: Record<string, string> = {
   message_unparseable: 'Nie udało się odczytać wiadomości',
   message_empty: 'Wiadomość nie zawiera tekstu',
   text_too_long: 'Tekst prośby jest za długi',
+  identity_unverified: 'Nadawca nierozpoznany — tożsamość niepotwierdzona',
+  cancelled_by_owner: 'Anulowane przez pracownika („to nie ja”)',
+  confirmation_expired: 'Wygasło bez potwierdzenia pracownika',
 }
 
 export const reasonLabel = (code: string | null | undefined) => (code ? (REASON_LABEL[code] ?? code) : '')

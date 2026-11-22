@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { proto } from '../mock/api'
+import { session } from '../lib/session'
 </script>
 
 <template>
@@ -14,7 +14,7 @@ import { proto } from '../mock/api'
       <h3>Środowisko</h3>
       <div class="param">
         <small>TRYB</small>
-        <p>{{ proto.mode === 'demo' ? 'Demonstracyjny — dane syntetyczne' : 'Organizacja' }}</p>
+        <p>{{ session.mode === 'demo' ? 'Demonstracyjny — dane syntetyczne' : 'Organizacja' }}</p>
       </div>
       <div class="param">
         <small>PROFIL INTEGRACJI</small>

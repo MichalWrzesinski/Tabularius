@@ -5,7 +5,6 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'
 import { listTickets } from '../lib/tickets'
-import { proto } from '../mock/api'
 import { logout, session } from '../lib/session'
 import { initials, openTicketNumber } from '../lib/ticket'
 import Ico from './Ico.vue'
@@ -120,7 +119,7 @@ async function signOut() {
         <RouterLink class="nav" :class="{ active: route.path === settingsTo }" :to="settingsTo"
           ><Ico name="settings" />Ustawienia</RouterLink
         >
-        <p>{{ proto.mode === 'demo' ? 'Środowisko demonstracyjne' : 'Środowisko organizacji' }} <span style="color: #c3a8f1">●</span></p>
+        <p>{{ session.mode === 'demo' ? 'Środowisko demonstracyjne' : 'Środowisko organizacji' }} <span style="color: #c3a8f1">●</span></p>
       </div>
     </aside>
 
@@ -145,7 +144,7 @@ async function signOut() {
             <div class="avatar" aria-hidden="true">{{ who.initials }}</div>
             <div>
               <b>{{ who.name }}</b
-              ><small>{{ proto.mode === 'demo' ? 'Konto demonstracyjne' : 'Organizacja demo' }}</small>
+              ><small>{{ session.mode === 'demo' ? 'Konto demonstracyjne' : 'Organizacja demo' }}</small>
             </div>
             <Ico name="chevron" />
           </button>

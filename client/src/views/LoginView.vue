@@ -4,10 +4,8 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'
 import Ico from '../components/Ico.vue'
-import { proto } from '../mock/api'
 import { errorMessage } from '../lib/http'
-import { login, requestPasswordReset } from '../lib/session'
-import { DEMO_MAILBOX } from '../mock/data'
+import { loadSession, login, requestPasswordReset, session } from '../lib/session'
 
 const props = defineProps<{ role: 'admin' | 'employee' }>()
 const route = useRoute()
@@ -69,6 +67,8 @@ async function forgot() {
     error.value = errorMessage(e)
   }
 }
+// Mode and mailbox address come from the server's public session probe.
+void loadSession().catch(() => undefined)
 </script>
 
 <template>
@@ -91,7 +91,7 @@ async function forgot() {
         <div class="flowline" />
         <div class="flowbox"><Ico name="calendar" /></div>
       </div>
-      <div v-if="proto.mode === 'demo'" class="demo">
+      <div v-if="session.mode === 'demo'" class="demo">
         <template v-if="isAdmin">
           <h3>Dostęp do demo</h3>
           <p>Przykładowe dane logowania</p>
@@ -104,7 +104,7 @@ async function forgot() {
         <template v-else>
           <h3>Wypróbuj demo</h3>
           <p>Wyślij e-mail z poleceniem na adres:</p>
-          <b class="address">{{ DEMO_MAILBOX }}</b>
+          <b class="address">{{ session.mailbox }}</b>
           <p>Przykład: Przygotuj raport sprzedaży<br />za październik 2026.</p>
           <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi.</p>
           <p style="margin-top: 18px">Przykładowe dane logowania</p>
@@ -119,7 +119,7 @@ async function forgot() {
 
     <section class="formarea">
       <div class="toprole">
-        <span v-if="proto.mode === 'demo'" class="pill">DEMO</span> {{ isAdmin ? 'Panel administratora' : 'Panel pracownika' }}
+        <span v-if="session.mode === 'demo'" class="pill">DEMO</span> {{ isAdmin ? 'Panel administratora' : 'Panel pracownika' }}
       </div>
       <form id="main" class="form" novalidate @submit.prevent="submit">
         <div class="eyebrow">{{ isAdmin ? 'Panel administratora' : 'Twój raport jest blisko' }}</div>
@@ -177,16 +177,16 @@ async function forgot() {
         <button class="cta" :class="{ blue: !isAdmin }" type="submit" :disabled="busy">
           <Ico name="login" :width="1.8" />{{ busy ? 'Logowanie…' : 'Zaloguj się' }}
         </button>
-        <p v-if="proto.mode === 'demo'" class="formnote x-desk">
+        <p v-if="session.mode === 'demo'" class="formnote x-desk">
           {{
             isAdmin ? 'Dane dostępowe do demo znajdziesz po lewej stronie.' : 'Instrukcję wypróbowania demo znajdziesz po lewej stronie.'
           }}
         </p>
-        <p v-if="proto.mode === 'demo'" class="formnote x-mob">
+        <p v-if="session.mode === 'demo'" class="formnote x-mob">
           {{ isAdmin ? 'Dane dostępowe do demo znajdziesz poniżej.' : 'Instrukcję wypróbowania demo znajdziesz poniżej.' }}
         </p>
       </form>
-      <div v-if="proto.mode === 'demo'" class="demo">
+      <div v-if="session.mode === 'demo'" class="demo">
         <template v-if="isAdmin">
           <h3>Dostęp do demo</h3>
           <p>Przykładowe dane logowania</p>
@@ -199,7 +199,7 @@ async function forgot() {
         <template v-else>
           <h3>Wypróbuj demo</h3>
           <p>Wyślij e-mail z poleceniem na adres:</p>
-          <b class="address">{{ DEMO_MAILBOX }}</b>
+          <b class="address">{{ session.mailbox }}</b>
           <p>Przykład: Przygotuj raport sprzedaży<br />za październik 2026.</p>
           <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi.</p>
           <p style="margin-top: 18px">Przykładowe dane logowania</p>

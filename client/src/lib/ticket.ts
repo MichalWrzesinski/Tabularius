@@ -1,13 +1,11 @@
 import { ref } from 'vue'
-import { proto } from '../mock/api'
 import type { PlanVersion, TicketStatus } from './types'
 
-/** What the title and person helpers need; satisfied by API tickets and by the prototype's mocked ones. */
+/** What the title and person helpers need. */
 interface TicketLike {
   status: TicketStatus
   plans: PlanVersion[]
   employeeName: string
-  participantAlias?: string
 }
 
 const MONTH_NOM = [
@@ -53,9 +51,9 @@ export function ticketTitle(t: TicketLike): string {
   }
 }
 
-/** Production: employee name. Public demo: synthetic alias only (ID-DEMO-3). */
+/** The server already decides who a ticket is shown as: the owner, or a synthetic alias in demo (ID-DEMO-3). */
 export function ticketPerson(t: TicketLike): string {
-  return proto.anonymize ? (t.participantAlias ?? 'Uczestnik demo') : t.employeeName
+  return t.employeeName
 }
 
 /** Number of the ticket open in the detail view, for the breadcrumb (mockup: „Zgłoszenia / #T-1042”). */

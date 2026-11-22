@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { session } from '../../lib/session'
 import { computed, ref } from 'vue'
 import AsyncBlock from '../../components/AsyncBlock.vue'
 import Ico from '../../components/Ico.vue'
@@ -15,7 +16,6 @@ import { formatDateTime } from '../../lib/format'
 import { errorMessage } from '../../lib/http'
 import { initials } from '../../lib/ticket'
 import { useAsync } from '../../lib/useAsync'
-import { proto } from '../../mock/api'
 
 const { data, loading, error, reload } = useAsync(listAccounts)
 const reps = useAsync(listSalesReps)
@@ -38,7 +38,7 @@ async function submit() {
   try {
     const created = await createAccount(name.value.trim(), email.value.trim(), rep.value)
     notice.value =
-      proto.mode === 'demo'
+      session.mode === 'demo'
         ? `Konto ${created.name} utworzone. W demo wiadomość z hasłem jest przechwytywana i nie trafia do adresata.`
         : `Konto ${created.name} utworzone. Losowe hasło wysłano na ${created.email}; administrator go nie widzi.`
     name.value = ''
@@ -135,10 +135,7 @@ async function remove(a: AdminAccount) {
           <div class="avatar" aria-hidden="true">{{ initials(a.name) }}</div>
           <div class="x-grow">
             <b>{{ a.name }}</b>
-            <span
-              >{{ proto.anonymize && !a.shared ? 'adres ukryty w demo publicznym' : a.email }} ·
-              {{ a.role === 'admin' ? 'administrator' : a.repCode }}</span
-            >
+            <span>{{ a.email }} · {{ a.role === 'admin' ? 'administrator' : a.repCode }}</span>
             <small>Ostatnie logowanie: {{ a.lastLoginAt ? formatDateTime(a.lastLoginAt) : 'nigdy' }}</small>
           </div>
           <span class="badge" :class="a.status === 'active' ? 'done' : 'error'">{{

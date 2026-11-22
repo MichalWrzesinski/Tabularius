@@ -5,7 +5,6 @@ import { useRouter } from 'vue-router'
 import { formatDate, formatTime } from '../lib/format'
 import { STATUS, STATUS_ORDER } from '../lib/status'
 import { ticketPerson, ticketTitle } from '../lib/ticket'
-import { proto } from '../mock/api'
 import type { TicketStatus, TicketSummary } from '../lib/types'
 import Ico from './Ico.vue'
 import StatusBadge from './StatusBadge.vue'
@@ -38,7 +37,8 @@ const pageList = computed(() => {
   const start = Math.max(1, Math.min(p - 1, n - 2))
   return Array.from({ length: Math.min(3, n) }, (_, i) => start + i)
 })
-const personCol = computed(() => (proto.anonymize ? 'UCZESTNIK' : 'PRACOWNIK'))
+// Demo mail tickets show a synthetic alias in this column (server rule, ID-DEMO-3).
+const personCol = 'PRACOWNIK'
 const today = formatDate(new Date().toISOString())
 const when = (iso: string) => (formatDate(iso) === today ? formatTime(iso) : formatDate(iso))
 const open = (t: TicketSummary) => void router.push(`/admin/zgloszenia/${t.id}`)
@@ -50,11 +50,7 @@ const open = (t: TicketSummary) => void router.push(`/admin/zgloszenia/${t.id}`)
       <label class="search">
         <Ico name="search" />
         <span class="sr-only">Szukaj zgłoszenia</span>
-        <input
-          v-model="query"
-          type="search"
-          :placeholder="proto.anonymize ? 'Szukaj zgłoszenia lub uczestnika' : 'Szukaj zgłoszenia lub pracownika'"
-        />
+        <input v-model="query" type="search" :placeholder="'Szukaj zgłoszenia lub pracownika'" />
       </label>
       <label class="filter">
         <span class="sr-only">Status</span>

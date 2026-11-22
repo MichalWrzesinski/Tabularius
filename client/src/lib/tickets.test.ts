@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './http'
 import {
+  cancelMyTicket,
+  confirmMyTicket,
   createTicket,
+  getMyTicket,
+  setTicketPlan,
   downloadFile,
   getCatalog,
   getFile,
@@ -38,6 +42,10 @@ describe('tickets API', () => {
     await myFiles()
     await myTickets()
     await getFile('f')
+    await setTicketPlan('t', 'parts_catalog', { manufacturer: 'BOSCH' })
+    await getMyTicket('m')
+    await confirmMyTicket('m')
+    await cancelMyTicket('m')
 
     expect(fetch.mock.calls.map(([url, init]) => `${init?.method} ${url}`)).toEqual([
       'GET /api/v1/admin/tickets',
@@ -51,6 +59,10 @@ describe('tickets API', () => {
       'GET /api/v1/me/files',
       'GET /api/v1/me/tickets',
       'GET /api/v1/files/f',
+      'POST /api/v1/admin/tickets/t/plan',
+      'GET /api/v1/me/tickets/m',
+      'POST /api/v1/me/tickets/m/confirm',
+      'POST /api/v1/me/tickets/m/cancel',
     ])
     expect(JSON.parse(String(fetch.mock.calls[2]?.[1]?.body))).toEqual({
       ownerId: 'owner',

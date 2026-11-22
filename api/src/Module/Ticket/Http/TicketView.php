@@ -23,6 +23,8 @@ final class TicketView
     public function __construct(
         private readonly PeriodResolver $periods,
         private readonly IntegrationProfile $profile,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'APP_MODE')]
+        private readonly string $mode = 'demo',
     ) {
     }
 
@@ -37,9 +39,7 @@ final class TicketView
             'id' => $t['id'],
             'number' => 'T-'.$t['number'],
             'ownerId' => $t['owner_account_id'],
-            // Mail tickets have no owner until identity assigns one (TASK-007).
-            'employeeName' => $t['owner_name'] ?? 'Nadawca nieprzypisany',
-            'employeeEmail' => $t['owner_email'] ?? '',
+            ...$this->person($t),
             'source' => $t['source'],
             'receivedAt' => self::iso($t['received_at']),
             'updatedAt' => self::iso($t['updated_at']),
@@ -52,6 +52,23 @@ final class TicketView
             // The current plan only; details carry every version.
             'plans' => null === $t['plan'] ? [] : [$this->plan($t['plan'], DateRange::date($t['reference_date']))],
         ];
+    }
+
+    /**
+     * Who the ticket is shown as. Demo mail tickets show only the synthetic alias, never the shared account or any
+     * address (ID-DEMO-3); production shows the owner, and nothing for an unverified sender (ID-4).
+     *
+     * @param TicketRow $t
+     *
+     * @return array{employeeName: string, employeeEmail: string, participantAlias: ?string}
+     */
+    private function person(array $t): array
+    {
+        if ('mail' === $t['source'] && 'demo' === $this->mode) {
+            return ['employeeName' => $t['participant_alias'] ?? 'Uczestnik demo', 'employeeEmail' => '', 'participantAlias' => $t['participant_alias']];
+        }
+
+        return ['employeeName' => $t['owner_name'] ?? 'Nadawca nierozpoznany', 'employeeEmail' => $t['owner_email'] ?? '', 'participantAlias' => null];
     }
 
     /**
