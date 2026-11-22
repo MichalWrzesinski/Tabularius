@@ -9,6 +9,7 @@ Private record of facts and links for a later, human-reviewed campaign (brief §
 | 01 | 2026-11-21 | Project start and discovery | [stages/01-discovery.md](stages/01-discovery.md) |
 | 02 | 2026-11-21 | Working prototype | [stages/02-prototype.md](stages/02-prototype.md) |
 | 03 | 2026-11-21 | Technical decisions and repository | [stages/03-technical-decisions.md](stages/03-technical-decisions.md) |
+| 04 | 2026-11-22 | First correct report (no LLM) | [stages/04-first-correct-report.md](stages/04-first-correct-report.md) |
 
 ## Report format
 

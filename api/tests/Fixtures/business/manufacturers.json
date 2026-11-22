@@ -1,0 +1,47 @@
+{
+    "items": [
+        {
+            "code": "BOSCH",
+            "name": "Bosch",
+            "aliases": [
+                "Robert Bosch"
+            ],
+            "active": true
+        },
+        {
+            "code": "LUCAS",
+            "name": "Lucas",
+            "aliases": [],
+            "active": false
+        },
+        {
+            "code": "MANN",
+            "name": "Mann-Filter",
+            "aliases": [
+                "Mann",
+                "MANN+HUMMEL"
+            ],
+            "active": true
+        },
+        {
+            "code": "SKF",
+            "name": "SKF",
+            "aliases": [],
+            "active": true
+        },
+        {
+            "code": "TRW",
+            "name": "TRW",
+            "aliases": [
+                "ZF TRW"
+            ],
+            "active": true
+        },
+        {
+            "code": "VALEO",
+            "name": "Valeo",
+            "aliases": [],
+            "active": true
+        }
+    ]
+}

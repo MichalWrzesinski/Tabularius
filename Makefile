@@ -7,7 +7,7 @@ API := $(DC) run --rm --no-deps api
 BUSINESS := $(DC) run --rm --no-deps business
 CLIENT := $(DC) run --rm --no-deps client
 
-.PHONY: up down logs install migrate seed test check check-backend check-frontend secrets hooks ci build clean-db
+.PHONY: up down logs install migrate seed csv-samples csv-check test check check-backend check-frontend secrets hooks ci build clean-db
 
 # Download caches are bind-mounted into the containers; create them as the current user first,
 # otherwise Docker creates them as root and npm/composer cannot write (CI runners).
@@ -46,6 +46,17 @@ migrate: .env | $(CACHE_DIRS)
 
 seed: .env | $(CACHE_DIRS) ## (re)load synthetic business data around REF=YYYY-MM-DD (default: today, Europe/Warsaw)
 	$(DC) run --rm business bin/console app:seed $(if $(REF),--reference-date=$(REF))
+
+csv-samples: .env ## regenerate docs/qa/csv samples (seed for REF=2026-11-15 first: make seed REF=2026-11-15)
+	$(DC) run --rm api sh -c 'mkdir -p var/csv && \
+	  bin/console app:report sales_report "{\"period\":{\"type\":\"previous_month\"}}" --reference-date=2026-11-15 --output=var/csv/sales_PH-01_2026-10.csv -q && \
+	  bin/console app:report customer_discount_simulation "{\"customer\":\"K-004\",\"period\":{\"type\":\"previous_month\"}}" --reference-date=2026-11-15 --output=var/csv/discount_K-004_2026-10.csv -q && \
+	  bin/console app:report parts_catalog "{\"manufacturer\":\"BOSCH\"}" --output=var/csv/catalog_BOSCH.csv -q'
+	cp api/var/csv/*.csv docs/qa/csv/
+
+csv-check: ## open docs/qa/csv samples in headless LibreOffice Calc (pl-PL) and check numbers, text and formulas
+	docker build -q -t tabularius-libreoffice -f infra/tools/libreoffice.Dockerfile infra/tools >/dev/null
+	docker run --rm -v "$(CURDIR)":/w -w /w -e HOME=/tmp tabularius-libreoffice python3 scripts/csv_spreadsheet_check.py docs/qa/csv/*.csv
 
 test: .env | $(CACHE_DIRS)
 	$(DC) up -d --wait db

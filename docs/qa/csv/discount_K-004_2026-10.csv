@@ -1,0 +1,19 @@
+﻿typ_wiersza;pozycja;wartosc
+meta;UWAGA;SYMULACJA — oferta niezatwierdzona, nie zmienia cen ani umów
+meta;Operacja;Aktywność klienta i symulacja rabatu
+meta;Zakres;Moto-Lux Gdańsk (K-004)
+meta;Okres;2026-10-01 – 2026-10-31 (Europe/Warsaw)
+meta;Waluta;PLN, netto po korektach, bez dokumentów anulowanych
+meta;Wersje;profil demo-autoparts v1 · dane 2026.11-1
+meta;Wygenerowano;2026-11-22 11:09
+meta;Polityka;DEMO-RABAT 2026.1 (fikcyjna)
+pozycja;Liczba dokumentów;2
+pozycja;Liczba pozycji;2
+pozycja;Sprzedaż netto (faktury);50000,10
+pozycja;Korekty netto;0,00
+pozycja;Ostatnia sprzedaż w okresie;2026-10-28
+pozycja;Podstawa rabatu;50000,10
+pozycja;Próg;od 50000,00
+pozycja;Stawka %;5
+suma;Symulowany rabat;2500,01
+suma;Netto po symulowanym rabacie;47500,09

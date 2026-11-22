@@ -1,0 +1,111 @@
+{
+    "items": [
+        {
+            "documentNumber": "FV/2026/10/0001",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-02",
+            "customerCode": "K-001",
+            "customerName": "Alfa Motors Sp. z o.o.",
+            "partNumber": "BO-01074",
+            "manufacturerCode": "BOSCH",
+            "manufacturerName": "Bosch",
+            "category": "Oświetlenie",
+            "quantity": "4.000",
+            "netValue": "519.60"
+        },
+        {
+            "documentNumber": "FV/2026/10/0001",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-02",
+            "customerCode": "K-001",
+            "customerName": "Alfa Motors Sp. z o.o.",
+            "partNumber": "MA-01111",
+            "manufacturerCode": "MANN",
+            "manufacturerName": "Mann-Filter",
+            "category": "Wycieraczki",
+            "quantity": "10.000",
+            "netValue": "234.50"
+        },
+        {
+            "documentNumber": "FV/2026/10/0005",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-03",
+            "customerCode": "K-004",
+            "customerName": "Moto-Lux Gdańsk",
+            "partNumber": "VA-01222",
+            "manufacturerCode": "VALEO",
+            "manufacturerName": "Valeo",
+            "category": "Zapłon",
+            "quantity": "50.000",
+            "netValue": "30000.00"
+        },
+        {
+            "documentNumber": "FV/2026/10/0004",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-07",
+            "customerCode": "K-003",
+            "customerName": "+48 Auto Części",
+            "partNumber": "BO-01111",
+            "manufacturerCode": "BOSCH",
+            "manufacturerName": "Bosch",
+            "category": "Zawieszenie",
+            "quantity": "8.000",
+            "netValue": "319.20"
+        },
+        {
+            "documentNumber": "FV/2026/10/0002",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-14",
+            "customerCode": "K-002",
+            "customerName": "Alfa-Tech Hurtownia",
+            "partNumber": "TR-01148",
+            "manufacturerCode": "TRW",
+            "manufacturerName": "TRW",
+            "category": "Łożyska",
+            "quantity": "6.000",
+            "netValue": "894.00"
+        },
+        {
+            "documentNumber": "FV/2026/10/0007",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-21",
+            "customerCode": "K-005",
+            "customerName": "Serwis Bielany",
+            "partNumber": "SK-01296",
+            "manufacturerCode": "SKF",
+            "manufacturerName": "SKF",
+            "category": "Wycieraczki",
+            "quantity": "1.000",
+            "netValue": "1289.00"
+        },
+        {
+            "documentNumber": "KOR/2026/10/0001",
+            "documentKind": "adjustment",
+            "inclusionDate": "2026-10-23",
+            "customerCode": "K-002",
+            "customerName": "Alfa-Tech Hurtownia",
+            "partNumber": "TR-01148",
+            "manufacturerCode": "TRW",
+            "manufacturerName": "TRW",
+            "category": "Łożyska",
+            "quantity": "-1.000",
+            "netValue": "-149.00"
+        },
+        {
+            "documentNumber": "FV/2026/10/0006",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-10-28",
+            "customerCode": "K-004",
+            "customerName": "Moto-Lux Gdańsk",
+            "partNumber": "VA-01259",
+            "manufacturerCode": "VALEO",
+            "manufacturerName": "Valeo",
+            "category": "Oświetlenie",
+            "quantity": "20.000",
+            "netValue": "20000.10"
+        }
+    ],
+    "page": 1,
+    "perPage": 1000,
+    "total": 8
+}

@@ -1,0 +1,20 @@
+{
+    "items": [
+        {
+            "documentNumber": "FV/2026/09/0001",
+            "documentKind": "invoice",
+            "inclusionDate": "2026-09-10",
+            "customerCode": "K-004",
+            "customerName": "Moto-Lux Gdańsk",
+            "partNumber": "VA-01296",
+            "manufacturerCode": "VALEO",
+            "manufacturerName": "Valeo",
+            "category": "Zawieszenie",
+            "quantity": "3.000",
+            "netValue": "9999.99"
+        }
+    ],
+    "page": 1,
+    "perPage": 1000,
+    "total": 1
+}

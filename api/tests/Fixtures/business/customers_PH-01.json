@@ -1,0 +1,46 @@
+{
+    "items": [
+        {
+            "code": "K-001",
+            "name": "Alfa Motors Sp. z o.o.",
+            "city": "Warszawa",
+            "active": true
+        },
+        {
+            "code": "K-002",
+            "name": "Alfa-Tech Hurtownia",
+            "city": "Łódź",
+            "active": true
+        },
+        {
+            "code": "K-003",
+            "name": "+48 Auto Części",
+            "city": "Kraków",
+            "active": true
+        },
+        {
+            "code": "K-004",
+            "name": "Moto-Lux Gdańsk",
+            "city": "Gdańsk",
+            "active": true
+        },
+        {
+            "code": "K-005",
+            "name": "Serwis Bielany",
+            "city": "Warszawa",
+            "active": true
+        },
+        {
+            "code": "K-006",
+            "name": "Warsztat Pod Lipami",
+            "city": "Piaseczno",
+            "active": true
+        },
+        {
+            "code": "K-007",
+            "name": "Auto-Kombi Radom",
+            "city": "Radom",
+            "active": false
+        }
+    ]
+}
