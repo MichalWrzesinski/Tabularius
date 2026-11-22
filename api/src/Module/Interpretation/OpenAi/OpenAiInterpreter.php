@@ -26,7 +26,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class OpenAiInterpreter implements Interpreter
 {
-    public const string PROMPT_VERSION = 'prompt-v3';
+    public const string PROMPT_VERSION = 'prompt-v4';
     private const string ENDPOINT = 'https://api.openai.com/v1/responses';
 
     public function __construct(
@@ -176,10 +176,12 @@ final class OpenAiInterpreter implements Interpreter
         6. Gdy podana nazwa pasuje do więcej niż jednej pozycji, NIE wybieraj żadnej: pole zostaw null i dodaj
            „ambiguous_customer” (lub „ambiguous_manufacturer”). Klient z polem „ta_sama_pierwsza_czesc_nazwy_co” ma
            wspólny początek nazwy z innymi: samo to słowo (np. „Alfa”) jest niejednoznaczne — wybierz go tylko, gdy
-           wiadomość podaje też dalszą część nazwy (np. „Alfa Motors”, „Alfa-Tech”). Dotyczy też listy „customers”.
+           wiadomość podaje też dalszą część nazwy (np. „Alfa Motors”, „Alfa-Tech”). Ta ostrożność dotyczy tylko
+           klientów z tym polem; pozostałych dopasowuj normalnie.
            Gdy nie pasuje do żadnej: null i „unknown_customer” (lub „unknown_manufacturer”). Nigdy nie zgaduj.
-        7. Raport sprzedaży: „customers” = null oznacza wszystkich klientów pracownika (także „moi klienci”); nie
-           zgłaszaj wtedy „missing_customer”. Listę kodów podaj tylko dla wyraźnie wskazanych klientów.
+        7. Raport sprzedaży: gdy wiadomość wymienia klientów („dla Serwisu Bielany”), „customers” = lista ich kodów.
+           „customers” = null tylko wtedy, gdy nie wymieniono żadnego klienta albo chodzi o wszystkich („moi
+           klienci”); nie zgłaszaj wtedy „missing_customer”.
 
         Okres (zwracasz wyrażenie, nie licz dat; pola nieużyte = null)
         8. „ostatni / zeszły / poprzedni miesiąc” → previous_month (pełny poprzedni miesiąc kalendarzowy, nie 30 dni).
