@@ -58,6 +58,10 @@ export const REASON_LABEL: Record<string, string> = {
   too_large: 'Raport przekracza limit wierszy',
   owner_inactive: 'Konto pracownika jest nieaktywne',
   admin_rejected: 'Odrzucone przez administratora',
+  message_too_large: 'Wiadomość przekracza limit rozmiaru',
+  message_unparseable: 'Nie udało się odczytać wiadomości',
+  message_empty: 'Wiadomość nie zawiera tekstu',
+  text_too_long: 'Tekst prośby jest za długi',
 }
 
 export const reasonLabel = (code: string | null | undefined) => (code ? (REASON_LABEL[code] ?? code) : '')
