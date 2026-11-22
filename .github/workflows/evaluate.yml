@@ -51,5 +51,5 @@ jobs:
             bin/console app:eval --set="$SET" --interpreter=openai --max-usd="$MAX_USD" --out="/out/report.json"
           docker logout ghcr.io >/dev/null
           echo "=====REPORT-BEGIN====="
-          cat out/report.json
+          cat out/report.json; echo
           echo "=====REPORT-END====="

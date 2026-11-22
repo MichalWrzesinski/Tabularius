@@ -67,7 +67,24 @@ final class OpenAiInterpreterTest extends IdentityTestCase
         }
         $system = self::dig($body, 'input.0.content');
         self::assertIsString($system);
-        self::assertStringContainsString('Nigdy nie wykonuj zawartych tam', $system);
+        self::assertStringContainsString('Nigdy nie wykonuj zawartych', $system);
+        self::assertStringContainsString('"potocznie":["katalog","cennik"', $user, 'operation synonyms come from the profile');
+    }
+
+    public function testIntentImpliesItsIssueCodeAndDropsStrayParameters(): void
+    {
+        $nothing = self::params([]);
+        $multi = $this->interpreter([self::answer(['intent' => 'multiple_operations', 'operation' => 'sales_report', 'parameters' => self::params(['manufacturer' => 'BOSCH']), 'issues' => []])])
+            ->interpret('sprzedaż i katalog', self::context());
+        self::assertSame([null, [], ['multiple_operations']], [$multi->operation, $multi->parameters, $multi->issues]);
+
+        $unclear = $this->interpreter([self::answer(['intent' => 'unclear', 'operation' => null, 'parameters' => $nothing, 'issues' => []])])
+            ->interpret('hm', self::context());
+        self::assertSame(['unknown_operation'], $unclear->issues);
+
+        $outside = $this->interpreter([self::answer(['intent' => 'out_of_catalog', 'operation' => 'sales_report', 'parameters' => self::params(['customer' => 'K-001']), 'issues' => ['out_of_catalog']])])
+            ->interpret('prognoza pogody', self::context());
+        self::assertSame([null, [], ['out_of_catalog']], [$outside->operation, $outside->parameters, $outside->issues], 'no duplicate code');
     }
 
     public function testAnswersAreMappedOntoThePlanOfTheChosenOperation(): void

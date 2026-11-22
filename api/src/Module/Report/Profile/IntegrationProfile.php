@@ -54,6 +54,8 @@ final readonly class IntegrationProfile
                 self::strings($operation, 'columns'),
                 \array_key_exists('permitted_fields', $operation) ? self::strings($operation, 'permitted_fields') : [],
                 self::parameters(self::map($operation, 'parameters')),
+                \is_string($operation['description'] ?? null) ? $operation['description'] : '',
+                \array_key_exists('synonyms', $operation) ? self::strings($operation, 'synonyms') : [],
             );
         }
         $limits = self::map($data, 'limits');

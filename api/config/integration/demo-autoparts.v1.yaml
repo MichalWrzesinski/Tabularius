@@ -19,6 +19,7 @@ operations:
       category: { type: category, required: false }
     columns: [typ_wiersza, data, dokument, rodzaj, klient_kod, klient, nr_czesci, producent, kategoria, ilosc, netto_pln]
     file_name: sprzedaz
+    synonyms: [sprzedaż, obroty, ile sprzedałem, faktury, zestawienie sprzedaży, wyniki klientów]
 
   parts_catalog:
     label: Katalog części producenta
@@ -29,6 +30,7 @@ operations:
     permitted_fields: [manufacturerName, partNumber, name, category, unit, listPriceNet]
     columns: [typ_wiersza, producent, nr_czesci, nazwa, kategoria, jm, cena_katalogowa_netto_pln]
     file_name: katalog
+    synonyms: [katalog, cennik, lista części, oferta producenta, jakie części ma producent]
 
   customer_discount_simulation:
     label: Aktywność klienta i symulacja rabatu
@@ -39,6 +41,7 @@ operations:
       policy: { type: discount_policy, required: false, default: current }
     columns: [typ_wiersza, pozycja, wartosc]
     file_name: symulacja_rabatu
+    synonyms: [rabat, ile rabatu, symulacja rabatu, aktywność klienta, jak kupuje klient]
 
 categories: [Hamulce, Filtry, Zapłon, Oświetlenie, Zawieszenie, Wycieraczki, Sprzęgła, Łożyska]
 
