@@ -23,7 +23,7 @@ Standards: `docs/standards/` — AppStandards suite 5.0.0, copied 2026-11-21 fro
 
 ## Commands
 
-`make up`, `make down`, `make migrate`, `make seed [REF=…]`, `make test`, `make check` (= CI job `check`), `make secrets`, `make hooks` — see [README](README.md#quick-start). Only Docker and make on the host (host Node is too old); one-off tools: `docker compose run --rm api|business|client …`.
+`make up`, `make down`, `make migrate`, `make seed [REF=…]`, `make csv-samples` / `make csv-check` (LibreOffice import check), `make test`, `make check` (= CI job `check`), `make secrets`, `make hooks` — see [README](README.md#quick-start). Only Docker and make on the host (host Node is too old); one-off tools: `docker compose run --rm api|business|client …`.
 
 ## Pitfalls
 
@@ -34,4 +34,5 @@ Standards: `docs/standards/` — AppStandards suite 5.0.0, copied 2026-11-21 fro
 - Business tests: `business/tests/bootstrap.php` migrates and seeds `business_test` for 2026-11-15 before every run; `SeedTest` pins the seed checksum, so a seed change needs a new `DemoDataSeeder::DATA_VERSION` and checksum. Known answers: `business/README.md`.
 - DBAL 4 needs `ParameterType::INTEGER` for typed parameters (not `PDO::PARAM_INT`, which throws a TypeError). Narrow DB values with `App\Db\Value` instead of casting `mixed` (PHPStan max).
 - php-cs-fixer keeps inline `/** @var */` (`phpdoc_to_comment` ignores `var`); do not turn them into `/* */` comments.
+- Report engine tests run the real `RestBusinessApi` against captured responses (`api/tests/Fixtures/business`, seed 2026.11-1, REF 2026-11-15); regenerate them when the seed version changes. A test helper must not be called `run()` (final in PHPUnit `TestCase`).
 - `vue-tsc` 3.3 does not work with TypeScript 7 (missing `typescript/lib/tsc` export); keep TypeScript 5.9 until vue-tsc supports it.
