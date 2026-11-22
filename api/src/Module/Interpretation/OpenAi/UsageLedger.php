@@ -11,7 +11,7 @@ use Psr\Clock\ClockInterface;
 /**
  * Daily spend guard and usage record of the LLM (ADR 0004 limits): tokens and cost per call, never text.
  */
-final class UsageLedger
+final class UsageLedger implements Usage
 {
     public function __construct(
         private readonly Connection $db,

@@ -32,7 +32,7 @@ final class OpenAiInterpreter implements Interpreter
     public function __construct(
         private readonly HttpClientInterface $http,
         private readonly IntegrationProfile $profile,
-        private readonly UsageLedger $usage,
+        private readonly Usage $usage,
         private readonly LoggerInterface $logger,
         #[Autowire(env: 'OPENAI_API_KEY')]
         private readonly string $apiKey,

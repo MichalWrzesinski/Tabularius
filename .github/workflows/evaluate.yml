@@ -1,0 +1,55 @@
+name: Evaluate interpretation
+
+# Manual, paid run of the interpretation evaluation against the real LLM (TASK-012). Uses the published API image of
+# a commit on main, the secret STAGING_OPENAI_API_KEY and a per-run cost cap. The report (synthetic cases, metrics,
+# cost; no secrets) is printed between markers in the log and committed to docs/qa/evaluation/ by the maintainer.
+on:
+  workflow_dispatch:
+    inputs:
+      set:
+        description: dev or final
+        required: true
+        default: dev
+      max_usd:
+        description: Cost cap of this run in USD
+        required: true
+        default: '1'
+      sha:
+        description: Commit on main whose API image is used (default the head of main)
+        required: false
+
+permissions: {}
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    env:
+      SET: ${{ inputs.set }}
+      MAX_USD: ${{ inputs.max_usd }}
+      SHA: ${{ inputs.sha || github.sha }}
+    steps:
+      - name: Validate inputs
+        run: |
+          [[ "$SET" =~ ^(dev|final)$ ]] || { echo "::error::set must be dev or final"; exit 1; }
+          [[ "$MAX_USD" =~ ^[0-9]+(\.[0-9]+)?$ ]] && awk "BEGIN{exit !($MAX_USD <= 5)}" || { echo "::error::max_usd must be a number up to 5"; exit 1; }
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::invalid sha"; exit 1; }
+      - name: Run
+        env:
+          OPENAI_API_KEY: ${{ secrets.STAGING_OPENAI_API_KEY }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
+          mkdir -m 777 out
+          docker run --rm -v "$PWD/out:/out" \
+            -e APP_SECRET=evaluation-only -e OPENAI_API_KEY \
+            "ghcr.io/michalwrzesinski/tabularius-api:$SHA" \
+            bin/console app:eval --set="$SET" --interpreter=openai --max-usd="$MAX_USD" --out="/out/report.json"
+          docker logout ghcr.io >/dev/null
+          echo "=====REPORT-BEGIN====="
+          cat out/report.json
+          echo "=====REPORT-END====="

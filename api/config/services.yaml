@@ -31,6 +31,7 @@ services:
     App\Module\Mail\MailboxSource: '@App\Module\Mail\Imap\ImapMailbox'
     # The LLM when OPENAI_API_KEY is set, the rule-based baseline otherwise; both behind the guards (ADR 0005).
     App\Module\Interpretation\Interpreter: '@App\Module\Interpretation\SelectedInterpreter'
+    App\Module\Interpretation\OpenAi\Usage: '@App\Module\Interpretation\OpenAi\UsageLedger'
 
     tabularius.session_handler:
         class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
