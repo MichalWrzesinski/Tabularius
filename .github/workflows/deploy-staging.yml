@@ -1,0 +1,83 @@
+name: Deploy staging
+
+# After CI succeeds on main (images published by the CI `publish` job), or manually for a commit on main.
+# Secrets: STAGING_SSH_HOST, STAGING_SSH_KEY, STAGING_SSH_KNOWN_HOSTS. Variables: STAGING_DOMAIN, optional
+# STAGING_SSH_USER, STAGING_APP_DIR (docs/runbook.md, Staging). Until they exist the job stops with a notice.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full commit SHA on main to deploy (also to go back to an earlier release)
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy staging
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    # The token is handed to the server for one registry login, so it may only read.
+    permissions:
+      contents: read
+      packages: read
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || inputs.sha }}
+      DOMAIN: ${{ vars.STAGING_DOMAIN }}
+      SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+      SSH_USER: ${{ vars.STAGING_SSH_USER || 'tabularius_deploy' }}
+      APP_DIR: ${{ vars.STAGING_APP_DIR || '/srv/Tabularius' }}
+    steps:
+      - name: Configured?
+        id: configured
+        run: |
+          if [[ -z "$DOMAIN" || -z "$SSH_HOST" ]]; then
+            echo "::notice::staging is not configured yet (docs/runbook.md, Staging); nothing deployed"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.configured.outputs.ready == 'true'
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Only commits on main are deployed; after CI, a commit that is no longer the head of main is skipped.
+      - name: Check the commit is on main
+        id: guard
+        if: steps.configured.outputs.ready == 'true'
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::invalid commit SHA"; exit 1; }
+          git merge-base --is-ancestor "$SHA" origin/main || { echo "::error::$SHA is not on main"; exit 1; }
+          if [[ "$EVENT" == workflow_run && "$(git rev-parse origin/main)" != "$SHA" ]]; then
+            echo "::notice::main has moved on; skipping $SHA"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+          # The runner script comes from main; the stack files from the deployed commit.
+          cp infra/ci/deploy-remote.sh "$RUNNER_TEMP/"
+          git checkout --quiet "$SHA"
+
+      - name: Deploy, migrate, smoke-test
+        if: steps.configured.outputs.ready == 'true' && steps.guard.outputs.skip != 'true'
+        env:
+          SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: bash "$RUNNER_TEMP/deploy-remote.sh"

@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Runs in GitHub Actions (deploy-staging): uploads the stack files of one commit to the server, logs the server in to
+# GHCR with the workflow's read-only token, runs deploy.sh there and checks the site from outside.
+#   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN
+set -euo pipefail
+
+fail() { echo "::error::$*"; exit 1; }
+[[ "${SHA:-}" =~ ^[0-9a-f]{40}$ ]] || fail "invalid commit SHA"
+[[ -n "${DOMAIN:-}" && -n "${SSH_HOST:-}" && -n "${SSH_KEY:-}" && -n "${KNOWN_HOSTS:-}" ]] \
+  || fail "domain, SSH host, key or known hosts missing (docs/runbook.md, Staging)"
+[[ "$DOMAIN" =~ ^[a-z0-9.-]+$ ]] || fail "invalid domain"
+[[ "${SSH_USER:-}" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] || fail "invalid SSH user"
+[[ "${APP_DIR:-}" =~ ^/srv/[A-Za-z0-9._-]+$ ]] || fail "the app directory must be a directory directly in /srv"
+[[ "${GHCR_USER:-}" =~ ^[A-Za-z0-9-]+$ ]] || fail "invalid GHCR user"
+
+install -d -m 700 ~/.ssh
+printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\n  StrictHostKeyChecking yes\n' \
+  "$SSH_HOST" "$SSH_USER" > ~/.ssh/config
+
+# SHA and APP_DIR are validated above, so expanding them on the client side is safe.
+# shellcheck disable=SC2029
+{
+  echo "::group::Upload stack files of $SHA"
+  ssh server "mkdir -p '$APP_DIR/releases/$SHA/postgres-init'"
+  scp -q infra/server/compose.yml infra/server/Caddyfile infra/server/deploy.sh "server:$APP_DIR/releases/$SHA/"
+  scp -q infra/postgres/init/01-roles-and-databases.sh "server:$APP_DIR/releases/$SHA/postgres-init/"
+  echo "::endgroup::"
+
+  printf '%s' "$GHCR_TOKEN" | ssh server "docker login ghcr.io -u '$GHCR_USER' --password-stdin" >/dev/null
+  trap 'ssh server "docker logout ghcr.io" >/dev/null 2>&1 || true' EXIT
+
+  echo "::group::deploy.sh $SHA"
+  status=0
+  ssh server "APP_DIR='$APP_DIR' bash '$APP_DIR/releases/$SHA/deploy.sh' $SHA" || status=$?
+  echo "::endgroup::"
+}
+[[ "$status" == 0 ]] || fail "deployment failed (deploy.sh exit $status); see the log above"
+
+echo "::group::External smoke tests"
+for path in /api/ready / /admin/logowanie; do
+  code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN$path") || true
+  [[ "$code" == 200 ]] || fail "$path returned $code"
+done
+headers=$(curl -sS -D - -o /dev/null --max-time 15 "http://$DOMAIN/") || true
+grep -qi '^location: https://' <<<"$headers" || fail "HTTP does not redirect to HTTPS"
+secure=$(curl -sS -D - -o /dev/null --max-time 15 "https://$DOMAIN/") || true
+for h in strict-transport-security content-security-policy x-content-type-options referrer-policy; do
+  grep -qi "^$h:" <<<"$secure" || fail "missing header $h"
+done
+echo "::endgroup::"
+echo "staging serves $SHA at https://$DOMAIN"
