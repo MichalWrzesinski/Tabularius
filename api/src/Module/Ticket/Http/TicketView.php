@@ -37,8 +37,9 @@ final class TicketView
             'id' => $t['id'],
             'number' => 'T-'.$t['number'],
             'ownerId' => $t['owner_account_id'],
-            'employeeName' => $t['owner_name'],
-            'employeeEmail' => $t['owner_email'],
+            // Mail tickets have no owner until identity assigns one (TASK-007).
+            'employeeName' => $t['owner_name'] ?? 'Nadawca nieprzypisany',
+            'employeeEmail' => $t['owner_email'] ?? '',
             'source' => $t['source'],
             'receivedAt' => self::iso($t['received_at']),
             'updatedAt' => self::iso($t['updated_at']),

@@ -104,7 +104,7 @@ final class ExecutePlanHandler
                 return null;
             }
             $plan = $this->tickets->plan($job->ticketId, $job->version);
-            $owner = $this->tickets->connection()->fetchAssociative('SELECT status, role, rep_code FROM account WHERE id = ?', [$ticket['owner_account_id']]);
+            $owner = null === $ticket['owner_account_id'] ? false : $this->tickets->connection()->fetchAssociative('SELECT status, role, rep_code FROM account WHERE id = ?', [$ticket['owner_account_id']]);
             if (null === $plan || null === $plan['operation']) {
                 throw new \LogicException('Queued ticket without an executable plan');
             }
@@ -125,7 +125,7 @@ final class ExecutePlanHandler
                 'operation' => $plan['operation'],
                 'parameters' => $plan['parameters'],
                 'rep_code' => $owner['rep_code'],
-                'owner_id' => $ticket['owner_account_id'],
+                'owner_id' => (string) $ticket['owner_account_id'], // checked above: an active owner exists
                 'reference' => DateRange::date(\is_string($reference) ? $reference : ''),
             ];
         });

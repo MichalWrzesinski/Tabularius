@@ -10,7 +10,7 @@ use Symfony\Component\Uid\Uuid;
 /**
  * Persistence of tickets, plan versions and ticket events (DBAL; jsonb and row locks are explicit).
  *
- * @phpstan-type TicketRow array{id: string, number: int, owner_account_id: string, owner_name: string, owner_email: string, owner_rep_code: ?string, owner_status: string, source: string, status: string, reason: ?string, plan_version: int, reference_date: string, received_at: string, updated_at: string, operation: ?string, file_id: ?string, plan: ?PlanRow}
+ * @phpstan-type TicketRow array{id: string, number: int, owner_account_id: ?string, owner_name: ?string, owner_email: ?string, owner_rep_code: ?string, owner_status: ?string, source: string, status: string, reason: ?string, plan_version: int, reference_date: string, received_at: string, updated_at: string, operation: ?string, file_id: ?string, plan: ?PlanRow}
  * @phpstan-type PlanRow array{version: int, author: string, author_ref: string, created_at: string, operation: ?string, parameters: array<array-key, mixed>, issues: list<string>}
  * @phpstan-type EventRow array{at: string, actor: string, actor_name: string, text: string}
  */
@@ -23,7 +23,7 @@ final class TicketStore
                p.parameters AS p_parameters, p.issues AS p_issues,
                (SELECT f.id FROM report_file f WHERE f.ticket_id = t.id AND f.deleted_at IS NULL ORDER BY f.created_at DESC LIMIT 1) AS file_id
         FROM ticket t
-        JOIN account a ON a.id = t.owner_account_id
+        LEFT JOIN account a ON a.id = t.owner_account_id
         LEFT JOIN ticket_plan p ON p.ticket_id = t.id AND p.version = t.plan_version
         SQL;
 
@@ -36,7 +36,7 @@ final class TicketStore
         return $this->db;
     }
 
-    public function insert(Uuid $id, string $ownerId, string $source, TicketStatus $status, \DateTimeImmutable $reference, \DateTimeImmutable $now, string $createdBy): void
+    public function insert(Uuid $id, ?string $ownerId, string $source, TicketStatus $status, \DateTimeImmutable $reference, \DateTimeImmutable $now, string $createdBy): void
     {
         $this->db->insert('ticket', [
             'id' => $id->toRfc4122(),
@@ -82,7 +82,7 @@ final class TicketStore
     /**
      * Row lock for the rest of the current transaction (one writer per ticket).
      *
-     * @return array{status: TicketStatus, plan_version: int, owner_account_id: string}|null
+     * @return array{status: TicketStatus, plan_version: int, owner_account_id: ?string}|null
      */
     public function lock(string $ticketId): ?array
     {
@@ -97,7 +97,7 @@ final class TicketStore
         return [
             'status' => TicketStatus::from(self::str($row['status'])),
             'plan_version' => (int) self::str($row['plan_version']),
-            'owner_account_id' => self::str($row['owner_account_id']),
+            'owner_account_id' => null === $row['owner_account_id'] ? null : self::str($row['owner_account_id']),
         ];
     }
 
@@ -172,11 +172,11 @@ final class TicketStore
         return [
             'id' => self::str($r['id']),
             'number' => (int) self::str($r['number']),
-            'owner_account_id' => self::str($r['owner_account_id']),
-            'owner_name' => self::str($r['owner_name']),
-            'owner_email' => self::str($r['owner_email']),
+            'owner_account_id' => null === $r['owner_account_id'] ? null : self::str($r['owner_account_id']),
+            'owner_name' => null === $r['owner_name'] ? null : self::str($r['owner_name']),
+            'owner_email' => null === $r['owner_email'] ? null : self::str($r['owner_email']),
             'owner_rep_code' => null === $r['owner_rep_code'] ? null : self::str($r['owner_rep_code']),
-            'owner_status' => self::str($r['owner_status']),
+            'owner_status' => null === $r['owner_status'] ? null : self::str($r['owner_status']),
             'source' => self::str($r['source']),
             'status' => self::str($r['status']),
             'reason' => null === $r['reason'] ? null : self::str($r['reason']),
