@@ -27,6 +27,8 @@ x-api-env: &api-env
   MAILER_DSN: ${MAILER_DSN:-null://null}
   MAILER_CAPTURE_DSN: null://null
   REPORT_STORAGE_DIR: /app/var/storage/reports
+  # Real mailbox (imaps://…); empty until the owner supplies the IMAP details (TASK-006).
+  MAILBOX_DSN: ${MAILBOX_DSN:-}
   REPORT_FILE_TTL_DAYS: "7"
   # Only the Docker gateway (the host's nginx) may set X-Forwarded-* (client IP for rate limits, HTTPS for cookies).
   TRUSTED_PROXIES: ${TRUSTED_PROXIES:?}
@@ -71,7 +73,7 @@ services:
     mem_limit: 256m
     image: ghcr.io/michalwrzesinski/tabularius-api:${IMAGE_TAG:?}
     restart: unless-stopped
-    command: ["php", "bin/console", "messenger:consume", "async", "--time-limit=3600", "--memory-limit=128M"]
+    command: ["php", "bin/console", "messenger:consume", "async", "scheduler_mail", "--time-limit=3600", "--memory-limit=128M"]
     environment: *api-env
     volumes:
       - reports:/app/var/storage/reports
@@ -90,7 +92,7 @@ services:
     mem_limit: 128m
     image: ghcr.io/michalwrzesinski/tabularius-api:${IMAGE_TAG:?}
     restart: unless-stopped
-    command: ["sh", "-c", "while true; do php bin/console app:files:purge --no-interaction; sleep 86400; done"]
+    command: ["sh", "-c", "while true; do php bin/console app:files:purge --no-interaction; php bin/console app:mail:purge --no-interaction; sleep 86400; done"]
     environment: *api-env
     volumes:
       - reports:/app/var/storage/reports
