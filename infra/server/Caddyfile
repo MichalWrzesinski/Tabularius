@@ -1,0 +1,50 @@
+{
+	admin off
+	auto_https off
+	# The host's nginx (via the Docker gateway) is the only proxy allowed to report the visitor's address.
+	servers {
+		trusted_proxies static {$TRUSTED_PROXIES}
+	}
+}
+
+# Public entry behind the host's nginx (TLS there): dashboard and API on one origin (ADR 0003).
+:80 {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		X-Robots-Tag "noindex, nofollow"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+		-Server
+	}
+
+	redir /api /api/ 308
+
+	# Symfony front controller in the api container (no PHP files on this side).
+	handle /api/* {
+		root * /app/public
+		rewrite * /index.php
+		reverse_proxy api:9000 {
+			transport fastcgi {
+				split .php
+			}
+		}
+	}
+
+	handle {
+		reverse_proxy client:8080
+	}
+}
+
+# Internal only (not published): the demo business system's API for api and worker.
+:8081 {
+	root * /app/public
+	rewrite * /index.php
+	reverse_proxy business:9000 {
+		transport fastcgi {
+			split .php
+		}
+	}
+}

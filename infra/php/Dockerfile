@@ -26,7 +26,7 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-pr
 COPY . .
 RUN composer dump-autoload --classmap-authoritative --no-dev \
     && APP_SECRET=build-only bin/console cache:warmup \
-    && mkdir -p var && chown -R www-data:www-data var \
+    && mkdir -p var/storage/reports && chown -R www-data:www-data var \
     && rm /usr/bin/composer
 USER www-data
 HEALTHCHECK --interval=15s --timeout=3s --retries=3 CMD SCRIPT_NAME=/index.php SCRIPT_FILENAME=/app/public/index.php REQUEST_URI="$HEALTH_PATH" REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 | grep -q '"status":"ok"'

@@ -39,3 +39,4 @@ Standards: `docs/standards/` — AppStandards suite 5.0.0, copied 2026-11-21 fro
 - `api/phpunit.dist.xml` forces `MAILER_DSN`, `APP_MODE` etc. over the container environment, so tests never send mail. Symfony removes the `X-Transport` header when sending; assert transport choice at unit level (`AccountMailerTest`).
 - State-changing API calls need the header `X-Tabularius-Request: 1` (CSRF); `client/src/lib/http.ts` adds it.
 - `vue-tsc` 3.3 does not work with TypeScript 7 (missing `typescript/lib/tsc` export); keep TypeScript 5.9 until vue-tsc supports it.
+- `infra/server/compose.yml` (staging) has the same Compose project name as the local stack (`tabularius`). A local rehearsal must set `COMPOSE_PROJECT_NAME`, otherwise it replaces the dev containers. Staging steps that need `sudo` on the owner's server are the owner's ([runbook](docs/runbook.md#staging-owners-shared-vps)).

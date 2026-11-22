@@ -48,3 +48,4 @@ As of 2026-11-21 (TASK-001 foundation). Versions are checked against registries 
   - IMAP host, port and TLS for incoming mail;
   - the Brevo SMTP port that works from this server (on the Profilo staging host, 25, 465 and 587 are blocked; 2525 works);
   - free resources for two databases, a worker and report files.
+- Staging setup (2026-11-22, [runbook](runbook.md#staging-owners-shared-vps)): the host's nginx forwards the domain to the stack's Caddy on `127.0.0.1:8091` (Docker network 172.29.0.0/24). The placeholder page is moved to `/srv/Tabularius-placeholder`, not deleted. A dedicated `tabularius_deploy` user is restricted to key login. GitHub Actions deploys the GHCR images of each green commit on `main`. Server secrets are generated on the server. No real mail yet (demo capture transport is `null://`).
