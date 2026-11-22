@@ -2,7 +2,7 @@
 
 As of: 2026-11-21 Europe/Warsaw | scope: first release (public demo on synthetic data)
 Stage: technical decisions and setup | increment: 1 done (prototype accepted 2026-11-21)
-Tasks (increment 2): 0 DONE / 5 | TASK-001 in review (PR), TASK-002–005 PLANNED — [docs/tasks/](tasks/)
+Tasks (increment 2): 1 DONE / 5 | TASK-001 DONE (PR #1), TASK-002 in review, TASK-003–005 PLANNED — [docs/tasks/](tasks/)
 Release: private repo `MichalWrzesinski/Tabularius` (pushed 2026-11-21), no CI yet, no hosting | production: not planned before separate approval
 Metrics: agent usage not measured (no tool export configured); application LLM cost: none incurred
 

@@ -5,7 +5,7 @@ As of 2026-11-21 (TASK-001 foundation). Versions are checked against registries 
 ## Stack
 
 - Backend (`api/`): PHP 8.5 (`php:8.5-fpm-alpine`; 8.6.0 is newer than 14 days), Symfony 7.4 LTS, Doctrine ORM 3 and Migrations. Owner decision: PHP/Symfony instead of the AppStandards default FastAPI.
-- Demo business system (`business/`): a separate small Symfony 7.4 app with its own PostgreSQL database, migrations and seed. It exposes a read-only REST API ([ADR 0002](decisions/0002-separate-business-system-behind-read-only-api.md)).
+- Demo business system (`business/`): a separate small Symfony 7.4 app (DBAL only, no ORM) with its own PostgreSQL database, migrations and deterministic seed. It exposes a read-only REST API ([ADR 0002](decisions/0002-separate-business-system-behind-read-only-api.md), endpoints and known answers in [business/README.md](../business/README.md)).
 - Database: PostgreSQL 18 (`postgres:18-alpine`). The same major version as the owner's other projects, so they share host tooling. Two databases on one server in development: `tabularius` and `business`, each with separate roles.
 - Background work: Symfony Messenger with the Doctrine (PostgreSQL) transport. Symfony Scheduler handles mailbox polling, retention cleanup and stuck-job checks. The worker is a separate process from the same image. There is no Redis/Valkey until a demonstrated need ([ADR 0001](decisions/0001-modular-monolith-symfony-messenger.md)).
 - Money: `brick/math` / `brick/money` (decimal); DB `numeric(14,2)`; rounding `HALF_UP` only where a rule says so (RPT-DISC-3).

@@ -14,12 +14,13 @@ Requirements: Docker (with Compose) and `make`. Nothing else on the host.
 make up
 ```
 
-Opens on http://127.0.0.1:8080 (API health: `/api/health`, readiness: `/api/ready`). `make up` creates `.env` from `.env.example` (local-only values), builds images, installs dependencies, runs migrations and starts `caddy`, `client`, `api`, `business` and `db`.
+Opens on http://127.0.0.1:8080 (API health: `/api/health`, readiness: `/api/ready`). `make up` creates `.env` from `.env.example` (local-only values plus your UID/GID), builds images, installs dependencies, runs migrations, seeds the synthetic business data and starts `caddy`, `client`, `api`, `business` and `db`.
 
 | Command | What it does |
 |---|---|
 | `make up` / `make down` | start / stop the stack |
 | `make migrate` | run migrations of both databases (as the migrator roles) |
+| `make seed [REF=YYYY-MM-DD]` | reload synthetic business data around a reference date (default today); see [business/README.md](business/README.md) |
 | `make test` | backend and frontend tests |
 | `make check` | everything CI runs: formatters, linters, PHPStan max, tests with coverage gates (backend 95 % lines, client logic 90 %), audits, gitleaks |
 | `make hooks` | install the gitleaks pre-commit hook |
