@@ -77,5 +77,18 @@ export const REASON_LABEL: Record<string, string> = {
 
 export const reasonLabel = (code: string | null | undefined) => (code ? (REASON_LABEL[code] ?? code) : '')
 
+export const TEMPLATE_LABEL: Record<string, string> = {
+  received: 'Potwierdzenie przyjęcia',
+  confirmation_request: 'Prośba o potwierdzenie',
+  report_ready: 'Raport gotowy',
+  refused: 'Odmowa z szablonu',
+}
+
+/** Delivery state of a notification; „przyjęte” means accepted by the mail server, not delivered. */
+export function deliveryLabel(delivery: string, route: string): string {
+  if (delivery === 'accepted') return route === 'capture' ? 'przechwycone (demo przed uruchomieniem)' : 'przyjęte przez serwer poczty'
+  return { pending: 'oczekuje na wysłanie', sending: 'wysyłanie', unknown: 'wynik nieznany', failed: 'nie wysłano' }[delivery] ?? delivery
+}
+
 /** Reasons the administrator can fix by re-running the same plan version. */
 export const RETRYABLE = new Set(['data_source_error', 'internal_error'])

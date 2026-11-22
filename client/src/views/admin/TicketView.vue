@@ -10,7 +10,18 @@ import { formatDateTime } from '../../lib/format'
 import { errorMessage } from '../../lib/http'
 import { ISSUE_LABEL, OPERATION_LABEL } from '../../lib/status'
 import { openTicketNumber, ticketTitle } from '../../lib/ticket'
-import { downloadFile, getFile, getTicket, reasonLabel, rejectTicket, retryTicket, RETRYABLE, sizeLabel } from '../../lib/tickets'
+import {
+  deliveryLabel,
+  downloadFile,
+  getFile,
+  getTicket,
+  reasonLabel,
+  rejectTicket,
+  retryTicket,
+  RETRYABLE,
+  sizeLabel,
+  TEMPLATE_LABEL,
+} from '../../lib/tickets'
 import type { ReportPreview } from '../../lib/types'
 import { useAsync } from '../../lib/useAsync'
 
@@ -216,6 +227,20 @@ async function download() {
                   Bez wiadomości e-mail i bez interpretacji: operacja i parametry zostały wybrane w formularzu. Wynik jest dostępny
                   pracownikowi w „Moich raportach”.
                 </p>
+              </div>
+            </article>
+            <article v-for="m in ticket.messages" :key="m.id" class="card message x-section">
+              <div class="messageheader">
+                <div class="avatar" aria-hidden="true">T</div>
+                <div>
+                  <b>Tabularius · {{ TEMPLATE_LABEL[m.template] ?? m.template }}</b>
+                  <small>{{ deliveryLabel(m.delivery, m.route) }}</small>
+                </div>
+                <time :datetime="m.at">{{ formatDateTime(m.at) }}</time>
+              </div>
+              <div class="mailbody">
+                <p v-if="m.body" style="white-space: pre-line">{{ m.body }}</p>
+                <p v-else><i>Treść usunięta po okresie przechowywania.</i></p>
               </div>
             </article>
             <div v-if="fileError" class="x-alert error x-section" role="alert">

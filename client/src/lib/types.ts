@@ -55,10 +55,23 @@ export interface TicketSummary {
   plans: PlanVersion[]
 }
 
+/** A notification sent for a ticket: backend template, delivery state, rendered text (no recipient address). */
+export interface OutgoingMessage {
+  id: string
+  direction: 'out'
+  at: string
+  kind: 'notification' | 'refusal' | 'confirmation_request'
+  template: 'received' | 'confirmation_request' | 'report_ready' | 'refused'
+  delivery: 'pending' | 'sending' | 'accepted' | 'unknown' | 'failed'
+  route: 'deliver' | 'capture'
+  /** Null after the retention period. */
+  body: string | null
+}
+
 export interface Ticket extends TicketSummary {
   referenceDate: string
   events: TicketEvent[]
-  messages: never[]
+  messages: OutgoingMessage[]
   clarificationRounds: number
 }
 

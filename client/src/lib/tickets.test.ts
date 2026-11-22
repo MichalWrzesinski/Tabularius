@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from './http'
 import {
+  TEMPLATE_LABEL,
   cancelMyTicket,
+  deliveryLabel,
   confirmMyTicket,
   createTicket,
   getMyTicket,
@@ -98,6 +100,14 @@ describe('tickets API', () => {
       throw new TypeError('offline')
     })
     await expect(downloadFile({ id: 'f', name: 'x.csv' })).rejects.toBeInstanceOf(ApiError)
+  })
+
+  it('labels notifications', () => {
+    expect(deliveryLabel('accepted', 'deliver')).toBe('przyjęte przez serwer poczty')
+    expect(deliveryLabel('accepted', 'capture')).toContain('przechwycone')
+    expect(deliveryLabel('unknown', 'deliver')).toBe('wynik nieznany')
+    expect(deliveryLabel('other', 'deliver')).toBe('other')
+    expect(TEMPLATE_LABEL.report_ready).toBe('Raport gotowy')
   })
 
   it('labels sizes and reasons', () => {
