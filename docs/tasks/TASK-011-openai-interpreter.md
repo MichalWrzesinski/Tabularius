@@ -1,6 +1,6 @@
 # TASK-011 — OpenAI interpreter behind the guard
 
-Status: IMPLEMENTED with test doubles (PR pending CI); real-model check pending the owner's key · Priority: high · Increment: 4 · Depends on: TASK-010 · Decision: [ADR 0004](../decisions/0004-llm-interprets-into-closed-plan-only.md)
+Status: DONE (PR #33; real model verified on staging 2026-11-22) · Priority: high · Increment: 4 · Depends on: TASK-010 · Decision: [ADR 0004](../decisions/0004-llm-interprets-into-closed-plan-only.md)
 
 ## Goal and scope
 The LLM maps the free text of a request to the database's closed lists: operations, the owner's customers, manufacturers with aliases, categories, and period expressions. It returns a schema-constrained plan; the backend never trusts it (TASK-010 PlanGuard, engine check, scope).
@@ -41,3 +41,10 @@ The LLM maps the free text of a request to the database's closed lists: operatio
   
   API: 400 tests, 96.26 % lines.
 - Pending (part 2): a real-model check on staging with the owner's key — the e-mail loop, and inflections and typos resolved by the model. Model choice and prices to be confirmed against the provider's current list.
+
+## Report (part 2: real model on staging, 2026-11-22)
+- Model `gpt-4.1-mini`, `prompt-v1`, the owner's key. Two test e-mails from the owner:
+  - „Poproszę katalog części Boscha.” → `parts_catalog`, manufacturer `BOSCH`; completed with a file. The same request had failed with the rule baseline (T-1005, `missing_manufacturer`).
+  - „Ile sprzedałem tym z Gdańska w zeszłym miesiącu?” → `sales_report`, `previous_month`, customers `["K-004"]` (Moto-Lux Gdańsk); completed. The model resolved an indirect reference to the owner's own customer.
+- Usage: 2 calls, about 1 410 input and 38–66 output tokens each, USD 0.000623 and 0.000672 at the configured prices.
+- Not yet observed on staging: an abusive e-mail through the real mailbox; the guard is covered by tests (TASK-010).
