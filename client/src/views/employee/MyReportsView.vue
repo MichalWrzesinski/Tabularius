@@ -16,7 +16,12 @@ const soon = (iso: string) => new Date(iso).getTime() - new Date(NOW).getTime() 
 
 <template>
   <div>
-    <div class="pagehead"><div><h1>Moje raporty</h1><p>Raporty przygotowane na Twoje prośby. Pliki są dostępne przez 7 dni.</p></div></div>
+    <div class="pagehead">
+      <div>
+        <h1>Moje raporty</h1>
+        <p>Raporty przygotowane na Twoje prośby. Pliki są dostępne przez 7 dni.</p>
+      </div>
+    </div>
 
     <section v-if="pending.data.value?.length" style="margin-bottom: 30px" aria-labelledby="att-h">
       <div class="sectionhead"><h2 id="att-h">Wymagają Twojej uwagi</h2></div>
@@ -27,7 +32,9 @@ const soon = (iso: string) => new Date(iso).getTime() - new Date(NOW).getTime() 
             <small>#{{ t.id }} · {{ formatDateTime(t.receivedAt) }}</small>
           </div>
           <span class="badge wait">{{ STATUS[t.status].label }}</span>
-          <RouterLink v-if="t.status === 'awaiting_confirmation'" class="cta blue" :to="`/moje-raporty/potwierdz/${t.id}`">Sprawdź i potwierdź <Ico name="arrow" :width="2" /></RouterLink>
+          <RouterLink v-if="t.status === 'awaiting_confirmation'" class="cta blue" :to="`/moje-raporty/potwierdz/${t.id}`"
+            >Sprawdź i potwierdź <Ico name="arrow" :width="2"
+          /></RouterLink>
           <span v-else class="x-muted">Odpowiedz na pytanie w wiadomości e-mail</span>
         </li>
       </ul>
@@ -38,7 +45,10 @@ const soon = (iso: string) => new Date(iso).getTime() - new Date(NOW).getTime() 
       <div v-if="files.data.value && !files.data.value.length" class="card x-empty">
         <span class="sym"><Ico name="mail" /></span>
         <h3>Nie masz jeszcze raportów</h3>
-        <p>Wyślij prośbę na <b>{{ DEMO_MAILBOX }}</b>, np. „Przygotuj raport sprzedaży za październik 2026”.</p>
+        <p>
+          Wyślij prośbę na <b>{{ DEMO_MAILBOX }}</b
+          >, np. „Przygotuj raport sprzedaży za październik 2026”.
+        </p>
       </div>
       <ul v-else class="x-list">
         <li v-for="f in files.data.value ?? []" :key="f.id" class="card x-row">
@@ -46,7 +56,12 @@ const soon = (iso: string) => new Date(iso).getTime() - new Date(NOW).getTime() 
           <div class="x-grow">
             <b>{{ OPERATION_LABEL[f.operation] }}</b>
             <span>{{ f.periodLabel }} · {{ f.scopeLabel }}</span>
-            <small>Utworzono {{ formatDateTime(f.createdAt) }} · <span :style="soon(f.expiresAt) ? 'color:#8a5f12;font-weight:700' : ''">dostępny do {{ formatDateTime(f.expiresAt) }}</span></small>
+            <small
+              >Utworzono {{ formatDateTime(f.createdAt) }} ·
+              <span :style="soon(f.expiresAt) ? 'color:#8a5f12;font-weight:700' : ''"
+                >dostępny do {{ formatDateTime(f.expiresAt) }}</span
+              ></small
+            >
           </div>
           <RouterLink class="cta blue" :to="`/moje-raporty/${f.id}`">Otwórz raport <Ico name="arrow" :width="2" /></RouterLink>
         </li>

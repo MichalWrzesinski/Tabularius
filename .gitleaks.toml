@@ -1,0 +1,14 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local-only development values and generated lock files"
+paths = [
+  '''\.env\.example$''',
+  '''package-lock\.json$''',
+  '''composer\.lock$''',
+  '''(^|/)vendor/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)var/''',
+  '''^\.env$''',
+]

@@ -2,7 +2,7 @@
 // It imitates backend rules (scope, versioned plans, single execution) only for the walkthrough;
 // none of this is a security boundary. Replace with the real API client in increment 2.
 import { reactive, watch } from 'vue'
-import { buildFixtures, discountFile, DEMO_REP_ID, NOW, outMsg } from './data'
+import { buildFixtures, discountFile, DEMO_REP_ID, NOW } from './data'
 import type { Account, ReportFile, Ticket, TicketEvent } from './types'
 
 export type Mode = 'demo' | 'production'
@@ -29,14 +29,17 @@ function readSession(): Session {
     return null
   }
 }
-watch(() => proto.session, (s) => {
-  try {
-    if (s) sessionStorage.setItem('proto-session', JSON.stringify(s))
-    else sessionStorage.removeItem('proto-session')
-  } catch {
-    /* storage unavailable: session stays in memory */
-  }
-})
+watch(
+  () => proto.session,
+  (s) => {
+    try {
+      if (s) sessionStorage.setItem('proto-session', JSON.stringify(s))
+      else sessionStorage.removeItem('proto-session')
+    } catch {
+      /* storage unavailable: session stays in memory */
+    }
+  },
+)
 
 const db = reactive({
   tickets: fixtures.tickets,
@@ -64,7 +67,10 @@ function wait<T>(value: () => T, ms = proto.latencyMs): Promise<T> {
 }
 
 export class ApiError extends Error {
-  constructor(public code: 'network' | 'forbidden' | 'not_found' | 'conflict', message: string) {
+  constructor(
+    public code: 'network' | 'forbidden' | 'not_found' | 'conflict',
+    message: string,
+  ) {
     super(message)
   }
 }
@@ -100,9 +106,10 @@ export function login(role: 'admin' | 'employee', email: string, password: strin
     if (email.trim().toLowerCase() !== c.email || password !== c.password) {
       throw new ApiError('forbidden', 'Nieprawidłowy e-mail lub hasło.')
     }
-    proto.session = role === 'admin'
-      ? { role, accountId: 'acc-admin', name: 'Administrator' }
-      : { role, accountId: DEMO_REP_ID, name: 'Handlowiec demonstracyjny' }
+    proto.session =
+      role === 'admin'
+        ? { role, accountId: 'acc-admin', name: 'Administrator' }
+        : { role, accountId: DEMO_REP_ID, name: 'Handlowiec demonstracyjny' }
     return proto.session
   }, 600)
 }
@@ -173,7 +180,11 @@ export function createAccount(name: string, email: string, repCode: string) {
     }
     const acc: Account = { id: `acc-${db.accounts.length + 1}`, name, email, repCode, customers: 4, status: 'active', lastLogin: null }
     db.accounts.push(acc)
-    audit('Administrator', 'Utworzenie konta (hasło wysłane do pracownika' + (proto.mode === 'demo' ? ', w demo przechwycone' : '') + ')', `${name} (${repCode})`)
+    audit(
+      'Administrator',
+      'Utworzenie konta (hasło wysłane do pracownika' + (proto.mode === 'demo' ? ', w demo przechwycone' : '') + ')',
+      `${name} (${repCode})`,
+    )
     return acc
   })
 }
@@ -184,7 +195,11 @@ export function setAccountStatus(id: string, status: Account['status']) {
     if (!a) throw new ApiError('not_found', 'Nie znaleziono konta.')
     if (a.shared) throw new ApiError('forbidden', 'Wspólnego konta demonstracyjnego nie można zablokować.')
     a.status = status
-    audit('Administrator', status === 'blocked' ? 'Zablokowanie konta (sesje unieważnione)' : 'Odblokowanie konta', `${a.name} (${a.repCode})`)
+    audit(
+      'Administrator',
+      status === 'blocked' ? 'Zablokowanie konta (sesje unieważnione)' : 'Odblokowanie konta',
+      `${a.name} (${a.repCode})`,
+    )
     return a
   })
 }
@@ -229,7 +244,9 @@ function salesFileFor(t: Ticket, period: string, from: string, to: string): Repo
     periodLabel: period,
     createdAt: created,
     expiresAt: new Date(new Date(created).getTime() + 7 * 86400000).toISOString(),
-    rows: base.rows.map((r) => (r.cells[2] === 'Okres' ? { ...r, cells: r.cells.map((c, i) => (i === 4 ? `${from} – ${to} (Europe/Warsaw)` : c)) } : r)),
+    rows: base.rows.map((r) =>
+      r.cells[2] === 'Okres' ? { ...r, cells: r.cells.map((c, i) => (i === 4 ? `${from} – ${to} (Europe/Warsaw)` : c)) } : r,
+    ),
   }
 }
 
@@ -245,8 +262,12 @@ export function simulateReply(id: string, text: string) {
       const prev = t.plans[t.plans.length - 1]!
       const version = prev.version + 1
       t.plans.push({
-        version, author: 'model', at: now(), operation: prev.operation,
-        params: prev.params.map((p) => (p.label === 'Okres' ? { label: 'Okres', value: '01–31.10.2026' } : p)), issues: [],
+        version,
+        author: 'model',
+        at: now(),
+        operation: prev.operation,
+        params: prev.params.map((p) => (p.label === 'Okres' ? { label: 'Okres', value: '01–31.10.2026' } : p)),
+        issues: [],
       })
       event(t, 'model', 'Interpretacja', `Plan v${version}: uzupełniono okres 01–31.10.2026; pozostałe parametry zachowane`)
       t.status = 'queued'
@@ -277,8 +298,17 @@ export function adminResolveSales(id: string, monthLabel: string, from: string, 
     const t = ticket(id)
     if (t.status !== 'needs_intervention') throw new ApiError('conflict', 'Zgłoszenie nie wymaga już interwencji.')
     const version = (t.plans[t.plans.length - 1]?.version ?? 0) + 1
-    t.plans.push({ version, author: 'admin', at: now(), operation: 'sales_report', params: [
-      { label: 'Okres', value: monthLabel }, { label: 'Zakres', value: 'Przypisani klienci' }], issues: [] })
+    t.plans.push({
+      version,
+      author: 'admin',
+      at: now(),
+      operation: 'sales_report',
+      params: [
+        { label: 'Okres', value: monthLabel },
+        { label: 'Zakres', value: 'Przypisani klienci' },
+      ],
+      issues: [],
+    })
     t.reason = undefined
     event(t, 'admin', 'Administrator', `Plan v${version} ustawiony ręcznie (zakres właściciela zgłoszenia)`)
     audit('Administrator', 'Ręczne ustawienie parametrów', t.id)
@@ -311,13 +341,26 @@ export function adminChooseCustomer(id: string, customer: string) {
     const t = ticket(id)
     if (!t.candidates?.includes(customer)) throw new ApiError('forbidden', 'Klient spoza zakresu właściciela zgłoszenia.')
     const version = (t.plans[t.plans.length - 1]?.version ?? 0) + 1
-    t.plans.push({ version, author: 'admin', at: now(), operation: 'customer_discount_simulation', params: [
-      { label: 'Klient', value: customer }, { label: 'Okres', value: '01–31.10.2026' }, { label: 'Polityka', value: 'DEMO-RABAT 2026.1 (fikcyjna)' }], issues: [] })
+    t.plans.push({
+      version,
+      author: 'admin',
+      at: now(),
+      operation: 'customer_discount_simulation',
+      params: [
+        { label: 'Klient', value: customer },
+        { label: 'Okres', value: '01–31.10.2026' },
+        { label: 'Polityka', value: 'DEMO-RABAT 2026.1 (fikcyjna)' },
+      ],
+      issues: [],
+    })
     t.reason = undefined
     event(t, 'admin', 'Administrator', `Plan v${version}: wybrano klienta „${customer}”`)
     audit('Administrator', 'Wybór klienta w niejednoznacznym zgłoszeniu', t.id)
     t.status = 'queued'
-    setTimeout(() => complete(t, { ...discountFile(t.id, now()), id: newId(), scopeLabel: customer, name: 'symulacja_rabatu_2026-10.csv' }), 900)
+    setTimeout(
+      () => complete(t, { ...discountFile(t.id, now()), id: newId(), scopeLabel: customer, name: 'symulacja_rabatu_2026-10.csv' }),
+      900,
+    )
     return t
   })
 }
@@ -348,7 +391,9 @@ export function myPendingTickets() {
   return wait(() => {
     if (proto.emptyEmployee) return []
     const s = proto.session
-    return db.tickets.filter((t) => t.ownerId === s?.accountId && (t.status === 'awaiting_confirmation' || t.status === 'needs_clarification'))
+    return db.tickets.filter(
+      (t) => t.ownerId === s?.accountId && (t.status === 'awaiting_confirmation' || t.status === 'needs_clarification'),
+    )
   })
 }
 

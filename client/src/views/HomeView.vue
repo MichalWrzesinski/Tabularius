@@ -39,12 +39,33 @@ function openLegal(title: string) {
         <div>
           <div class="eyebrow">Poznaj Tabularius</div>
           <h2 id="about-title">Od zwykłej wiadomości<br />do potrzebnych danych.</h2>
-          <p>Tabularius łączy zgłoszenia e-mail z przygotowaniem raportów. Pracownicy otrzymują potrzebne dane, a administratorzy mają przejrzysty widok realizacji zgłoszeń.</p>
+          <p>
+            Tabularius łączy zgłoszenia e-mail z przygotowaniem raportów. Pracownicy otrzymują potrzebne dane, a administratorzy mają
+            przejrzysty widok realizacji zgłoszeń.
+          </p>
         </div>
         <ol class="steps">
-          <li><span class="step-number">01</span><div><h3>Opisz, czego potrzebujesz</h3><p>Wyślij e-mail z prośbą o przygotowanie raportu.</p></div></li>
-          <li><span class="step-number">02</span><div><h3>Zgłoszenie trafia do realizacji</h3><p>Administrator sprawdza jego status w panelu.</p></div></li>
-          <li><span class="step-number">03</span><div><h3>Odbierz gotowy raport</h3><p>Gdy będzie gotowy, otrzymasz link do pobrania.</p></div></li>
+          <li>
+            <span class="step-number">01</span>
+            <div>
+              <h3>Opisz, czego potrzebujesz</h3>
+              <p>Wyślij e-mail z prośbą o przygotowanie raportu.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">02</span>
+            <div>
+              <h3>Zgłoszenie trafia do realizacji</h3>
+              <p>Administrator sprawdza jego status w panelu.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">03</span>
+            <div>
+              <h3>Odbierz gotowy raport</h3>
+              <p>Gdy będzie gotowy, otrzymasz link do pobrania.</p>
+            </div>
+          </li>
         </ol>
       </section>
     </main>

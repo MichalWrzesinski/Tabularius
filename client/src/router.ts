@@ -6,8 +6,18 @@ export const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
   routes: [
     { path: '/', component: () => import('./views/HomeView.vue'), meta: { title: 'Tabularius' } },
-    { path: '/logowanie', component: () => import('./views/LoginView.vue'), props: { role: 'employee' }, meta: { title: 'Logowanie pracownika' } },
-    { path: '/admin/logowanie', component: () => import('./views/LoginView.vue'), props: { role: 'admin' }, meta: { title: 'Logowanie administratora' } },
+    {
+      path: '/logowanie',
+      component: () => import('./views/LoginView.vue'),
+      props: { role: 'employee' },
+      meta: { title: 'Logowanie pracownika' },
+    },
+    {
+      path: '/admin/logowanie',
+      component: () => import('./views/LoginView.vue'),
+      props: { role: 'admin' },
+      meta: { title: 'Logowanie administratora' },
+    },
     {
       path: '/moje-raporty',
       component: () => import('./components/EmployeeShell.vue'),
@@ -16,7 +26,12 @@ export const router = createRouter({
         { path: '', component: () => import('./views/employee/MyReportsView.vue'), meta: { title: 'Moje raporty' } },
         { path: 'konto', component: () => import('./views/SettingsView.vue'), meta: { title: 'Ustawienia' } },
         { path: ':fileId', component: () => import('./views/employee/ReportView.vue'), props: true, meta: { title: 'Raport' } },
-        { path: 'potwierdz/:ticketId', component: () => import('./views/employee/ConfirmView.vue'), props: true, meta: { title: 'Potwierdź prośbę' } },
+        {
+          path: 'potwierdz/:ticketId',
+          component: () => import('./views/employee/ConfirmView.vue'),
+          props: true,
+          meta: { title: 'Potwierdź prośbę' },
+        },
       ],
     },
     {

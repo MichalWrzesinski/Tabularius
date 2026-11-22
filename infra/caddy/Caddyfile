@@ -1,0 +1,34 @@
+{
+	admin off
+	auto_https off
+}
+
+# Public entry: dashboard and API on one origin (ADR 0003).
+:80 {
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+
+	handle /api/* {
+		root * /app/public
+		php_fastcgi api:9000 {
+			root /app/public
+		}
+	}
+
+	handle {
+		reverse_proxy client:5173
+	}
+}
+
+# Internal only (not published): demo business system API, reached by api/worker as http://caddy:8081.
+:8081 {
+	root * /business/public
+	php_fastcgi business:9000 {
+		root /app/public
+	}
+}

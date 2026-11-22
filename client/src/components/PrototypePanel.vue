@@ -43,7 +43,7 @@ const scenarios = [
         <label><input v-model="proto.emptyEmployee" type="checkbox" /> Pracownik bez raportów</label>
         <label>
           Opóźnienie API
-          <select v-model.number="proto.latencyMs" class="x-native" style="height:40px">
+          <select v-model.number="proto.latencyMs" class="x-native" style="height: 40px">
             <option :value="150">krótkie (150 ms)</option>
             <option :value="450">typowe (450 ms)</option>
             <option :value="2500">długie (2,5 s)</option>
@@ -52,7 +52,9 @@ const scenarios = [
       </fieldset>
       <h3>Scenariusze</h3>
       <ul>
-        <li v-for="s in scenarios" :key="s.to"><RouterLink :to="s.to" @click="open = false">{{ s.text }}</RouterLink></li>
+        <li v-for="s in scenarios" :key="s.to">
+          <RouterLink :to="s.to" @click="open = false">{{ s.text }}</RouterLink>
+        </li>
       </ul>
     </section>
   </div>

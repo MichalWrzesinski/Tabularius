@@ -1,0 +1,11 @@
+.env.local
+.env.*.local
+.env.dev
+var/
+vendor/
+tests/
+scripts/
+phpunit.dist.xml
+phpstan.dist.neon
+.php-cs-fixer.dist.php
+.php-cs-fixer.cache

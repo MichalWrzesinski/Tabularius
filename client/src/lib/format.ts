@@ -1,8 +1,18 @@
 // Formatting helpers. Money is always an integer number of grosze (never a binary float of złoty).
 
 const MONTHS_GEN = [
-  'stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
-  'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia',
+  'stycznia',
+  'lutego',
+  'marca',
+  'kwietnia',
+  'maja',
+  'czerwca',
+  'lipca',
+  'sierpnia',
+  'września',
+  'października',
+  'listopada',
+  'grudnia',
 ]
 
 /** `group: false` for CSV cells: spreadsheets read „1289,00” as a number, but not „1 289,00”. */
@@ -26,7 +36,11 @@ function parts(iso: string) {
   const d = new Date(iso)
   const f = new Intl.DateTimeFormat('pl-PL', {
     timeZone: 'Europe/Warsaw',
-    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   }).formatToParts(d)
   const get = (t: string) => f.find((p) => p.type === t)?.value ?? ''
   return { y: get('year'), m: get('month'), d: get('day'), h: get('hour'), min: get('minute') }
