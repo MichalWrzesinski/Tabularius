@@ -32,6 +32,8 @@ x-api-env: &api-env
   REPORT_STORAGE_DIR: /app/var/storage/reports
   # Real mailbox (imaps://…); empty until the owner supplies the IMAP details (TASK-006).
   MAILBOX_DSN: ${MAILBOX_DSN:-}
+  # Mail already in the mailbox before this moment is never read (set when the mailbox is connected).
+  MAIL_INGEST_SINCE: ${MAIL_INGEST_SINCE:-}
   REPORT_FILE_TTL_DAYS: "7"
   # Only the Docker gateway (the host's nginx) may set X-Forwarded-* (client IP for rate limits, HTTPS for cookies).
   TRUSTED_PROXIES: ${TRUSTED_PROXIES:?}

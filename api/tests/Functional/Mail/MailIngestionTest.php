@@ -176,6 +176,18 @@ final class MailIngestionTest extends IdentityTestCase
         self::assertSame(200, $this->api('POST', '/api/v1/admin/tickets/'.$id.'/reject'), 'a received ticket can be rejected');
     }
 
+    public function testMailFromBeforeTheStartIsRecordedButNeverRead(): void
+    {
+        $c = self::getContainer();
+        $ingestor = new Ingestor($c->get(MailStore::class), $c->get(TicketStore::class), new MessageParser(), $c->get(MessageIdentity::class), $c->get(\Symfony\Component\Messenger\MessageBusInterface::class), $c->get(\App\Module\Notification\Outbox::class), new MockClock(self::AT), new NullLogger(), 'secret', 'demo', 5, 20, 200, '2026-11-15T08:30:00Z');
+        $raw = self::fixture('plain-request');
+        self::assertSame('before_start', $ingestor->ingest(new IncomingMessage('imap:test', 3, 10, $raw, \strlen($raw), new \DateTimeImmutable('2026-11-15 08:29:59+00:00'))));
+        self::assertSame('ticketed', $ingestor->ingest(new IncomingMessage('imap:test', 3, 11, self::fixture('html-only'), 300, new \DateTimeImmutable('2026-11-15 08:30:00+00:00'))));
+        self::assertSame(1, $this->rowsIn('SELECT count(*) FROM ticket'));
+        self::assertSame(1, $this->rowsIn("SELECT count(*) FROM mail_message WHERE outcome = 'before_start' AND sender IS NULL AND subject IS NULL AND text_body IS NULL AND message_id_hash IS NULL"));
+        self::assertSame(11, $c->get(MailStore::class)->lastUid('imap:test', 3));
+    }
+
     public function testInjectCommandAndRetention(): void
     {
         $container = self::getContainer();
