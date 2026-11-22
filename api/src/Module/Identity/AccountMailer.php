@@ -47,7 +47,7 @@ final class AccountMailer
             'Login: '.$account->email(),
             'Nowe hasło: '.$password,
             'Zaloguj się: '.rtrim($this->baseUrl, '/').'/logowanie',
-            'Jeśli to nie Ty prosiłeś o zmianę, poinformuj administratora.',
+            'Jeśli to nie Twoja prośba, poinformuj administratora.',
         ]);
     }
 

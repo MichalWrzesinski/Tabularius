@@ -43,6 +43,7 @@ final class ExecutePlanHandler
         private readonly CsvWriter $csv,
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
+        private readonly \App\Module\Notification\Outbox $outbox,
         #[Autowire(env: 'int:REPORT_FILE_TTL_DAYS')]
         private readonly int $ttlDays = 7,
     ) {
@@ -150,8 +151,9 @@ final class ExecutePlanHandler
 
                     return false;
                 }
+                $fileId = Uuid::v7()->toRfc4122();
                 $this->files->insert([
-                    'id' => Uuid::v7()->toRfc4122(),
+                    'id' => $fileId,
                     'ticket_id' => $job->ticketId,
                     'plan_version' => $job->version,
                     'owner_account_id' => $claim['owner_id'],
@@ -170,6 +172,7 @@ final class ExecutePlanHandler
                     'expires_at' => TicketStore::ts($now->modify(\sprintf('+%d days', $this->ttlDays))),
                 ]);
                 $this->tickets->setStatus($job->ticketId, TicketStatus::Completed, null, $now);
+                $this->outbox->enqueue($job->ticketId, 'report_ready', $job->ticketId.':ready:'.$job->version, ['fileId' => $fileId]);
                 $this->tickets->event($job->ticketId, 'system', 'System', \sprintf('Raport wygenerowany: %s%s', $report->fileName, $report->empty ? ' (brak danych w okresie)' : ''), $now);
 
                 return true;

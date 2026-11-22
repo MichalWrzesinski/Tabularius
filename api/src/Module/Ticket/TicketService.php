@@ -36,6 +36,7 @@ final class TicketService
         private readonly MessageBusInterface $bus,
         private readonly AuditLog $audit,
         private readonly ClockInterface $clock,
+        private readonly \App\Module\Notification\Outbox $outbox,
         #[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'APP_MODE')]
         private readonly string $mode = 'demo',
     ) {
@@ -99,6 +100,7 @@ final class TicketService
             if ('mail' === $ticket['source'] && 'demo' !== $this->mode) {
                 $this->move($ticketId, $ticket['status'], TicketStatus::AwaitingConfirmation, $now);
                 $this->tickets->event($ticketId, 'system', 'System', 'Czeka na potwierdzenie pracownika po zalogowaniu (adres nadawcy nie potwierdza tożsamości)', $now);
+                $this->outbox->enqueue($ticketId, 'confirmation_request', $ticketId.':confirm:'.$version);
 
                 return;
             }
@@ -184,6 +186,7 @@ final class TicketService
             $this->tickets->setStatus($ticketId, TicketStatus::Rejected, 'admin_rejected', $now);
             $this->tickets->event($ticketId, 'admin', 'Administrator', 'Zgłoszenie odrzucone przez administratora', $now);
             $this->audit->record(self::ref($admin), 'ticket.reject', 'ticket:'.$ticketId);
+            $this->outbox->enqueue($ticketId, 'refused', $ticketId.':refused', ['reason' => 'admin_rejected']);
         });
     }
 

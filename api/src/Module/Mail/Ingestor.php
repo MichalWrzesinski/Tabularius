@@ -33,6 +33,7 @@ final class Ingestor
         private readonly MessageParser $parser,
         private readonly MessageIdentity $identity,
         private readonly \Symfony\Component\Messenger\MessageBusInterface $bus,
+        private readonly \App\Module\Notification\Outbox $outbox,
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
         #[Autowire(env: 'APP_SECRET')]
@@ -132,6 +133,7 @@ final class Ingestor
                     'uid_validity' => $message->uidValidity,
                     'uid' => $message->uid,
                     'message_id_hash' => 'duplicate' === $outcome ? null : $idHash,
+                    'message_id' => $keep ? $parsed?->messageId : null,
                     'received_at' => TicketStore::ts($message->receivedAt),
                     'sender_hash' => $senderHash,
                     'sender' => $keep ? $parsed?->sender : null,
@@ -144,6 +146,9 @@ final class Ingestor
                     'ticket_id' => $ticketId,
                     'created_at' => TicketStore::ts($now),
                 ]);
+                if (null !== $ticketId) {
+                    $this->outbox->enqueue($ticketId, 'received', $ticketId.':received');
+                }
             });
         } catch (UniqueConstraintViolationException) {
             return 'duplicate'; // a concurrent poll stored it first

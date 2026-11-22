@@ -23,6 +23,7 @@ final class TicketView
     public function __construct(
         private readonly PeriodResolver $periods,
         private readonly IntegrationProfile $profile,
+        private readonly \App\Module\Notification\Outbox $outbox,
         #[\Symfony\Component\DependencyInjection\Attribute\Autowire(env: 'APP_MODE')]
         private readonly string $mode = 'demo',
     ) {
@@ -92,7 +93,7 @@ final class TicketView
                 'actorName' => $e['actor_name'],
                 'text' => $e['text'],
             ], $events),
-            'messages' => [],
+            'messages' => $this->outbox->forTicket($t['id']),
             'clarificationRounds' => 0,
         ];
     }

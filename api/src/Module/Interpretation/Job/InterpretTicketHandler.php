@@ -45,6 +45,7 @@ final class InterpretTicketHandler
         private readonly MessageBusInterface $bus,
         private readonly ClockInterface $clock,
         private readonly LoggerInterface $logger,
+        private readonly \App\Module\Notification\Outbox $outbox,
         #[Autowire(env: 'APP_MODE')]
         private readonly string $mode = 'demo',
     ) {
@@ -140,6 +141,10 @@ final class InterpretTicketHandler
             $this->tickets->event($ticketId, 'system', 'System', $text, $now);
             if (TicketStatus::Queued === $status) {
                 $this->bus->dispatch(new ExecutePlan($ticketId, 1));
+            } elseif (TicketStatus::AwaitingConfirmation === $status) {
+                $this->outbox->enqueue($ticketId, 'confirmation_request', $ticketId.':confirm:1');
+            } elseif (TicketStatus::Rejected === $status) {
+                $this->outbox->enqueue($ticketId, 'refused', $ticketId.':refused', ['reason' => $reason]);
             }
         });
     }
