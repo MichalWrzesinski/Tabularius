@@ -130,6 +130,11 @@ final class RestBusinessApiTest extends TestCase
         self::api(new MockResponse((string) json_encode(['items' => [self::line(1)], 'total' => 4])))->salesLines('PH-01', DateRange::of('2026-10-01', '2026-10-31'));
     }
 
+    public function testListsRepresentativeCodes(): void
+    {
+        self::assertSame(['PH-01', 'PH-02'], self::api(new MockResponse('{"items":[{"code":"PH-01","name":"A"},{"code":"PH-02","name":"B"}]}'))->salesReps());
+    }
+
     public function testSendsTheBearerToken(): void
     {
         $seen = null;

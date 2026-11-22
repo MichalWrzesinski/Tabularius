@@ -1,0 +1,6 @@
+framework:
+    mailer:
+        # `capture` receives account e-mails in demo mode (ID-DEMO-5); selected by the X-Transport header.
+        transports:
+            main: '%env(MAILER_DSN)%'
+            capture: '%env(MAILER_CAPTURE_DSN)%'

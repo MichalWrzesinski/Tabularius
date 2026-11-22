@@ -46,6 +46,7 @@ Similar names on purpose: „Alfatrans Logistyka” (K-008) belongs to PH-02.
 | Endpoint | Purpose |
 |---|---|
 | `/v1/meta` | Seed version and reference date |
+| `/v1/sales-reps` | Representatives (code, name) |
 | `/v1/sales-reps/{code}/customers` | Customers currently assigned to a representative |
 | `/v1/sales-lines?salesRep=&from=&to=[&customers=K-001,…][&manufacturer=][&category=][&page=&perPage=]` | Sales lines by inclusion date: invoices by sale date, adjustments by issue date, canceled documents excluded. Requested customers outside the representative's scope → `403 out_of_scope`. Periods are capped at 400 days and `perPage` at 1000 |
 | `/v1/manufacturers` | Manufacturers with aliases and the active flag |

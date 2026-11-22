@@ -46,6 +46,13 @@ final class ApiTest extends WebTestCase
         self::assertSame(20261122, $body['randomSeed']);
     }
 
+    public function testRepresentatives(): void
+    {
+        $items = $this->items('/v1/sales-reps');
+        self::assertSame(['PH-01', 'PH-02', 'PH-03', 'PH-04', 'PH-05'], array_column($items, 'code'));
+        self::assertSame('Handlowiec demonstracyjny', $items[0]['name'] ?? null);
+    }
+
     public function testRepresentativeCustomers(): void
     {
         $items = $this->items('/v1/sales-reps/PH-01/customers');

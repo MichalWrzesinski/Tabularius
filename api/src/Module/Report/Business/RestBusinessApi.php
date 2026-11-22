@@ -31,6 +31,11 @@ final class RestBusinessApi implements BusinessApi
     ) {
     }
 
+    public function salesReps(): array
+    {
+        return array_map(static fn (array $r): string => self::s($r, 'code'), self::items($this->get('/v1/sales-reps')['items'] ?? null));
+    }
+
     public function customersOf(string $salesRep): array
     {
         return array_map(

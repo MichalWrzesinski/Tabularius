@@ -50,6 +50,15 @@ final class ApiController
         ]);
     }
 
+    #[Route('/sales-reps', name: 'api_reps')]
+    public function reps(Request $request): JsonResponse
+    {
+        new Query($request, []);
+        $rows = $this->connection->fetchAllAssociative('SELECT code, name FROM v_sales_rep ORDER BY code');
+
+        return new JsonResponse(['items' => array_map(static fn (array $r): array => ['code' => $r['code'], 'name' => $r['name']], $rows)]);
+    }
+
     #[Route('/sales-reps/{code}/customers', name: 'api_rep_customers')]
     public function repCustomers(Request $request, string $code): JsonResponse
     {

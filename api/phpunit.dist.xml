@@ -15,6 +15,11 @@
         <server name="APP_ENV" value="test" force="true"/>
         <server name="SHELL_VERBOSITY" value="-1"/>
         <server name="KERNEL_CLASS" value="App\Kernel"/>
+        <!-- Tests never send e-mail and always run the demo-mode rules, whatever the container environment says. -->
+        <env name="MAILER_DSN" value="null://null" force="true"/>
+        <env name="MAILER_CAPTURE_DSN" value="null://null" force="true"/>
+        <env name="APP_MODE" value="demo" force="true"/>
+        <env name="DEMO_SHARED_PASSWORD" value="Demo123!" force="true"/>
     </php>
     <testsuites>
         <testsuite name="all">
