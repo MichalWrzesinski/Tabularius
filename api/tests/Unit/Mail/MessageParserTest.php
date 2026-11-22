@@ -39,6 +39,7 @@ final class MessageParserTest extends TestCase
             self::assertTrue($parser->parse($header."From: a@example.com\r\nSubject: x\r\n\r\ntext")->automatic, trim($header));
         }
         self::assertFalse($parser->parse("Auto-Submitted: no\r\nFrom: a@example.com\r\n\r\ntext")->automatic);
+        self::assertFalse($parser->parse("X-Auto-Response-Suppress: All\r\nFrom: a@example.com\r\n\r\nRaport sprzedaży")->automatic, 'set by some Outlook setups on ordinary mail');
     }
 
     public function testMissingOrInvalidIdentifiers(): void

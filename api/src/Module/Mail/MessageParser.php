@@ -65,7 +65,8 @@ final class MessageParser
         if (\in_array($precedence, ['bulk', 'junk', 'list', 'auto_reply'], true)) {
             return true;
         }
-        foreach (['X-Autoreply', 'X-Autorespond', 'X-Auto-Response-Suppress', 'X-Failed-Recipients'] as $name) {
+        // Not X-Auto-Response-Suppress: some Outlook/Exchange setups add it to ordinary messages (a lost request).
+        foreach (['X-Autoreply', 'X-Autorespond', 'X-Failed-Recipients'] as $name) {
             if (null !== $message->getHeader($name)) {
                 return true;
             }
