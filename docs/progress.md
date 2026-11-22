@@ -10,7 +10,7 @@ Metrics: agent usage not measured (no tool export configured); application LLM c
 |---|---|---|---|
 | 1 | Discovery: vocabulary, financial and access rules, threat model, prototype | discovery drafted, owner decisions recorded; prototype v1 rejected (did not match mockups); v2 on mockup sources accepted 2026-11-21 | — |
 | 2 | Deterministic report engine on seeded demo business system, API, login, dashboard | done: TASK-001–005, first full loop without mail and LLM (2026-11-22) | 1 |
-| 3 | Mail ingestion, secure identity, durable tickets | planned | 2; mailbox details for the real adapter |
+| 3 | Mail ingestion, secure identity, durable tickets | tasks planned 2026-11-22 (TASK-006–009), awaiting the owner's go-ahead | 2; mailbox details for the real adapter |
 | 4 | LLM interpretation, evaluation, attack tests | planned | 3; OpenAI key and evaluation budget for real runs |
 | 5 | Clarifications, reply correlation, controlled notifications | planned | 4 |
 | 6 | File delivery, failure scenarios, release readiness | planned | 5 |
