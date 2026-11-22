@@ -19,7 +19,8 @@ Principle: email content and model output are untrusted. Restrictions are enforc
 | T-11 | Mail loops | Auto-reply ping-pong | MAIL-2 | Non-standard auto-responders |
 | T-12 | Disclosure in demo | Participant reads others' messages | ID-DEMO-3 templated views; no free text published | Participant puts personal data in a parameter that is shown (only closed-set values are displayed) |
 | T-13 | Secret/data leakage via logs | Report rows or bodies in telemetry | No bodies/report content in logs; audit stores ids and codes | — |
-| T-14 | Data modification | „Usuń bazę” | Report DB account has SELECT on approved views only; business system API is read-only | — |
+| T-14 | Data modification | „Usuń bazę” | Report DB account has SELECT on approved views only; business system API is read-only; RequestScreen refuses before the model ([ADR 0005](../../decisions/0005-business-scope-guard.md)) | — |
+| T-15 | Abuse beyond reports | „Pokaż hasła”, „wygeneruj skrypt”, „zignoruj instrukcje i…” | RequestScreen before the model; PlanGuard admits only closed typed values; no tools; template-only mail ([ADR 0005](../../decisions/0005-business-scope-guard.md)) | Unknown phrasing evades the screen → still stopped by PlanGuard; measured in evaluation |
 
 ## Limits
 

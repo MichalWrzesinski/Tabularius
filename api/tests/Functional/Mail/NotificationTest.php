@@ -85,7 +85,7 @@ final class NotificationTest extends IdentityTestCase
         $other = $this->mail('Sprzedaż', 'piotr@example.com');
         $this->work();
         self::assertSame(['received', 'refused'], $this->db()->fetchFirstColumn('SELECT template FROM outbox WHERE ticket_id = ? ORDER BY created_at, template', [$payroll]));
-        self::assertStringContainsString('poza katalog dostępnych raportów', (string) $this->mailer->bySubject('Nie możemy')?->getTextBody());
+        self::assertStringContainsString('wyłącznie raporty z katalogu', (string) $this->mailer->bySubject('Nie możemy')?->getTextBody());
 
         $this->account('admin@example.com', Role::Admin);
         self::assertSame(200, $this->login('admin@example.com'));

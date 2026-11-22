@@ -17,6 +17,7 @@ final class Templates
         'out_of_catalog' => 'Prośba wykracza poza katalog dostępnych raportów: raport sprzedaży, katalog części producenta i symulacja rabatu dla klienta.',
         'out_of_scope' => 'Prośba dotyczy danych spoza Twojego zakresu, dlatego nie możemy jej zrealizować.',
         'admin_rejected' => 'Prośba została odrzucona przez administratora.',
+        'outside_business_scope' => 'Tabularius przygotowuje wyłącznie raporty z katalogu (raport sprzedaży, katalog części producenta, symulacja rabatu) dla Twoich klientów. Nie zmienia ani nie usuwa danych, nie udostępnia haseł ani danych dostępowych i nie tworzy kodu ani innych plików.',
     ];
 
     public function __construct(
