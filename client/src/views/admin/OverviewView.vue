@@ -6,9 +6,8 @@ import Ico from '../../components/Ico.vue'
 import TicketList from '../../components/TicketList.vue'
 import { formatLongDate } from '../../lib/format'
 import { useAsync } from '../../lib/useAsync'
-import { listTickets } from '../../mock/api'
-import { NOW } from '../../mock/data'
-import type { TicketStatus } from '../../mock/types'
+import { listTickets } from '../../lib/tickets'
+import type { TicketStatus } from '../../lib/types'
 
 const { data, loading, error, reload } = useAsync(listTickets)
 const stats = computed(() => {
@@ -30,7 +29,7 @@ const stats = computed(() => {
         <h1>Przegląd zgłoszeń</h1>
         <p>Wiadomości, statusy i gotowe raporty — w jednym miejscu.</p>
       </div>
-      <div class="date">{{ formatLongDate(NOW) }}</div>
+      <div class="date">{{ formatLongDate(new Date().toISOString()) }}</div>
     </div>
     <AsyncBlock :loading="loading && !data" :error="error" :skeleton-rows="6" @retry="reload">
       <div class="stats">

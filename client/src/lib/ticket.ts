@@ -1,5 +1,14 @@
+import { ref } from 'vue'
 import { proto } from '../mock/api'
-import type { Ticket } from '../mock/types'
+import type { PlanVersion, TicketStatus } from './types'
+
+/** What the title and person helpers need; satisfied by API tickets and by the prototype's mocked ones. */
+interface TicketLike {
+  status: TicketStatus
+  plans: PlanVersion[]
+  employeeName: string
+  participantAlias?: string
+}
 
 const MONTH_NOM = [
   'styczeń',
@@ -26,7 +35,7 @@ function fullMonth(period: string): string | null {
 }
 
 /** Short title in the mockups' style, built from the recognized operation and parameters — never from the subject. */
-export function ticketTitle(t: Ticket): string {
+export function ticketTitle(t: TicketLike): string {
   const plan = t.plans[t.plans.length - 1]
   if (!plan) return t.status === 'received' || t.status === 'interpreting' ? 'Nowa prośba' : 'Prośba nierozpoznana'
   const param = (label: string) => plan.params.find((p) => p.label === label)?.value ?? ''
@@ -45,9 +54,12 @@ export function ticketTitle(t: Ticket): string {
 }
 
 /** Production: employee name. Public demo: synthetic alias only (ID-DEMO-3). */
-export function ticketPerson(t: Ticket): string {
-  return proto.anonymize ? t.participantAlias : t.employeeName
+export function ticketPerson(t: TicketLike): string {
+  return proto.anonymize ? (t.participantAlias ?? 'Uczestnik demo') : t.employeeName
 }
+
+/** Number of the ticket open in the detail view, for the breadcrumb (mockup: „Zgłoszenia / #T-1042”). */
+export const openTicketNumber = ref<string | null>(null)
 
 export function initials(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean)

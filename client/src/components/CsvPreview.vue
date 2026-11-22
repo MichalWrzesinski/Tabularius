@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { ReportFile } from '../mock/types'
-
-defineProps<{ file: ReportFile }>()
+defineProps<{ file: { name: string; header: string[]; rows: { type: string; cells: string[] }[] } }>()
 const isMoney = (c: string) => /^-?\d+,\d{2}$/.test(c)
 </script>
 

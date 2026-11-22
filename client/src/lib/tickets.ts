@@ -1,0 +1,66 @@
+// Tickets and report files on the real API (TASK-005). Downloads go through the authorized endpoint (ACC-FILE-1).
+import { api, ApiError } from './http'
+import type { Catalog, CustomerRef, FileMeta, Operation, ReportPreview, Ticket, TicketSummary } from './types'
+
+const items = <T>(r: { items: T[] }) => r.items
+
+export const listTickets = () => api<{ items: TicketSummary[] }>('GET', '/admin/tickets').then(items)
+export const getTicket = (id: string) => api<Ticket>('GET', `/admin/tickets/${encodeURIComponent(id)}`)
+export const createTicket = (ownerId: string, operation: Operation, parameters: Record<string, unknown>) =>
+  api<Ticket>('POST', '/admin/tickets', { ownerId, operation, parameters })
+export const retryTicket = (id: string) => api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/retry`)
+export const rejectTicket = (id: string) => api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/reject`)
+export const getCatalog = () => api<Catalog>('GET', '/admin/catalog')
+export const ownerCustomers = (accountId: string) =>
+  api<{ items: CustomerRef[] }>('GET', `/admin/accounts/${encodeURIComponent(accountId)}/customers`).then(items)
+
+export const listFiles = () => api<{ items: FileMeta[] }>('GET', '/admin/files').then(items)
+export const myFiles = () => api<{ items: FileMeta[] }>('GET', '/me/files').then(items)
+export const myTickets = () =>
+  api<{ items: Pick<TicketSummary, 'id' | 'number' | 'receivedAt' | 'status' | 'operation' | 'operationLabel'>[] }>(
+    'GET',
+    '/me/tickets',
+  ).then(items)
+export const getFile = (id: string) => api<ReportPreview>('GET', `/files/${encodeURIComponent(id)}`)
+
+/** Fetches the CSV through the authorized endpoint and saves it; refusals surface as ApiError (no blind navigation). */
+export async function downloadFile(file: Pick<FileMeta, 'id' | 'name'>): Promise<void> {
+  let response: Response
+  try {
+    response = await fetch(`/api/v1/files/${encodeURIComponent(file.id)}/content`, { credentials: 'same-origin' })
+  } catch {
+    throw new ApiError(0, 'network', 'Brak połączenia z serwerem. Sprawdź połączenie i spróbuj ponownie.')
+  }
+  if (!response.ok) {
+    const problem = (await response.json().catch(() => ({}))) as { code?: unknown }
+    throw new ApiError(response.status, typeof problem.code === 'string' ? problem.code : 'http_error', `HTTP ${response.status}`)
+  }
+  const url = URL.createObjectURL(await response.blob())
+  const a = document.createElement('a')
+  a.href = url
+  a.download = file.name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+export function sizeLabel(file: Pick<FileMeta, 'sizeBytes'>): string {
+  return `CSV · ${Math.max(1, Math.round(file.sizeBytes / 1024))} KB`
+}
+
+/** Polish explanation for a ticket's reason code. */
+export const REASON_LABEL: Record<string, string> = {
+  data_source_error: 'Błąd źródła danych — system danych był niedostępny',
+  internal_error: 'Błąd techniczny podczas generowania raportu',
+  out_of_scope: 'Zakres klientów pracownika nie obejmuje żądanych danych',
+  invalid_parameters: 'Parametry planu są nieprawidłowe',
+  too_large: 'Raport przekracza limit wierszy',
+  owner_inactive: 'Konto pracownika jest nieaktywne',
+  admin_rejected: 'Odrzucone przez administratora',
+}
+
+export const reasonLabel = (code: string | null | undefined) => (code ? (REASON_LABEL[code] ?? code) : '')
+
+/** Reasons the administrator can fix by re-running the same plan version. */
+export const RETRYABLE = new Set(['data_source_error', 'internal_error'])
