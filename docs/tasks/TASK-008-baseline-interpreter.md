@@ -46,3 +46,6 @@ Table-driven unit tests (development set only; the frozen evaluation set is crea
 - Limitations:
   - Rules are tuned on the development set only; the quality measurement against a frozen set comes in increment 4.
   - No clarification e-mail: tickets with issues wait for the administrator.
+
+## Follow-up (2026-11-22, staging)
+The owner's first test e-mail on staging asked for a catalog, but the manufacturer was not recognized (`missing_manufacturer`). Exact text unknown to the agent; the likely causes were an inflected form or a typo. Manufacturer names of four or more letters now also match an inflected form (up to three added letters: „Boscha”); names of five or more letters also match one typo („Bosh”, „Waleo”). Short names (SKF, TRW) stay exact. Five cases were added to the development set (49 in total).
