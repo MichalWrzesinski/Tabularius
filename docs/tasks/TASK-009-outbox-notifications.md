@@ -1,6 +1,6 @@
 # TASK-009 — Outbox and the first notifications (confirmation request, report ready)
 
-Status: DONE (PR pending CI) · Priority: high · Increment: 3 · Depends on: TASK-007
+Status: DONE (PR #27) · Priority: high · Increment: 3 · Depends on: TASK-007
 
 ## Goal and scope
 Outgoing mail is written in the ticket's transaction and sent afterwards (MAIL-3, MAIL-4). It goes only to the ticket's own recipient: the registered address in production, the sender of that ticket in demo (ID-DEMO-2).

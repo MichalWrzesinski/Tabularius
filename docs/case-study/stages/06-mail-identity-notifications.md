@@ -5,7 +5,7 @@
   - TASK-006, mail ingestion (PR #24);
   - TASK-007, identity and confirmation (PR #25);
   - TASK-008, rule-based interpreter (PR #26);
-  - TASK-009, outbox and notifications (PR from `feat/TASK-009-outbox-notifications`).
+  - TASK-009, outbox and notifications (PR #27).
 - Environment: the local stack (Mailpit for outgoing mail, `app:mail:inject` instead of a mailbox) and staging behind its environment login, deployed by CI as `tabularius_deploy`.
 - Test doubles: synthetic `.eml` fixtures, a scripted IMAP server, a recording mailer. **No real mailbox or SMTP was used**: they wait for the owner's credentials. No LLM.
 
