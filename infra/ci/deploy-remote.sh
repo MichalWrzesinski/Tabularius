@@ -18,8 +18,14 @@ if [[ -n "${MAILBOX_DSN:-}" ]]; then
     || fail "MAILBOX_DSN must look like imaps://user:password@host:993/INBOX (URL-encoded, no quotes)"
 fi
 if [[ -n "${MAILER_DSN:-}" ]]; then
-  [[ "$MAILER_DSN" =~ ^smtps?://[^[:space:]\']+@[A-Za-z0-9.-]+(:[0-9]{2,5})?(\?[^[:space:]\']*)?$ ]] \
-    || fail "MAILER_DSN must look like smtp://user:password@host:587 (URL-encoded, no quotes)"
+  # Diagnostics name the failing rule, the scheme and the host only: never the login or the key.
+  scheme="${MAILER_DSN%%://*}"
+  host="${MAILER_DSN##*@}"
+  [[ "$MAILER_DSN" == *"://"* && "$scheme" =~ ^smtps?$ ]] || fail "MAILER_DSN: scheme must be smtp:// or smtps:// (got '${scheme:0:20}')"
+  [[ "$MAILER_DSN" != *[[:space:]]* ]] || fail "MAILER_DSN contains whitespace or a line break"
+  [[ "$MAILER_DSN" != *\'* && "$MAILER_DSN" != *\"* ]] || fail "MAILER_DSN contains a quote"
+  [[ "$MAILER_DSN" == *@* ]] || fail "MAILER_DSN has no user:password@ part"
+  [[ "$host" =~ ^[A-Za-z0-9.-]+(:[0-9]{2,5})?(\?.*)?$ ]] || fail "MAILER_DSN: host part must be host:port (got '${host:0:60}')"
 fi
 [[ "${MAIL_INGEST_SINCE:-}" =~ ^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}(Z|[+-][0-9]{2}:[0-9]{2}))?$ ]] || fail "MAIL_INGEST_SINCE must be ISO 8601, e.g. 2026-11-22T18:00:00Z"
 [[ "${MAIL_ALLOWED_RECIPIENTS:-}" =~ ^[A-Za-z0-9.@_+,\ -]*$ ]] || fail "MAIL_ALLOWED_RECIPIENTS: addresses or @domains separated by commas"
