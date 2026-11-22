@@ -44,8 +44,9 @@ migrate: .env | $(CACHE_DIRS)
 	$(DC) run --rm api sh -c 'DATABASE_URL="$$MIGRATIONS_DATABASE_URL" bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration'
 	$(DC) run --rm business sh -c 'DATABASE_URL="$$MIGRATIONS_DATABASE_URL" bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration'
 
-seed: .env | $(CACHE_DIRS) ## (re)load synthetic business data around REF=YYYY-MM-DD (default: today, Europe/Warsaw)
+seed: .env | $(CACHE_DIRS) ## (re)load synthetic business data around REF=YYYY-MM-DD (default: today) and the shared demo accounts
 	$(DC) run --rm business bin/console app:seed $(if $(REF),--reference-date=$(REF))
+	$(DC) run --rm api bin/console app:accounts:demo
 
 csv-samples: .env ## regenerate docs/qa/csv samples (seed for REF=2026-11-15 first: make seed REF=2026-11-15)
 	$(DC) run --rm api sh -c 'mkdir -p var/csv && \

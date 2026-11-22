@@ -24,7 +24,7 @@ services:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./api/public:/app/public:ro
       - ./business/public:/business/public:ro
-    depends_on: [api, business, client]
+    depends_on: [api, business, client, mailpit]
 
   api:
     <<: *php
@@ -38,6 +38,13 @@ services:
       MIGRATIONS_DATABASE_URL: postgresql://tabularius_migrator:${TABULARIUS_MIGRATOR_PASSWORD}@db:5432/tabularius?serverVersion=18&charset=utf8
       BUSINESS_API_URL: http://caddy:8081
       BUSINESS_API_TOKEN: ${BUSINESS_API_TOKEN}
+      APP_MODE: demo
+      DEMO_SHARED_PASSWORD: ${DEMO_SHARED_PASSWORD}
+      PUBLIC_BASE_URL: http://127.0.0.1:8080
+      MAILER_FROM: tabularius@gitpush.app
+      # Local: every e-mail lands in Mailpit (http://127.0.0.1:8025), nothing is delivered.
+      MAILER_DSN: smtp://mailpit:1025
+      MAILER_CAPTURE_DSN: smtp://mailpit:1025
 
   business:
     <<: *php
@@ -62,6 +69,11 @@ services:
     volumes:
       - ./client:/app
       - ./.cache/npm:/cache/npm
+
+  mailpit:
+    image: axllent/mailpit:v1.33.1@sha256:aef2aacc11f075ec0fb6874275ee4a421e688e11a96ebb296134d1735c7761ce
+    ports:
+      - "127.0.0.1:8025:8025"
 
   db:
     image: postgres:18.6-alpine@sha256:9ba53c7d41ea093baf5c1ba635ba5434c4f979880527d49bb7d9237d3193085b
