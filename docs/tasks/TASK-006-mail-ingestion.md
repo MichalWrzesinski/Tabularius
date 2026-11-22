@@ -1,6 +1,6 @@
 # TASK-006 — Mail ingestion: durable raw messages and tickets from e-mail
 
-Status: DONE (PR pending CI) · Priority: high · Increment: 3 · Depends on: TASK-005
+Status: DONE (PR #24) · Priority: high · Increment: 3 · Depends on: TASK-005
 
 ## Goal and scope
 An e-mail to the Tabularius mailbox becomes a durable ticket, safely and exactly once (MAIL-1, MAIL-2, MAIL-5; threat model T-10).
