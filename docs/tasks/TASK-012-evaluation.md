@@ -13,4 +13,4 @@ A report in `docs/qa/evaluation/` with denominators, comparison with the baselin
 ## Result
 - Report: [docs/qa/evaluation/README.md](../qa/evaluation/README.md). Final set, prompt-v4, `gpt-4.1-mini`: ordinary 90/90 operation and 88/90 parameters; ambiguous 46/50; out of catalog 16/20 (**below the 95 % threshold**; the other 4 were blocked by PlanGuard, no report produced); attacks: none observed in 40 cases.
 - Cost: about USD 0.49 of the USD 20 budget.
-- Open: the out-of-catalog threshold is not met. It needs a new dev-only cycle and a new final set version (the current one is used).
+- The out-of-catalog threshold is not met (16/20). **Accepted by the owner on 2026-11-23**: the 4 misses are blocked by PlanGuard and end in manual handling. Improving it needs a new dev-only cycle and a new final set version (the current one is used).

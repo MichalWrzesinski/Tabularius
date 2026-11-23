@@ -136,6 +136,28 @@ final class TicketService
         });
     }
 
+    /** Questions not answered within the period go to the administrator (needs_clarification → needs_intervention). */
+    public function expireClarifications(int $days = 7): int
+    {
+        $now = $this->clock->now();
+        $ids = $this->tickets->connection()->fetchFirstColumn(
+            "SELECT id FROM ticket WHERE status = 'needs_clarification' AND updated_at < ?",
+            [TicketStore::ts($now->modify(\sprintf('-%d days', $days)))],
+        );
+        foreach ($ids as $id) {
+            $this->tickets->connection()->transactional(function () use ($id, $now, $days): void {
+                $ticket = \is_string($id) ? $this->tickets->lock($id) : null;
+                if (null === $ticket || TicketStatus::NeedsClarification !== $ticket['status']) {
+                    return;
+                }
+                $this->tickets->setStatus((string) $id, TicketStatus::NeedsIntervention, 'clarification_expired', $now);
+                $this->tickets->event((string) $id, 'system', 'System', \sprintf('Brak odpowiedzi na pytanie w ciągu %d dni; potrzebna decyzja administratora', $days), $now);
+            });
+        }
+
+        return \count($ids);
+    }
+
     /** Requests not confirmed within the period expire (tickets.md: awaiting_confirmation → rejected after 7 days). */
     public function expireUnconfirmed(int $days = 7): int
     {

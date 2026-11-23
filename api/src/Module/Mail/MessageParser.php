@@ -36,7 +36,21 @@ final class MessageParser
             $text,
             $message->getAttachmentCount(),
             self::automatic($message),
+            self::replyTo($message),
         );
+    }
+
+    /**
+     * Ids the message says it answers. Headers only point at a candidate ticket; they never authorize anything.
+     *
+     * @return list<string>
+     */
+    private static function replyTo(IMessage $message): array
+    {
+        $raw = ((string) $message->getHeader('In-Reply-To')?->getRawValue()).' '.((string) $message->getHeader('References')?->getRawValue());
+        preg_match_all('/<([^<>\s]{1,250})>/', $raw, $m);
+
+        return \array_slice(array_values(array_unique($m[1])), 0, 50);
     }
 
     private static function messageId(IMessage $message): ?string

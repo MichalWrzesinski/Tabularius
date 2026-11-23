@@ -29,7 +29,7 @@ final class Templates
     }
 
     /**
-     * @param array{number: string, ticketId: string, fileId?: string, reason?: ?string} $v
+     * @param array{number: string, ticketId: string, fileId?: string, reason?: ?string, questions?: list<string>, round?: int} $v
      *
      * @return array{subject: string, text: string, html: string}
      */
@@ -56,6 +56,16 @@ final class Templates
                     'Dzień dobry,',
                     'Twój raport jest gotowy. Ze względów bezpieczeństwa nie dołączamy go do wiadomości: jest dostępny po zalogowaniu przez 7 dni.',
                     'Otwórz raport: '.$base.'/moje-raporty/'.($v['fileId'] ?? ''),
+                ],
+            ],
+            'clarification' => [
+                \sprintf('Potrzebujemy uzupełnienia prośby (%s)', $v['number']),
+                [
+                    'Dzień dobry,',
+                    \sprintf('aby przygotować raport %s, potrzebujemy jeszcze informacji:', $v['number']),
+                    ...array_map(static fn (string $q): string => '• '.$q, $v['questions'] ?? []),
+                    'Odpowiedz na tę wiadomość, wpisując brakujące informacje (nie zmieniaj tematu ani adresu). Nowa wiadomość poza tym wątkiem utworzy nową prośbę.',
+                    \sprintf('Pytanie %d z %d. Bez odpowiedzi w ciągu 7 dni prośbą zajmie się administrator.', $v['round'] ?? 1, \App\Module\Interpretation\Clarification::MAX_ROUNDS),
                 ],
             ],
             'refused' => [

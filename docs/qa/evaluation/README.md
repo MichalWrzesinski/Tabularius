@@ -103,6 +103,7 @@ Misses (all 10):
 Interpretation:
 - The LLM beats the rule baseline in every category, attacks included (rules: 1 misinterpreted attack, LLM: 0).
 - The out-of-catalog gap is about requests that *sound like* a catalog operation (future sales, the whole company). The guard catches them, but as `blocked`, not as a refusal.
+- **Owner's decision (2026-11-23):** the result is accepted with the out-of-catalog gap; work moves on to increment 5.
 - The final set is now **used**. Fixing this needs a new dev-only cycle (e.g. dev cases for forecasts and company-wide totals) and a new final set version, written and frozen before the next real-model run. Re-running this set after changes it revealed would no longer be an independent measurement.
 
 ### Budget
