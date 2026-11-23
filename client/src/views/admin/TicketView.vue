@@ -15,8 +15,10 @@ import {
   downloadFile,
   getFile,
   getTicket,
+  notificationResolutions,
   reasonLabel,
   rejectTicket,
+  resolveNotification,
   retryTicket,
   RETRYABLE,
   sizeLabel,
@@ -89,7 +91,16 @@ function confirmReject() {
   }
 }
 
-const canRetry = computed(() => ticket.value?.status === 'needs_intervention' && RETRYABLE.has(ticket.value.reason ?? ''))
+const canRetry = computed(
+  () => ticket.value?.status === 'needs_intervention' && RETRYABLE.has(ticket.value.reason ?? '') && ticket.value.plans.length > 0,
+)
+function resolve(notification: string, resolution: 'sent' | 'resend') {
+  const question =
+    resolution === 'sent'
+      ? 'Uznać wiadomość za wysłaną? Nie zostanie wysłana ponownie.'
+      : 'Wysłać wiadomość ponownie? Jeśli pierwsza dotarła, odbiorca może dostać drugą kopię.'
+  if (window.confirm(question)) void act(() => resolveNotification(ticket.value!.id, notification, resolution))
+}
 // A ticket with an owner but no executable plan (mail waiting for interpretation, or in intervention).
 const canSetPlan = computed(
   () =>
@@ -241,6 +252,21 @@ async function download() {
               <div class="mailbody">
                 <p v-if="m.body" style="white-space: pre-line">{{ m.body }}</p>
                 <p v-else><i>Treść usunięta po okresie przechowywania.</i></p>
+              </div>
+              <div v-if="notificationResolutions(m.delivery).length" class="resolve">
+                <p class="x-muted">Wynik wysyłki wymaga decyzji — wiadomość nie jest ponawiana automatycznie.</p>
+                <button
+                  v-if="notificationResolutions(m.delivery).includes('sent')"
+                  class="x-btn2"
+                  type="button"
+                  :disabled="busy"
+                  @click="resolve(m.id, 'sent')"
+                >
+                  <Ico name="check" />Uznaj za wysłane
+                </button>
+                <button class="x-btn2" type="button" :disabled="busy || !m.body" @click="resolve(m.id, 'resend')">
+                  <Ico name="refresh" />Wyślij ponownie
+                </button>
               </div>
             </article>
             <div v-if="fileError" class="x-alert error x-section" role="alert">

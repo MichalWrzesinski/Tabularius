@@ -745,3 +745,21 @@ td a {
 .x-empmain a.cta {
   font-weight: 700;
 }
+
+/* Outgoing message whose sending outcome needs the administrator's decision (TASK-014): never resent automatically. */
+.message .resolve {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 18px;
+  border-top: 1px solid #efe9f5;
+}
+.message .resolve p {
+  flex-basis: 100%;
+  font-size: 13px;
+}
+.message .resolve .x-btn2 {
+  min-height: 48px;
+}

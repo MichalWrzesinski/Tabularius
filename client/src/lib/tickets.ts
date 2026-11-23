@@ -11,6 +11,8 @@ export const createTicket = (ownerId: string, operation: Operation, parameters: 
 export const setTicketPlan = (id: string, operation: Operation, parameters: Record<string, unknown>) =>
   api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/plan`, { operation, parameters })
 export const retryTicket = (id: string) => api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/retry`)
+export const resolveNotification = (id: string, notification: string, resolution: 'sent' | 'resend') =>
+  api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/notifications/${encodeURIComponent(notification)}/resolve`, { resolution })
 export const rejectTicket = (id: string) => api<Ticket>('POST', `/admin/tickets/${encodeURIComponent(id)}/reject`)
 export const getCatalog = () => api<Catalog>('GET', '/admin/catalog')
 export const ownerCustomers = (accountId: string) =>
@@ -79,6 +81,8 @@ export const REASON_LABEL: Record<string, string> = {
   model_output_rejected: 'Wynik interpretacji odrzucony przez kontrolę zakresu',
   ai_provider_error: 'Błąd dostawcy AI — ustaw parametry ręcznie',
   ai_limit: 'Limit interpretacji AI wyczerpany — ustaw parametry ręcznie',
+  processing_failed: 'Zadanie nie powiodło się po ponowieniach (błąd techniczny)',
+  processing_stalled: 'Przetwarzanie bez postępu przez ponad 24 godziny',
 }
 
 export const reasonLabel = (code: string | null | undefined) => (code ? (REASON_LABEL[code] ?? code) : '')
@@ -94,8 +98,22 @@ export const TEMPLATE_LABEL: Record<string, string> = {
 /** Delivery state of a notification; „przyjęte” means accepted by the mail server, not delivered. */
 export function deliveryLabel(delivery: string, route: string): string {
   if (delivery === 'accepted') return route === 'capture' ? 'przechwycone (demo przed uruchomieniem)' : 'przyjęte przez serwer poczty'
-  return { pending: 'oczekuje na wysłanie', sending: 'wysyłanie', unknown: 'wynik nieznany', failed: 'nie wysłano' }[delivery] ?? delivery
+  return (
+    {
+      pending: 'oczekuje na wysłanie',
+      sending: 'wysyłanie',
+      unknown: 'wynik nieznany',
+      failed: 'nie wysłano',
+      bounced: 'zwrot — nie doręczono',
+    }[delivery] ?? delivery
+  )
 }
 
 /** Reasons the administrator can fix by re-running the same plan version. */
-export const RETRYABLE = new Set(['data_source_error', 'internal_error'])
+export const RETRYABLE = new Set(['data_source_error', 'internal_error', 'processing_failed', 'processing_stalled'])
+
+/** Delivery states the administrator resolves by hand (never resent automatically): which decisions each allows. */
+export function notificationResolutions(delivery: string): Array<'sent' | 'resend'> {
+  if (delivery === 'unknown') return ['sent', 'resend']
+  return delivery === 'failed' ? ['resend'] : []
+}

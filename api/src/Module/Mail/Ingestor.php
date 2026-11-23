@@ -77,6 +77,8 @@ final class Ingestor
             return null === $message->uid ? 'duplicate' : $this->record($message, null, null, 'duplicate');
         }
         if (null !== $parsed && $parsed->automatic) {
+            $this->bounced($parsed->returned);
+
             return $this->record($message, null, $idHash, 'auto_reply');
         }
         $senderHash = null === $parsed?->sender ? null : hash_hmac('sha256', $parsed->sender, $this->secret);
@@ -145,6 +147,30 @@ final class Ingestor
             });
         } catch (UniqueConstraintViolationException) {
             return 'duplicate';
+        }
+    }
+
+    /**
+     * A bounce marks our outgoing message `bounced` (MAIL-2): only one that left (accepted, or outcome unknown) and only
+     * by its unpredictable Message-ID. It never creates a ticket and is never answered.
+     *
+     * @param list<string> $ids
+     */
+    private function bounced(array $ids): void
+    {
+        if ([] === $ids) {
+            return;
+        }
+        $rows = $this->tickets->connection()->fetchAllAssociative(
+            "UPDATE outbox SET status = 'bounced', error = 'bounce' WHERE message_id IN (?) AND status IN ('accepted', 'unknown') RETURNING ticket_id, template",
+            [$ids],
+            [\Doctrine\DBAL\ArrayParameterType::STRING],
+        );
+        $now = $this->clock->now();
+        foreach ($rows as $row) {
+            if (\is_string($row['ticket_id']) && \is_string($row['template'])) {
+                $this->tickets->event($row['ticket_id'], 'system', 'Poczta', \sprintf('Powiadomienie %s: zwrot od serwera poczty (nie doręczono)', $row['template']), $now);
+            }
         }
     }
 

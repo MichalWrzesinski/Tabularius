@@ -37,7 +37,26 @@ final class MessageParser
             $message->getAttachmentCount(),
             self::automatic($message),
             self::replyTo($message),
+            self::returned($message, $raw),
         );
+    }
+
+    /**
+     * Ids named by a delivery-status report (a bounce, MAIL-2): the ones it answers and every `Message-ID` header of
+     * the returned part. An out-of-office reply is not a bounce, so it never marks a message undelivered.
+     *
+     * @return list<string>
+     */
+    private static function returned(IMessage $message, string $raw): array
+    {
+        $report = 'multipart/report' === strtolower((string) $message->getContentType())
+            && 'delivery-status' === strtolower((string) $message->getHeaderParameter('Content-Type', 'report-type'));
+        if (!$report && null === $message->getHeader('X-Failed-Recipients')) {
+            return [];
+        }
+        preg_match_all('/^Message-ID:[ \t]*<([^<>\s]{1,250})>/mi', substr($raw, 0, 512 * 1024), $m);
+
+        return \array_slice(array_values(array_unique([...self::replyTo($message), ...$m[1]])), 0, 50);
     }
 
     /**
