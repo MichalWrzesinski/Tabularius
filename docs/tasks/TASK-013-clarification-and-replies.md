@@ -1,6 +1,6 @@
 # TASK-013 — Clarification questions and reply correlation
 
-Status: IN PROGRESS · Priority: high · Increment: 5 · Depends on: TASK-009, TASK-011 · Rules: [tickets.md](../product/areas/tickets.md) (TKT-CLAR, TKT-VER, MAIL-CORR)
+Status: DONE · Priority: high · Increment: 5 · Depends on: TASK-009, TASK-011 · Rules: [tickets.md](../product/areas/tickets.md) (TKT-CLAR, TKT-VER, MAIL-CORR)
 
 ## Goal and scope
 A mail request that lacks information gets a question by e-mail. The answer in the same thread completes the same ticket.
@@ -54,4 +54,5 @@ Functional tests: the full thread with the rule interpreter; correlation negativ
 
   Two existing expectations changed from `needs_intervention` to `needs_clarification`.
 - Deployed to staging (`907f199`, migration applied, smoke tests passed). prompt-v5 on dev: 118/120, attacks 0 effects ([evaluation](../qa/evaluation/README.md)).
-- **Not verified yet:** a real thread on staging (needs a test e-mail from the owner).
+- **Staging verification (2026-11-23, owner):** a real thread from an allowlisted test address. Request without a period → T-1008 `needs_clarification` with one period question (choices and dates correct, no request text). The reply „Za październik” in the thread → the report link arrived for the same ticket. The ticket's database state was not inspected; the owner accepted the delivered report as sufficient.
+- **Observed:** the question reached the mailbox before the „received” acknowledgement. Not investigated (it may be mailbox ordering or delivery timing).
