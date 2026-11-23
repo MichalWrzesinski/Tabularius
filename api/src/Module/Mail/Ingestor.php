@@ -20,6 +20,9 @@ use Symfony\Component\Uid\Uuid;
  * - demo-mode sender and global limits are counted durably in the database;
  * - oversized, unparseable, empty or too long messages still become tickets, in `needs_intervention` with a reason,
  *   never silently truncated or dropped;
+ * - a reply (MAIL-CORR) joins a ticket only when its In-Reply-To/References name one of that ticket's own outgoing
+ *   Message-IDs and its sender is the ticket's participant; a ticket waiting for an answer goes back to
+ *   interpretation, any other ticket only records it (`late_reply`). Subject, `Re:` or the sender alone never do;
  * - everything else becomes a `received` ticket. The message row and the ticket are written in one transaction.
  * Logs never contain addresses, subjects or bodies.
  */
@@ -89,7 +92,60 @@ final class Ingestor
             default => ['ticketed', TicketStatus::Received, null],
         };
 
+        if ('ticketed' === $outcome && null !== $parsed && [] !== $parsed->replyTo) {
+            $reply = $this->reply($message, $parsed, $idHash, $senderHash);
+            if (null !== $reply) {
+                return $reply;
+            }
+        }
+
         return $this->record($message, $parsed, $idHash, $outcome, $senderHash, $status, $reason);
+    }
+
+    /** The outcome when the message correlates with a ticket, or null to treat it as a new request. */
+    private function reply(IncomingMessage $message, ParsedMessage $parsed, ?string $idHash, ?string $senderHash): ?string
+    {
+        if (null === $senderHash) {
+            return null;
+        }
+        $db = $this->tickets->connection();
+        $tickets = $db->fetchFirstColumn(
+            'SELECT DISTINCT ticket_id FROM outbox WHERE message_id IN (?)',
+            [$parsed->replyTo],
+            [\Doctrine\DBAL\ArrayParameterType::STRING],
+        );
+        if (1 !== \count($tickets) || !\is_string($tickets[0])) {
+            return null;
+        }
+        $ticketId = $tickets[0];
+        // The participant: the sender of the ticket's request (demo, ID-DEMO-2) who, in production, is still the
+        // ticket owner's registered address of an active account.
+        $original = $db->fetchOne("SELECT sender_hash FROM mail_message WHERE ticket_id = ? AND outcome NOT IN ('reply', 'late_reply') ORDER BY received_at LIMIT 1", [$ticketId]);
+        $owner = $db->fetchOne('SELECT owner_account_id FROM ticket WHERE id = ?', [$ticketId]);
+        if ($original !== $senderHash || !\is_string($owner)
+            || (!$this->identity->demo() && $this->identity->resolve($parsed->sender, $senderHash)['owner'] !== $owner)) {
+            return null;
+        }
+        $now = $this->clock->now();
+        try {
+            return $db->transactional(function () use ($message, $parsed, $idHash, $senderHash, $ticketId, $now): string {
+                $ticket = $this->tickets->lock($ticketId);
+                $waiting = null !== $ticket && TicketStatus::NeedsClarification === $ticket['status'];
+                $outcome = $waiting ? 'reply' : 'late_reply';
+                if ($waiting) {
+                    $this->tickets->setStatus($ticketId, TicketStatus::Interpreting, null, $now);
+                    $this->tickets->event($ticketId, 'system', 'Poczta', 'Odpowiedź w wątku przyjęta; ponowna interpretacja', $now);
+                    $this->bus->dispatch(new \App\Module\Interpretation\Job\InterpretTicket($ticketId, $ticket['plan_version']));
+                } else {
+                    $this->tickets->event($ticketId, 'system', 'Poczta', 'Odpowiedź w wątku, gdy zgłoszenie nie czekało na uzupełnienie; pominięta, nic nie wykonano', $now);
+                }
+                $this->mail->insert($this->row($message, $waiting ? $parsed : null, $idHash, $outcome, $senderHash, $ticketId, $now));
+
+                return $outcome;
+            });
+        } catch (UniqueConstraintViolationException) {
+            return 'duplicate';
+        }
     }
 
     private function limited(?string $senderHash, \DateTimeImmutable $at): bool
@@ -133,25 +189,7 @@ final class Ingestor
                         $this->bus->dispatch(new \App\Module\Interpretation\Job\InterpretTicket($ticketId));
                     }
                 }
-                $this->mail->insert([
-                    'id' => Uuid::v7()->toRfc4122(),
-                    'mailbox' => $message->mailbox,
-                    'uid_validity' => $message->uidValidity,
-                    'uid' => $message->uid,
-                    'message_id_hash' => 'duplicate' === $outcome ? null : $idHash,
-                    'message_id' => $keep ? $parsed?->messageId : null,
-                    'received_at' => TicketStore::ts($message->receivedAt),
-                    'sender_hash' => $senderHash,
-                    'sender' => $keep ? $parsed?->sender : null,
-                    'subject' => $keep ? $parsed?->subject : null,
-                    'header_block' => $keep ? $parsed?->headerBlock : null,
-                    'text_body' => $keep && 'text_too_long' !== $outcome ? $parsed?->text : null,
-                    'size_bytes' => $message->size,
-                    'attachment_count' => $parsed->attachmentCount ?? 0,
-                    'outcome' => $outcome,
-                    'ticket_id' => $ticketId,
-                    'created_at' => TicketStore::ts($now),
-                ]);
+                $this->mail->insert($this->row($message, $keep ? $parsed : null, $idHash, $outcome, $senderHash, $ticketId, $now, null === $parsed ? 0 : $parsed->attachmentCount));
                 if (null !== $ticketId) {
                     $this->outbox->enqueue($ticketId, 'received', $ticketId.':received');
                 }
@@ -162,6 +200,34 @@ final class Ingestor
         $this->logger->info('Mail message ingested', ['outcome' => $outcome, 'size' => $message->size]);
 
         return $outcome;
+    }
+
+    /**
+     * The mail_message row; contents (`$kept`) only for messages that became or joined a ticket.
+     *
+     * @return array{id: string, mailbox: string, uid_validity: ?int, uid: ?int, message_id_hash: ?string, message_id: ?string, received_at: string, sender_hash: ?string, sender: ?string, subject: ?string, header_block: ?string, text_body: ?string, size_bytes: int, attachment_count: int, outcome: string, ticket_id: ?string, created_at: string}
+     */
+    private function row(IncomingMessage $message, ?ParsedMessage $kept, ?string $idHash, string $outcome, ?string $senderHash, ?string $ticketId, \DateTimeImmutable $now, ?int $attachments = null): array
+    {
+        return [
+            'id' => Uuid::v7()->toRfc4122(),
+            'mailbox' => $message->mailbox,
+            'uid_validity' => $message->uidValidity,
+            'uid' => $message->uid,
+            'message_id_hash' => 'duplicate' === $outcome ? null : $idHash,
+            'message_id' => $kept?->messageId,
+            'received_at' => TicketStore::ts($message->receivedAt),
+            'sender_hash' => $senderHash,
+            'sender' => $kept?->sender,
+            'subject' => $kept?->subject,
+            'header_block' => $kept?->headerBlock,
+            'text_body' => 'text_too_long' !== $outcome ? $kept?->text : null,
+            'size_bytes' => $message->size,
+            'attachment_count' => $attachments ?? $kept->attachmentCount ?? 0,
+            'outcome' => $outcome,
+            'ticket_id' => $ticketId,
+            'created_at' => TicketStore::ts($now),
+        ];
     }
 
     private static function receivedText(IncomingMessage $message, ?ParsedMessage $parsed): string

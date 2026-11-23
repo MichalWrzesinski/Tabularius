@@ -71,6 +71,8 @@ export const REASON_LABEL: Record<string, string> = {
   cancelled_by_owner: 'Anulowane przez pracownika („to nie ja”)',
   confirmation_expired: 'Wygasło bez potwierdzenia pracownika',
   clarification_needed: 'Prośba wymaga uzupełnienia parametrów',
+  clarification_exhausted: 'Po 3 pytaniach prośba nadal niepełna',
+  clarification_expired: 'Brak odpowiedzi na pytanie w ciągu 7 dni',
   out_of_catalog: 'Prośba spoza katalogu operacji',
   interpretation_unavailable: 'Interpretacja niemożliwa — ustaw parametry ręcznie',
   outside_business_scope: 'Prośba poza zakresem usługi (kontrola bezpieczeństwa)',
@@ -86,6 +88,7 @@ export const TEMPLATE_LABEL: Record<string, string> = {
   confirmation_request: 'Prośba o potwierdzenie',
   report_ready: 'Raport gotowy',
   refused: 'Odmowa z szablonu',
+  clarification: 'Pytanie o uzupełnienie',
 }
 
 /** Delivery state of a notification; „przyjęte” means accepted by the mail server, not delivered. */

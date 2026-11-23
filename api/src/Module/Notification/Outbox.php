@@ -45,8 +45,8 @@ final class Outbox
     }
 
     /**
-     * @param 'received'|'confirmation_request'|'report_ready'|'refused' $template
-     * @param array{fileId?: string, reason?: ?string}                   $values
+     * @param 'received'|'confirmation_request'|'report_ready'|'refused'|'clarification'      $template
+     * @param array{fileId?: string, reason?: ?string, questions?: list<string>, round?: int} $values
      */
     public function enqueue(string $ticketId, string $template, string $dedupKey, array $values = []): void
     {
@@ -97,7 +97,7 @@ final class Outbox
      */
     public function forTicket(string $ticketId): array
     {
-        $kinds = ['received' => 'notification', 'report_ready' => 'notification', 'refused' => 'refusal', 'confirmation_request' => 'confirmation_request'];
+        $kinds = ['received' => 'notification', 'report_ready' => 'notification', 'refused' => 'refusal', 'confirmation_request' => 'confirmation_request', 'clarification' => 'clarification_request'];
 
         return array_map(static fn (array $r): array => [
             'id' => self::s($r['id']),

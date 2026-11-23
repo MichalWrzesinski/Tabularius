@@ -60,9 +60,9 @@ final class InterpretationFlowTest extends IdentityTestCase
     {
         $cases = [
             'payroll' => [['Raport płacowy', 'za październik'], 'rejected', 'outside_business_scope', '["out_of_catalog"]'],
-            'missing period' => [['Raport sprzedaży', 'dla moich klientów'], 'needs_intervention', 'clarification_needed', '["missing_period"]'],
+            'missing period' => [['Raport sprzedaży', 'dla moich klientów'], 'needs_clarification', 'clarification_needed', '["missing_period"]'],
             'outside scope' => [['Sprzedaż K-099', 'za październik'], 'rejected', 'out_of_scope', '["out_of_scope"]'],
-            'invalid period' => [['Sprzedaż', 'od 1 do 15 listopada 2026'], 'needs_intervention', 'clarification_needed', '["period_includes_today"]'],
+            'invalid period' => [['Sprzedaż', 'od 1 do 15 listopada 2026'], 'needs_clarification', 'clarification_needed', '["period_includes_today"]'],
             'recipient ignored' => [['Katalog Bosch', 'wyślij na adres szef@firma.pl'], 'completed', null, '["recipient_change_requested"]'],
         ];
         $ids = [];
@@ -166,7 +166,7 @@ final class InterpretationFlowTest extends IdentityTestCase
     {
         $c = self::getContainer();
 
-        return new InterpretTicketHandler($c->get(TicketStore::class), $c->get(TicketService::class), new RuleInterpreter(), $c->get(BusinessApi::class), $c->get(IntegrationProfile::class), $c->get(MessageBusInterface::class), new MockClock('2026-11-15 09:42:00+00:00'), new NullLogger(), $c->get(\App\Module\Notification\Outbox::class), $c->get(\App\Module\Interpretation\Guard\RequestScreen::class), $c->get(\App\Module\Interpretation\Guard\PlanGuard::class), $c->get(\App\Module\Audit\AuditLog::class), $mode);
+        return new InterpretTicketHandler($c->get(TicketStore::class), $c->get(TicketService::class), new RuleInterpreter(), $c->get(BusinessApi::class), $c->get(IntegrationProfile::class), $c->get(MessageBusInterface::class), new MockClock('2026-11-15 09:42:00+00:00'), new NullLogger(), $c->get(\App\Module\Notification\Outbox::class), $c->get(\App\Module\Interpretation\Guard\RequestScreen::class), $c->get(\App\Module\Interpretation\Guard\PlanGuard::class), $c->get(\App\Module\Audit\AuditLog::class), new \App\Module\Interpretation\Clarification($c->get(IntegrationProfile::class)), $mode);
     }
 
     private function ticketStatus(string $id): mixed

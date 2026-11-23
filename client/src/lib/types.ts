@@ -60,8 +60,8 @@ export interface OutgoingMessage {
   id: string
   direction: 'out'
   at: string
-  kind: 'notification' | 'refusal' | 'confirmation_request'
-  template: 'received' | 'confirmation_request' | 'report_ready' | 'refused'
+  kind: 'notification' | 'refusal' | 'confirmation_request' | 'clarification_request'
+  template: 'received' | 'confirmation_request' | 'report_ready' | 'refused' | 'clarification'
   delivery: 'pending' | 'sending' | 'accepted' | 'unknown' | 'failed'
   route: 'deliver' | 'capture'
   /** Null after the retention period. */

@@ -91,7 +91,7 @@ final class NotificationTest extends IdentityTestCase
         self::assertSame(200, $this->login('admin@example.com'));
         self::assertSame(200, $this->api('POST', '/api/v1/admin/tickets/'.$other.'/reject'));
         $this->work();
-        self::assertSame(['received', 'refused'], $this->db()->fetchFirstColumn('SELECT template FROM outbox WHERE ticket_id = ? ORDER BY created_at, template', [$other]));
+        self::assertSame(['clarification', 'received', 'refused'], $this->db()->fetchFirstColumn('SELECT template FROM outbox WHERE ticket_id = ? ORDER BY created_at, template', [$other]), 'asked first, then rejected by the administrator');
     }
 
     public function testControlledRecipientsBeforeLaunch(): void

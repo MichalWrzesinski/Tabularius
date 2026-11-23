@@ -94,7 +94,7 @@ final class TicketView
                 'text' => $e['text'],
             ], $events),
             'messages' => $this->outbox->forTicket($t['id']),
-            'clarificationRounds' => 0,
+            'clarificationRounds' => $t['clarification_rounds'],
         ];
     }
 

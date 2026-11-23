@@ -18,6 +18,8 @@ final readonly class ParsedMessage
         public string $text,
         public int $attachmentCount,
         public bool $automatic,
+        /** @var list<string> Message-IDs from In-Reply-To and References (without brackets), for correlation only */
+        public array $replyTo = [],
     ) {
     }
 }

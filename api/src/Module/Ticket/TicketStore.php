@@ -10,7 +10,7 @@ use Symfony\Component\Uid\Uuid;
 /**
  * Persistence of tickets, plan versions and ticket events (DBAL; jsonb and row locks are explicit).
  *
- * @phpstan-type TicketRow array{id: string, number: int, owner_account_id: ?string, participant_alias: ?string, owner_name: ?string, owner_email: ?string, owner_rep_code: ?string, owner_status: ?string, source: string, status: string, reason: ?string, plan_version: int, reference_date: string, received_at: string, updated_at: string, operation: ?string, file_id: ?string, plan: ?PlanRow}
+ * @phpstan-type TicketRow array{id: string, number: int, owner_account_id: ?string, participant_alias: ?string, owner_name: ?string, owner_email: ?string, owner_rep_code: ?string, owner_status: ?string, source: string, status: string, reason: ?string, plan_version: int, clarification_rounds: int, reference_date: string, received_at: string, updated_at: string, operation: ?string, file_id: ?string, plan: ?PlanRow}
  * @phpstan-type PlanRow array{version: int, author: string, author_ref: string, created_at: string, operation: ?string, parameters: array<array-key, mixed>, issues: list<string>}
  * @phpstan-type EventRow array{at: string, actor: string, actor_name: string, text: string}
  */
@@ -18,7 +18,7 @@ final class TicketStore
 {
     private const string SELECT = <<<'SQL'
         SELECT t.id, t.number, t.owner_account_id, t.participant_alias, a.name AS owner_name, a.email AS owner_email, a.rep_code AS owner_rep_code,
-               a.status AS owner_status, t.source, t.status, t.reason, t.plan_version, t.reference_date, t.received_at, t.updated_at,
+               a.status AS owner_status, t.source, t.status, t.reason, t.plan_version, t.clarification_rounds, t.reference_date, t.received_at, t.updated_at,
                p.operation, p.version AS p_version, p.author AS p_author, p.author_ref AS p_author_ref, p.created_at AS p_created_at,
                p.parameters AS p_parameters, p.issues AS p_issues,
                (SELECT f.id FROM report_file f WHERE f.ticket_id = t.id AND f.deleted_at IS NULL ORDER BY f.created_at DESC LIMIT 1) AS file_id
@@ -185,6 +185,7 @@ final class TicketStore
             'status' => self::str($r['status']),
             'reason' => null === $r['reason'] ? null : self::str($r['reason']),
             'plan_version' => (int) self::str($r['plan_version']),
+            'clarification_rounds' => (int) self::str($r['clarification_rounds']),
             'reference_date' => self::str($r['reference_date']),
             'received_at' => self::str($r['received_at']),
             'updated_at' => self::str($r['updated_at']),
