@@ -72,6 +72,7 @@ All runs went through the **Evaluate interpretation** workflow on the GHCR image
 | v2 | `ad9566e` | 54 | 22 | 12 | 24, 0 | 0.0845 | 948 / 1261 | `…-prompt-v2.json` |
 | v3 | `15e8e1f` | 52 | 30 | 12 | 24, 0 | 0.0893 | 948 / 1365 | `…-prompt-v3.json` |
 | v4 | `a1c1cc1` | 54 | 30 | 12 | 24, 0 | 0.0907 | 925 / 1359 | `…-prompt-v4.json` |
+| v5 | `907f199` | 53 | 29 | 12 | 24, 0 | 0.0932 | 1053 / 1704 | `…-prompt-v5.json` |
 
 What changed, each based only on dev misses:
 - **v2:** operation synonyms come from the profile („cennik” = catalog). New prompt rules:
@@ -83,6 +84,10 @@ What changed, each based only on dev misses:
   In code, the intent implies its issue code.
 - **v3:** customers whose names start with the same word are marked in the list the model gets (data, not a matching rule). Code adds `missing_<param>` for an empty required parameter, unless the model already gave a reason.
 - **v4:** the v3 caution made the model drop a plainly named customer (2 ordinary regressions). Caution now applies only to the marked customers, and named customers are always listed. Tuning stopped here.
+
+- **v5 (TASK-013, after the final run):** one rule for replies: lines starting with „Uzupełnienie:” complete the request, and the later one wins. The dev set has no replies, so this run only checks for regressions.
+  - Two misses, both safe: a needless question about the customer for a sales report (dev-050), and „wrzesień i październik” blocked by PlanGuard instead of a period question (dev-071, the same pattern as the final set).
+  - Even at temperature 0, single cases vary between runs. The final result above is for v4; v5 has not been measured on a final set.
 
 ### Final set (frozen, run once): prompt-v4, commit `a1c1cc1`, 2026-11-23
 Report: `final-openai-gpt-4.1-mini-prompt-v4.json` (set sha256 `082345f9…617c`). 181 model calls (19 cases stopped at RequestScreen), 365 924 / 10 117 tokens, **USD 0.1626**, latency p50 1133 ms, p95 1695 ms, 0 provider errors.
@@ -110,8 +115,9 @@ Interpretation:
 | item | USD |
 |---|---|
 | dev runs v1–v4 | 0.3300 |
+| dev run v5 | 0.0932 |
 | final run | 0.1626 |
 | staging checks (T-1006, T-1007) | ≈ 0.0013 |
-| **total from the USD 20 evaluation budget** | **≈ 0.49** |
+| **total from the USD 20 evaluation budget** | **≈ 0.59** |
 
 Agent development cost is not included here (see the case study).
