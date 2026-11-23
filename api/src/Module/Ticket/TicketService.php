@@ -180,6 +180,35 @@ final class TicketService
         return \count($ids);
     }
 
+    /**
+     * Tickets still processing after the given time: a worker crash is redelivered by Messenger within an hour, so a
+     * ticket this old has no job coming. It goes to the administrator; a late job then finds nothing to claim.
+     */
+    public function expireStalled(int $hours = 24): int
+    {
+        $now = $this->clock->now();
+        $ids = $this->tickets->connection()->fetchFirstColumn(
+            "SELECT id FROM ticket WHERE status IN ('received', 'interpreting', 'queued', 'running') AND updated_at < ?",
+            [TicketStore::ts($now->modify(\sprintf('-%d hours', $hours)))],
+        );
+        $processing = [TicketStatus::Received, TicketStatus::Interpreting, TicketStatus::Queued, TicketStatus::Running];
+        $moved = 0;
+        foreach ($ids as $id) {
+            $moved += $this->tickets->connection()->transactional(function () use ($id, $now, $hours, $processing): int {
+                $ticket = \is_string($id) ? $this->tickets->lock($id) : null;
+                if (null === $ticket || !\in_array($ticket['status'], $processing, true)) {
+                    return 0;
+                }
+                $this->tickets->setStatus((string) $id, TicketStatus::NeedsIntervention, 'processing_stalled', $now);
+                $this->tickets->event((string) $id, 'system', 'System', \sprintf('Przetwarzanie bez postępu przez ponad %d godz.; potrzebna decyzja administratora', $hours), $now);
+
+                return 1;
+            });
+        }
+
+        return $moved;
+    }
+
     /** Re-run the current plan version after a data-source or technical failure (same parameters). */
     public function retry(Account $admin, string $ticketId): void
     {
@@ -194,6 +223,46 @@ final class TicketService
             $this->tickets->event($ticketId, 'admin', 'Administrator', \sprintf('Ponowienie wykonania planu v%d (bez zmiany parametrów)', $version), $now);
             $this->audit->record(self::ref($admin), 'ticket.retry', 'ticket:'.$ticketId, ['version' => $version]);
             $this->bus->dispatch(new ExecutePlan($ticketId, $version));
+        });
+    }
+
+    /**
+     * The administrator resolves a notification whose outcome is unknown or that failed (brief §8: never resent before
+     * the outcome is resolved). `sent`: an unknown message is taken as sent. `resend`: an unknown or failed message is
+     * queued again with the same Message-ID (a client that already has it shows one copy); not after retention purged it.
+     */
+    public function resolveNotification(Account $admin, string $ticketId, string $outboxId, string $resolution): void
+    {
+        if (!\in_array($resolution, ['sent', 'resend'], true)) {
+            throw new Refusal('invalid_resolution');
+        }
+        $this->tickets->connection()->transactional(function () use ($admin, $ticketId, $outboxId, $resolution): void {
+            $db = $this->tickets->connection();
+            if (!Uuid::isValid($outboxId) || null === $this->tickets->lock($ticketId)) {
+                throw new Refusal('not_found', 404);
+            }
+            $row = $db->fetchAssociative('SELECT status, template, purged_at FROM outbox WHERE id = ? AND ticket_id = ? FOR UPDATE', [$outboxId, $ticketId]);
+            if (false === $row) {
+                throw new Refusal('not_found', 404);
+            }
+            $status = \is_string($row['status']) ? $row['status'] : '';
+            $template = \is_string($row['template']) ? $row['template'] : '';
+            if (!\in_array($status, 'sent' === $resolution ? ['unknown'] : ['unknown', 'failed'], true)) {
+                throw new Refusal('invalid_status', 409);
+            }
+            if ('resend' === $resolution && null !== $row['purged_at']) {
+                throw new Refusal('notification_purged', 409);
+            }
+            $now = $this->clock->now();
+            if ('sent' === $resolution) {
+                $db->executeStatement("UPDATE outbox SET status = 'accepted', error = 'resolved_by_admin' WHERE id = ?", [$outboxId]);
+                $this->tickets->event($ticketId, 'admin', 'Administrator', \sprintf('Powiadomienie %s uznane za wysłane (decyzja administratora)', $template), $now);
+            } else {
+                $db->executeStatement("UPDATE outbox SET status = 'pending', attempts = 0, error = NULL WHERE id = ?", [$outboxId]);
+                $this->tickets->event($ticketId, 'admin', 'Administrator', \sprintf('Powiadomienie %s wysłane ponownie (decyzja administratora)', $template), $now);
+                $this->bus->dispatch(new \App\Module\Notification\Job\SendNotification($outboxId));
+            }
+            $this->audit->record(self::ref($admin), 'notification.resolve', 'ticket:'.$ticketId, ['notification' => $outboxId, 'resolution' => $resolution, 'was' => $status]);
         });
     }
 

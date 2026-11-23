@@ -17,8 +17,10 @@ import {
   myFiles,
   myTickets,
   ownerCustomers,
+  notificationResolutions,
   reasonLabel,
   rejectTicket,
+  resolveNotification,
   retryTicket,
   RETRYABLE,
   sizeLabel,
@@ -48,6 +50,7 @@ describe('tickets API', () => {
     await getMyTicket('m')
     await confirmMyTicket('m')
     await cancelMyTicket('m')
+    await resolveNotification('t', 'n', 'resend')
 
     expect(fetch.mock.calls.map(([url, init]) => `${init?.method} ${url}`)).toEqual([
       'GET /api/v1/admin/tickets',
@@ -65,7 +68,9 @@ describe('tickets API', () => {
       'GET /api/v1/me/tickets/m',
       'POST /api/v1/me/tickets/m/confirm',
       'POST /api/v1/me/tickets/m/cancel',
+      'POST /api/v1/admin/tickets/t/notifications/n/resolve',
     ])
+    expect(JSON.parse(String(fetch.mock.calls[15]?.[1]?.body))).toEqual({ resolution: 'resend' })
     expect(JSON.parse(String(fetch.mock.calls[2]?.[1]?.body))).toEqual({
       ownerId: 'owner',
       operation: 'sales_report',
@@ -106,7 +111,12 @@ describe('tickets API', () => {
     expect(deliveryLabel('accepted', 'deliver')).toBe('przyjęte przez serwer poczty')
     expect(deliveryLabel('accepted', 'capture')).toContain('przechwycone')
     expect(deliveryLabel('unknown', 'deliver')).toBe('wynik nieznany')
+    expect(deliveryLabel('bounced', 'deliver')).toContain('nie doręczono')
     expect(deliveryLabel('other', 'deliver')).toBe('other')
+    expect(notificationResolutions('unknown')).toEqual(['sent', 'resend'])
+    expect(notificationResolutions('failed')).toEqual(['resend'])
+    expect(notificationResolutions('accepted')).toEqual([])
+    expect(notificationResolutions('bounced')).toEqual([])
     expect(TEMPLATE_LABEL.report_ready).toBe('Raport gotowy')
   })
 
@@ -118,5 +128,7 @@ describe('tickets API', () => {
     expect(reasonLabel('other')).toBe('other')
     expect(reasonLabel(null)).toBe('')
     expect(RETRYABLE.has('internal_error')).toBe(true)
+    expect(RETRYABLE.has('processing_failed')).toBe(true)
+    expect(reasonLabel('processing_stalled')).toContain('24 godziny')
   })
 })

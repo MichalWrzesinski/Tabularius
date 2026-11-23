@@ -20,6 +20,8 @@ final readonly class ParsedMessage
         public bool $automatic,
         /** @var list<string> Message-IDs from In-Reply-To and References (without brackets), for correlation only */
         public array $replyTo = [],
+        /** @var list<string> For a delivery-status report (bounce) only: Message-IDs it names, to mark our outgoing message bounced */
+        public array $returned = [],
     ) {
     }
 }

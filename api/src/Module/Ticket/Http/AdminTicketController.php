@@ -86,6 +86,15 @@ final class AdminTicketController
         return new JsonResponse($this->detail($id));
     }
 
+    #[Route('/tickets/{id}/notifications/{notification}/resolve', name: 'api_admin_ticket_notification_resolve', methods: ['POST'], requirements: ['id' => '[0-9a-f-]{36}', 'notification' => '[0-9a-f-]{36}'])]
+    public function resolveNotification(string $id, string $notification, Request $request, #[CurrentUser] Account $admin): JsonResponse
+    {
+        $body = AuthController::json($request);
+        $this->service->resolveNotification($admin, $id, $notification, \is_string($body['resolution'] ?? null) ? $body['resolution'] : '');
+
+        return new JsonResponse($this->detail($id));
+    }
+
     #[Route('/tickets/{id}/reject', name: 'api_admin_ticket_reject', methods: ['POST'])]
     public function reject(string $id, #[CurrentUser] Account $admin): JsonResponse
     {
