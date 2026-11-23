@@ -4,7 +4,7 @@ As of: 2026-11-23 Europe/Warsaw | scope: first release (public demo on synthetic
 Stage: implementation | increments 1–4 done; increment 5 in progress
 Tasks: TASK-001–012 DONE; TASK-013 (clarification and replies) in progress — [docs/tasks/](tasks/)
 Release: private repo `MichalWrzesinski/Tabularius`, CI on every PR; **staging live** at https://tabularius.gitpush.app since 2026-11-22 (private: environment login; deployed by CI as `tabularius_deploy`) | production: not planned before separate approval
-Metrics: agent usage not measured (no tool export configured); application LLM cost: about USD 0.49 of the USD 20 evaluation budget ([evaluation](qa/evaluation/README.md))
+Metrics: agent usage not measured (no tool export configured); application LLM cost: about USD 0.59 of the USD 20 evaluation budget ([evaluation](qa/evaluation/README.md))
 
 | # | Increment (brief §11) | State | Depends on |
 |---|---|---|---|

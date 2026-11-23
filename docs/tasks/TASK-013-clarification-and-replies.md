@@ -53,4 +53,5 @@ Functional tests: the full thread with the rule interpreter; correlation negativ
   - stale jobs.
 
   Two existing expectations changed from `needs_intervention` to `needs_clarification`.
-- **Not verified yet:** a real thread on staging, and the evaluation of prompt-v5 on the dev set.
+- Deployed to staging (`907f199`, migration applied, smoke tests passed). prompt-v5 on dev: 118/120, attacks 0 effects ([evaluation](../qa/evaluation/README.md)).
+- **Not verified yet:** a real thread on staging (needs a test e-mail from the owner).
