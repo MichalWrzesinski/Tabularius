@@ -1,6 +1,6 @@
 # TASK-014 — Failure scenarios: exhausted jobs, unknown sends, bounces
 
-Status: IN PROGRESS · Priority: high · Increment: 6 · Depends on: TASK-005, TASK-009, TASK-013 · Rules: [tickets.md](../product/areas/tickets.md) (TKT-STATUS, notification state, MAIL-2, MAIL-3), brief §8 and §10
+Status: DONE · Priority: high · Increment: 6 · Depends on: TASK-005, TASK-009, TASK-013 · Rules: [tickets.md](../product/areas/tickets.md) (TKT-STATUS, notification state, MAIL-2, MAIL-3), brief §8 and §10
 
 ## Goal and scope
 No failure leaves a ticket or a notification in a state that pretends work is still going on. No failure resends mail without a decision.
@@ -56,3 +56,4 @@ No failure leaves a ticket or a notification in a state that pretends work is st
   - API: 420 tests, 96.21 % lines. `FailureScenarioTest` (6) covers exhausted execution and retry, a stale failure, a failure after completion, an exhausted interpretation, exhausted notifications, stalled tickets, resolving sends (roles, validation, sent, resend once with the same id, purged), and a bounce against an auto-reply and a foreign id.
   - Client: 47 Vitest tests.
 - **Not verified:** the resolve buttons were not checked in a browser (only by unit tests of their logic). A real bounce from the staging SMTP provider has not been observed.
+- Deployed to staging (`f8ba833`, migration applied, smoke tests passed).

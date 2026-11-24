@@ -4,6 +4,8 @@ name: Deploy staging
 # Secrets: STAGING_SSH_HOST, STAGING_SSH_KEY, STAGING_SSH_KNOWN_HOSTS, optional STAGING_MAILBOX_DSN, STAGING_MAILER_DSN.
 # Variables: optional STAGING_MAIL_ALLOWED_RECIPIENTS (controlled test addresses before the public demo is approved),
 # STAGING_MAIL_INGEST_SINCE (ISO 8601; older mail in the mailbox is never read), STAGING_OPENAI_MODEL.
+# Optional secrets STAGING_SENTRY_DSN (error reporting) and STAGING_SENTRY_AUTH_TOKEN with variables SENTRY_ORG,
+# SENTRY_PROJECT (release, source maps, deployment record; TASK-015).
 # Optional secret STAGING_OPENAI_API_KEY: without it staging interprets with the rule-based baseline. Variables: STAGING_DOMAIN, optional
 # STAGING_SSH_USER, STAGING_APP_DIR (docs/runbook.md, Staging). Until they exist the job stops with a notice.
 on:
@@ -31,6 +33,8 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    outputs:
+      deployed: ${{ steps.deployed.outputs.done }}
     # The token is handed to the server for one registry login, so it may only read.
     permissions:
       contents: read
@@ -87,6 +91,39 @@ jobs:
           MAIL_INGEST_SINCE: ${{ vars.STAGING_MAIL_INGEST_SINCE }}
           OPENAI_API_KEY: ${{ secrets.STAGING_OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.STAGING_OPENAI_MODEL }}
+          SENTRY_DSN: ${{ secrets.STAGING_SENTRY_DSN }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
         run: bash "$RUNNER_TEMP/deploy-remote.sh"
+
+      - name: Mark deployed
+        id: deployed
+        if: steps.configured.outputs.ready == 'true' && steps.guard.outputs.skip != 'true'
+        run: echo "done=true" >> "$GITHUB_OUTPUT"
+
+  sentry:
+    name: Sentry release
+    needs: deploy
+    if: needs.deploy.outputs.deployed == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Its own job: the Sentry token never reaches the server; the registry token only reads.
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Release, source maps, deployment
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha || inputs.sha }}
+          ENV_NAME: staging
+          SENTRY_AUTH_TOKEN: ${{ secrets.STAGING_SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+          SENTRY_URL: ${{ vars.SENTRY_URL }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: bash infra/ci/sentry-release.sh
