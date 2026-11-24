@@ -79,6 +79,23 @@ final class NotificationTest extends IdentityTestCase
         self::assertStringNotContainsString('jan@example.com', (string) $this->client->getResponse()->getContent(), 'no recipient address in the dashboard');
     }
 
+    public function testTheAcknowledgementIsQueuedBeforeTheInterpretation(): void
+    {
+        $this->mail('Sprzedaż za październik', 'jan@example.com');
+
+        /** @var TransportInterface $transport */
+        $transport = self::getContainer()->get('messenger.transport.async');
+        $order = [];
+        while ([] !== $batch = [...$transport->get()]) {
+            foreach ($batch as $envelope) {
+                $order[] = $envelope->getMessage()::class;
+                $transport->ack($envelope);
+            }
+        }
+        // The queue is FIFO: „received” leaves before the model is called, so it never arrives after a question.
+        self::assertSame([SendNotification::class, InterpretTicket::class], $order);
+    }
+
     public function testRefusalsAndAdminRejection(): void
     {
         $payroll = $this->mail('Raport płacowy', 'anna@example.com');

@@ -30,7 +30,9 @@
   - **Not on the final set:** v5 was not measured there, so the final numbers of stage 07 describe v4, while staging runs v5.
 - **Failure during the work:** an expiry test used `now() - 8 days`, which conflicted with the frozen test clock. Fixed with a fixed date.
 - **Observation on staging (T-1008, 2026-11-23):** the owner's request without a period got one period question, with correct example dates and without the request's text. The reply „Za październik” in the thread produced the report link for the same ticket.
-- **Observation:** the question reached the owner's mailbox before the „received” acknowledgement. The cause was not investigated: it may be mailbox ordering or delivery timing.
+- **Observation:** the question reached the owner's mailbox before the „received” acknowledgement.
+  - **Cause (found on 2026-11-24):** ingestion queued the interpretation job before the acknowledgement, and the queue is FIFO. The acknowledgement therefore waited for the model call, and the question was sent right after it.
+  - **Fix:** the acknowledgement is now queued first, with a test of the queue order that failed before the fix.
 
 ## 5. Human and agent contributions
 - **Owner:**
@@ -58,7 +60,7 @@
 - **Done:** the clarification loop works end to end on real mail.
 - **Remaining risk:**
   - **Evaluation gap:** v5 is unmeasured on a final set. The dev set has no reply cases.
-  - **Acknowledgement order:** the order of the acknowledgement and the question is unexplained.
+  - **Acknowledgement order:** explained and fixed on 2026-11-24, not yet observed in a real thread.
 - **Next:** increment 6 (failure scenarios, operations, launch).
 
 ## 9. Publication angle
