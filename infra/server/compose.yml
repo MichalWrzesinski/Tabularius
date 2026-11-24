@@ -154,6 +154,9 @@ services:
       TRUSTED_PROXIES: ${TRUSTED_PROXIES:?}
       # Whole-environment protection (bcrypt, base64; deploy.sh generates it), off when STAGING_PUBLIC=true.
       STAGING_PUBLIC: ${STAGING_PUBLIC:-false}
+      # Search engines: "all" when STAGING_INDEX=true (deploy.sh), otherwise "noindex, nofollow".
+      SITE_ROBOTS: ${SITE_ROBOTS:-noindex, nofollow}
+      SITE_DOMAIN: ${DOMAIN:?}
       STAGING_AUTH_USER: ${STAGING_AUTH_USER:?}
       STAGING_AUTH_HASH: ${STAGING_AUTH_HASH:?}
     volumes:

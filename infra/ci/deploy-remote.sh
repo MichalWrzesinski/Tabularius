@@ -4,10 +4,11 @@
 #   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN
 #   optional: MAILBOX_DSN (IMAP), MAILER_DSN (SMTP, e.g. Brevo), MAIL_ALLOWED_RECIPIENTS (controlled test addresses),
 #   OPENAI_API_KEY, OPENAI_MODEL, SENTRY_DSN (error reporting, TASK-015), STAGING_PUBLIC (true = no environment login),
-#   MAIL_PUBLIC_REPLIES (1 = demo replies to every sender)
+#   MAIL_PUBLIC_REPLIES (1 = demo replies to every sender), STAGING_INDEX (true = search engines may index)
 set -euo pipefail
 
 [[ "${STAGING_PUBLIC:-false}" == true ]] && STAGING_PUBLIC=true || STAGING_PUBLIC=false
+[[ "${STAGING_INDEX:-false}" == true ]] && STAGING_INDEX=true || STAGING_INDEX=false
 
 fail() { echo "::error::$*"; exit 1; }
 [[ "${SHA:-}" =~ ^[0-9a-f]{40}$ ]] || fail "invalid commit SHA"
@@ -71,7 +72,7 @@ printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\
 
   echo "::group::deploy.sh $SHA"
   status=0
-  ssh server "APP_DIR='$APP_DIR' STAGING_PUBLIC='$STAGING_PUBLIC' bash '$APP_DIR/releases/$SHA/deploy.sh' $SHA" || status=$?
+  ssh server "APP_DIR='$APP_DIR' STAGING_PUBLIC='$STAGING_PUBLIC' STAGING_INDEX='$STAGING_INDEX' bash '$APP_DIR/releases/$SHA/deploy.sh' $SHA" || status=$?
   echo "::endgroup::"
 }
 [[ "$status" == 0 ]] || fail "deployment failed (deploy.sh exit $status); see the log above"
@@ -94,6 +95,17 @@ else
     [[ "$code" == 401 ]] || fail "$path without the staging login returned $code (expected 401)"
   done
 fi
+robots=$(curl -sS -D - -o /dev/null --max-time 15 "https://$DOMAIN/" | tr -d '\r' | sed -n 's/^x-robots-tag: //Ip') || true
+if [[ "$STAGING_INDEX" == true ]]; then
+  [[ "$robots" == all ]] || fail "X-Robots-Tag is '$robots' (expected 'all': indexing allowed)"
+else
+  [[ "$robots" == *noindex* ]] || fail "X-Robots-Tag is '$robots' (expected noindex)"
+fi
+for path in /robots.txt /sitemap.xml; do
+  code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN$path") || true
+  # Behind the environment login while private.
+  [[ "$code" == 200 || ( "$STAGING_PUBLIC" != true && "$code" == 401 ) ]] || fail "$path returned $code"
+done
 headers=$(curl -sS -D - -o /dev/null --max-time 15 "http://$DOMAIN/") || true
 grep -qi '^location: https://' <<<"$headers" || fail "HTTP does not redirect to HTTPS"
 # Both an application response and the environment login's 401 (Caddy's error path) carry the security headers.

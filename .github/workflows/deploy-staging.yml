@@ -96,6 +96,8 @@ jobs:
           SENTRY_DSN: ${{ secrets.STAGING_SENTRY_DSN }}
           # true = public demo without the environment login (owner, 2026-11-24); anything else keeps staging private.
           STAGING_PUBLIC: ${{ vars.STAGING_PUBLIC }}
+          # true = search engines may index the public pages (owner, 2026-11-24); anything else keeps noindex.
+          STAGING_INDEX: ${{ vars.STAGING_INDEX }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
         run: bash "$RUNNER_TEMP/deploy-remote.sh"

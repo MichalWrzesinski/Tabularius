@@ -17,7 +17,9 @@ Staging runs at `https://tabularius.gitpush.app` on the owner's VPS, which hosts
 - **Public since 2026-11-24 (owner's decision):** the repository variable `STAGING_PUBLIC=true` turns the environment login off, so the dashboard is open to everyone. The application's own login still guards every API call and file.
   - **Closing it again:** set the variable to anything else (or delete it) and deploy again. The edge proxy then asks for one shared login (Basic Auth) for the whole environment again; only `/api/health` and `/api/ready` stay open.
   - **The shared login:** the first deployment generated it. The password is in `/srv/Tabularius/.staging-auth` (mode 600) and its bcrypt hash in `.env`. Read it with `ssh -t webhome-vps 'sudo cat /srv/Tabularius/.staging-auth'`. To change it, delete the `STAGING_AUTH_*` lines from `.env` and deploy again.
-  - **Unchanged by this switch:** pages still carry `noindex`. Demo replies are a separate switch (below).
+  - **Unchanged by this switch:** demo replies and indexing are separate switches (below).
+- **Indexed since 2026-11-24 (owner's decision):** the repository variable `STAGING_INDEX=true` makes the edge proxy send `X-Robots-Tag: all` instead of `noindex, nofollow`. The deploy workflow checks the header from outside.
+  - **`robots.txt` and `sitemap.xml`:** served by the edge proxy. `robots.txt` excludes `/admin`, `/moje-raporty` and `/api/`. `sitemap.xml` lists the home page, the employee login and the two legal pages.
 - **Replies to every sender since 2026-11-24 (owner's decision):** the repository variable `STAGING_MAIL_PUBLIC_REPLIES=1` sends ticket notifications (received, question, report ready, refusal) to the sender of each ticket.
   - **Test addresses only:** with `0`, or with the variable unset, only the addresses in `STAGING_MAIL_ALLOWED_RECIPIENTS` get replies; the rest are captured and dropped.
   - **Not affected:** account mail (passwords) is captured in demo either way (ID-DEMO-5). The limits per sender and per day still apply (threat model, Limits).

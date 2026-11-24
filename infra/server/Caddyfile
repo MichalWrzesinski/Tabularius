@@ -13,7 +13,8 @@
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
 		X-Frame-Options DENY
-		X-Robots-Tag "noindex, nofollow"
+		# "all" when the owner allows indexing (STAGING_INDEX=true, 2026-11-24); otherwise kept out of search engines.
+		X-Robots-Tag "{$SITE_ROBOTS}"
 		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
 		-Server
 	}
@@ -39,6 +40,31 @@
 	handle_errors {
 		import security_headers
 		respond "{err.status_code} {err.status_text}" {err.status_code}
+	}
+
+	# Crawling: the public pages only; the dashboards and the API need a login anyway. The meaning of indexing is set
+	# by X-Robots-Tag above, so a crawler must be allowed to fetch a page to see it.
+	handle /robots.txt {
+		header Content-Type "text/plain; charset=utf-8"
+		respond <<TXT
+			User-agent: *
+			Disallow: /admin
+			Disallow: /moje-raporty
+			Disallow: /api/
+			Sitemap: https://{$SITE_DOMAIN}/sitemap.xml
+			TXT 200
+	}
+	handle /sitemap.xml {
+		header Content-Type "application/xml; charset=utf-8"
+		respond <<XML
+			<?xml version="1.0" encoding="UTF-8"?>
+			<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+			<url><loc>https://{$SITE_DOMAIN}/</loc></url>
+			<url><loc>https://{$SITE_DOMAIN}/logowanie</loc></url>
+			<url><loc>https://{$SITE_DOMAIN}/regulamin</loc></url>
+			<url><loc>https://{$SITE_DOMAIN}/polityka-prywatnosci</loc></url>
+			</urlset>
+			XML 200
 	}
 
 	redir /api /api/ 308
