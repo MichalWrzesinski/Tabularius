@@ -33,3 +33,7 @@ Demo logins (created by `make seed`): `admin@example.com` / `Demo123!`, `handlow
 - Agent instructions: [AGENTS.md](AGENTS.md)
 
 Stack (agreed): PHP/Symfony, PostgreSQL, Vue 3 + TypeScript, OpenAI, IMAP/SMTP.
+
+## License
+
+[MIT](LICENSE) © 2026 Michał Wrzesiński.
