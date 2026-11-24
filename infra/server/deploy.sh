@@ -43,6 +43,9 @@ STAGING_AUTH_PASSWORD="$(sed -n 's/^password: //p' "$APP_DIR/.staging-auth")"
 # Public demo (the deploy workflow's STAGING_PUBLIC variable): no environment login. Anything but "true" keeps it.
 [[ "${STAGING_PUBLIC:-false}" == true ]] || STAGING_PUBLIC=false
 export STAGING_PUBLIC
+# Indexing (the deploy workflow's STAGING_INDEX variable): "all" only for exactly "true".
+if [[ "${STAGING_INDEX:-false}" == true ]]; then SITE_ROBOTS=all; else SITE_ROBOTS="noindex, nofollow"; fi
+export SITE_ROBOTS
 
 PREV=""
 [[ -L "$APP_DIR/current" ]] && PREV="$(basename "$(readlink "$APP_DIR/current")")"
