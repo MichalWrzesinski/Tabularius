@@ -8,7 +8,7 @@ Private source material for campaign no. 2 (brief §12), for review by the owner
 - **Public demo:** https://tabularius.gitpush.app since 2026-11-24, on the owner's shared VPS. It uses a real mailbox, Brevo for outgoing mail and OpenAI `gpt-4.1-mini`.
 - **Status, reported separately:**
   - **Implementation:** increments 1–6 are built.
-  - **Integration:** real mail and model work; Sentry and Better Stack wait for the owner's accounts.
+  - **Integration:** real mail, model, Sentry and Better Stack work.
   - **Production:** no production release for a real organisation; that is a separate stage (brief §13).
 
 ## Chronology
@@ -79,13 +79,13 @@ Private source material for campaign no. 2 (brief §12), for review by the owner
 
 ## Limitations and open risks
 - **Legal pages:** drafts with placeholders, not reviewed. The demo is public meanwhile.
-- **Monitoring:** Sentry, Better Stack and the GitHub alert e-mails are not connected yet. Errors are visible only in server logs.
+- **Monitoring:** Sentry and Better Stack were connected on 2026-11-24 (test events from the API and the dashboard arrived). Not confirmed: the Sentry error-count alert and a Better Stack test alert.
 - **Backups:** no off-server copy and no restoration test (accepted).
 - **Interpreter quality:**
   - out-of-catalog requests that resemble catalog operations end in manual handling, not a refusal;
   - prompt-v5 is unmeasured on a final set.
-- **Not observed for real:** a bounce, a dashboard error reported to Sentry, and the resolve buttons in a browser.
-- **Undecided:** indexing (`noindex` stays). SPF, DKIM and DMARC are unchecked.
+- **Not observed for real:** a bounce, and the resolve buttons in a browser.
+- **Unchecked:** SPF, DKIM and DMARC. Indexing was allowed on 2026-11-24.
 - **Not explained:** the order of the acknowledgement and the question in the T-1008 thread.
 - **Scope of the evidence:** synthetic data only. Nothing here verifies a deployment for a real organisation (brief §13).
 

@@ -1,6 +1,6 @@
 # TASK-015 — Monitoring, error reporting and operations
 
-Status: IN PROGRESS · Priority: high · Increment: 6 · Depends on: TASK-014 · Standards: [operations](../standards/development/operations.md), [deployment setup](../standards/development/deployment-setup.md#checklist-before-the-first-release)
+Status: DONE · Priority: high · Increment: 6 · Depends on: TASK-014 · Standards: [operations](../standards/development/operations.md), [deployment setup](../standards/development/deployment-setup.md#checklist-before-the-first-release)
 
 ## Owner decisions (2026-11-24)
 - **Demo environment:** the public demo runs on the current staging, https://tabularius.gitpush.app, once the owner approves the launch. At launch the environment login is removed and replies go to every sender. There is no separate test environment then; changes are verified locally and in CI. The launch switch belongs to TASK-016.
@@ -67,8 +67,18 @@ Status: IN PROGRESS · Priority: high · Increment: 6 · Depends on: TASK-014 ·
 - **`app:monitoring:test`:** logs one test error with a fake address and token, for the owner's check on staging.
 - **Runbook:** new sections „Monitoring and alerts” (what watches what, the owner's setup steps, first steps on an alert) and „Backups” (the accepted arrangement, restoring from a dump).
 - **Tests:** API 429 (96.06 % lines): `ScrubberTest`, `MonitoringTest` (off without a DSN, SDK options, config, forwarding and scrubbing, invalid envelopes, CSRF, rate limit), `MonitoringTestCommandTest`. Client 50 (`monitoring.test.ts`). shellcheck and actionlint clean.
-- **Not verified yet (owner's setup first):**
-  - real events in Sentry;
-  - the release job with a token;
-  - the Better Stack monitor and a test alert;
-  - GitHub e-mails.
+- **Owner's setup (2026-11-24):**
+  - Sentry project `tabularius` in the organisation `webhome-6c`;
+  - secrets `STAGING_SENTRY_DSN` and `STAGING_SENTRY_AUTH_TOKEN` (a separate organisation token, `tabularius-ci`);
+  - variables `SENTRY_ORG` and `SENTRY_PROJECT` (set by the agent);
+  - the Better Stack monitor on `/api/ready`, reported done by the owner.
+- **Verified on staging (2026-11-24, `6720185`):**
+  - **Release:** the `Sentry release` job created the release, uploaded the dashboard's source maps with debug ids and recorded the `staging` deployment.
+  - **Monitoring on:** `/api/monitoring/config` reports it, with environment `staging`.
+  - **Dashboard:** a test error thrown in the browser went through the tunnel, and Sentry accepted it (200).
+  - **API:** `app:monitoring:test`, run by the owner over SSH, logged a test error.
+  - **Events:** the owner confirmed that both events arrived in Sentry.
+- **Not confirmed:**
+  - the absence of the test address and token in the Sentry events, checked only by tests;
+  - the Sentry error-count alert;
+  - a Better Stack test alert.
