@@ -11,8 +11,9 @@ This is the [first-release checklist](../standards/development/deployment-setup.
 | 2026-11-21 | Retention: messages, subjects, addresses 7 days; pseudonymous audit 90 days; report files 7 days | — |
 | 2026-11-24 | The public demo runs on the current staging; there is no separate test environment | Changes reach the public demo after local tests and CI only |
 | 2026-11-24 | Backups as in Profilo: the VPS provider's daily server backup plus a dump before each deployment | No copy at another provider, no scheduled restoration test |
-| 2026-11-24 | Monitoring as in Profilo: Better Stack, Sentry, GitHub e-mails | Not active until the owner sets the accounts up |
-| 2026-11-24 | Environment login off (`STAGING_PUBLIC=true`) and demo replies to every sender (`STAGING_MAIL_PUBLIC_REPLIES=1`), before the legal pages were final | Public use with draft legal pages and without monitoring |
+| 2026-11-24 | Monitoring as in Profilo: Better Stack, Sentry, GitHub e-mails | — (connected the same day) |
+| 2026-11-24 | Environment login off (`STAGING_PUBLIC=true`) and demo replies to every sender (`STAGING_MAIL_PUBLIC_REPLIES=1`), before the legal pages were final; the legal pages stay drafts for now | Public use with draft legal pages |
+| 2026-11-24 | Indexing allowed (`STAGING_INDEX=true`) | — |
 
 ## Checklist
 
@@ -22,7 +23,7 @@ This is the [first-release checklist](../standards/development/deployment-setup.
 | Outgoing mail with SPF, DKIM and DMARC; a test message arrives outside spam | Partly | Brevo sends and threads (T-1008 thread on 2026-11-23). **Owner:** check SPF, DKIM and DMARC for gitpush.app in Brevo and the DNS, and confirm that mail lands outside spam at Gmail and Outlook |
 | Secrets through the secrets mechanism; debug off; seed and test accounts unavailable | Done (for a demo) | GitHub secrets and the server's `.env` (mode 600); `APP_ENV=prod`. The shared demo accounts are public by design (brief §4.1) and cannot be changed or blocked (ID-DEMO-5) |
 | Backup created and test-restored, deletions re-applied | Accepted risk | See the decisions above; the restore steps are in the [runbook](../runbook.md#backups) |
-| Monitoring and alerts confirmed by a test alert | Waiting for the owner | Code and CI ready (TASK-015). **Owner:** runbook „Monitoring and alerts”, setup steps 1–5 |
+| Monitoring and alerts confirmed by a test alert | Mostly done | Sentry is connected (2026-11-24): releases with source maps, and test events from the API and the dashboard arrived. Better Stack monitors `/api/ready`. **Owner:** confirm that the Sentry events show `[Filtered]` instead of the test address and token, add the error-count alert, send a Better Stack test alert |
 | Error pages, `robots.txt`, `sitemap.xml`; `noindex` only in test environments | Done | The owner decided on indexing on 2026-11-24 (`STAGING_INDEX=true`: `X-Robots-Tag: all`). `robots.txt` excludes the dashboards and the API; `sitemap.xml` lists the public pages. Unknown paths show the app's „Nie znaleziono strony” page |
 | Request limits and bot protection on public forms | Done | Mail: 5 per hour and 20 per day per sender, 200 per day in total. Login: 5 per 15 minutes; password reset: 3 per hour per address and 10 per IP; error reports: 30 per minute per IP. There are no public sign-up forms |
 | Legal documents ready and reviewed by a human | Drafts | `/regulamin` and `/polityka-prywatnosci` are live, linked in every footer and in the demo notice (TASK-016). **Owner:** fill in the placeholders and review the text (see below) |
