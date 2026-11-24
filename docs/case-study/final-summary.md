@@ -98,12 +98,9 @@ Private source material for campaign no. 2 (brief §12), for review by the owner
 ## Repository clean-up
 - **Removed on 2026-11-24:**
   - `scripts/__pycache__/`, a compiled file (`__pycache__/` is now ignored);
-  - `client/scripts/prototype-screens.mjs`, the prototype walkthrough, obsolete since TASK-005. Its screenshots stay as the record of the accepted prototype.
-- **Proposed, needs the owner's approval:**
-  - after the brief's findings are confirmed in the product documents, remove `docs/input/brief.md` and the mockups;
-  - remove the `DONE` task files once a release covers them, as the artifact-lifecycle rule says.
-
-  Both are linked from this summary and the stage reports. Git history keeps them.
+  - `client/scripts/prototype-screens.mjs`, the prototype walkthrough, obsolete since TASK-005.
+- **Removed on 2026-11-24 at the owner's request:** the design-period material: the input brief, the mockups, the prototype record (screenshots, mockup comparisons, sample CSV) and `client/scripts/compare-mockups.mjs`. Their findings live in the product documents and `docs/design/README.md`; the files are in Git history at `f269996`.
+- **Kept:** the `DONE` task files (evidence for the case study; to be removed after a production release, per the artifact-lifecycle rule).
 
 ## Evidence index
 - **Product and rules:**
@@ -113,7 +110,7 @@ Private source material for campaign no. 2 (brief §12), for review by the owner
 - **Tasks:** [TASK-001 … TASK-016](../tasks/).
 - **QA:** [critical paths](../qa/critical-paths.md), [evaluation reports](../qa/evaluation/), [CSV samples](../qa/csv/).
 - **Operations:** [runbook](../runbook.md), [readiness record](../release/public-demo-readiness.md), [progress](../progress.md).
-- **Design:** [mockups](../design/mockups/), [prototype record](../design/prototype/).
+- **Design:** [UI design](../design/README.md); the mockups, the prototype record and the brief [in Git history](https://github.com/MichalWrzesinski/Tabularius/tree/f269996/docs/design) (removed on 2026-11-24).
 - **Pull requests:** GitHub `MichalWrzesinski/Tabularius`, PRs 1–47.
 
 ## Campaign topics grounded in the material

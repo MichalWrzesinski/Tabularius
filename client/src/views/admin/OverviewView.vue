@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Mockup: docs/design/mockups/{desktop,mobile}/03-przeglad.html
+// Mockup: the owner's mockup 03-przeglad (docs/design/README.md)
 import { computed } from 'vue'
 import AsyncBlock from '../../components/AsyncBlock.vue'
 import Ico from '../../components/Ico.vue'

@@ -8,7 +8,7 @@ Standards: `docs/standards/` — AppStandards suite 5.0.0, copied 2026-11-21 fro
 
 - Product (source of rules, IDs like RPT-*, ACC-*, TKT-*): [docs/product/overview.md](docs/product/overview.md) and `docs/product/areas/`
 - Design direction and mockups: [docs/design/README.md](docs/design/README.md)
-- Owner's input brief (input material; findings move into `docs/product/`): [docs/input/brief.md](docs/input/brief.md)
+- Owner's input brief: removed on 2026-11-24 after its findings moved into `docs/product/` and `docs/design/README.md`; in Git history at [`f269996`](https://github.com/MichalWrzesinski/Tabularius/blob/f269996/docs/input/brief.md)
 - Progress view: [docs/progress.md](docs/progress.md)
 - Case-study source material (required deliverable, facts only, never published by the agent): [docs/case-study/README.md](docs/case-study/README.md)
 - Technical profile: [docs/technical-profile.md](docs/technical-profile.md); architecture: [docs/architecture.md](docs/architecture.md); decisions: `docs/decisions/`; API contract (generated, from increment 2): `docs/api/openapi.yaml`

@@ -28,7 +28,7 @@ This is the [first-release checklist](../standards/development/deployment-setup.
 | Request limits and bot protection on public forms | Done | Mail: 5 per hour and 20 per day per sender, 200 per day in total. Login: 5 per 15 minutes; password reset: 3 per hour per address and 10 per IP; error reports: 30 per minute per IP. There are no public sign-up forms |
 | Legal documents ready and reviewed by a human | Drafts | `/regulamin` and `/polityka-prywatnosci` are live, linked in every footer and in the demo notice (TASK-016). **Owner:** fill in the placeholders and review the text (see below) |
 | Runbook with responsibility and the alert route | Done | [Runbook](../runbook.md): deployment, operations, monitoring, alert response (owner, kontakt@webhome.pl), backups |
-| Repository cleaned up (artifact lifecycle) | Done for leftovers; proposals open | Removed a compiled Python file and the obsolete prototype script (2026-11-24). **Owner:** approve or reject removing the brief, the mockups and the `DONE` task files ([final summary](../case-study/final-summary.md#repository-clean-up)) |
+| Repository cleaned up (artifact lifecycle) | Done | 2026-11-24: leftovers removed, and the design-period material (brief, mockups, prototype record, mockup-comparison script) removed at the owner's request after its findings moved to `docs/product/` and `docs/design/README.md` (Git history: `f269996`). The `DONE` task files stay as case-study evidence |
 
 ## Placeholders to fill in (owner)
 

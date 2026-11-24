@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Mockup: docs/design/mockups/{desktop,mobile}/04-zgloszenie.html. States the mockup does not show
+// Mockup: the owner's mockup 04-zgloszenie (docs/design/README.md). States the mockup does not show
 // (refusal, error, interventions) reuse its cards, params and buttons. Correspondence arrives with mail (TASK-006+).
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import AsyncBlock from '../../components/AsyncBlock.vue'

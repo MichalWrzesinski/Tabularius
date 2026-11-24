@@ -38,7 +38,7 @@ As of 2026-11-21 (TASK-001 foundation). Versions are checked against registries 
 ## Pitfalls
 
 - `vue-tsc` 3.3 does not work with TypeScript 7; keep TypeScript 5.9.
-- Mockup CSS uses `:has()` and fixed artboard sizes; the fluid adjustments are listed in `docs/design/prototype/README.md`.
+- Mockup CSS uses `:has()` and fixed artboard sizes; the fluid adjustments are listed in `docs/design/README.md`.
 
 ## Hosting and mail (owner, 2026-11-22)
 

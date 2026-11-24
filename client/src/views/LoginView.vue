@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Mockups: docs/design/mockups/{desktop,mobile}/01-logowanie-pracownik.html and 02-logowanie-admin.html.
+// Mockups: the owner's mockups 01-logowanie-pracownik and 02-logowanie-admin (docs/design/README.md).
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'

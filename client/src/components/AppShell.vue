@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Mockup shell: docs/design/mockups/desktop/03-przeglad.html (sidebar, topbar) and mobile/03-przeglad.html
+// Mockup shell: the owner's mockups 03-przeglad, desktop and mobile (sidebar, topbar; docs/design/README.md)
 // (mobileheader with details menu, mobilecontext). The employee variant reuses it with the teal palette.
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

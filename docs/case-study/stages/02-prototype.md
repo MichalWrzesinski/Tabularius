@@ -42,14 +42,14 @@ Goal: let the owner check the main flow and the visual direction before costly i
 
 | Criterion | Evidence | Result | Limitation |
 |---|---|---|---|
-| Required scenarios walkable | [prototype README](../../design/prototype/README.md#scenarios-covered-brief-9), script `client/scripts/prototype-screens.mjs` | all walked automatically, both sizes | Mocked rules |
+| Required scenarios walkable | [prototype README](https://github.com/MichalWrzesinski/Tabularius/blob/f269996/docs/design/prototype/README.md#scenarios-covered-brief-9), script `client/scripts/prototype-screens.mjs` | all walked automatically, both sizes | Mocked rules |
 | No horizontal page scroll at 360 px and desktop | same script, 55 checks | no overflow found | Only listed routes and states |
 | No console errors | same script | none | — |
 | Discount rounding and CSV guard in shared helpers | ad-hoc check of `lib/format.ts` (8 boundary cases, 7 guard cases) | 15/15 | Not a committed test; real engine is PHP |
 | Contrast of tokens | computed WCAG ratios | text ≥ 4.77:1 | Gradients and focus states not measured individually |
 | Keyboard and screen reader | not performed | gap | Next: manual pass before increment 2 UI work |
 
-Screenshots (synthetic data): [screens/](../../design/prototype/screens/).
+Screenshots (synthetic data): [screens/](https://github.com/MichalWrzesinski/Tabularius/tree/f269996/docs/design/prototype/screens).
 
 ## 7. Measurements
 
@@ -73,7 +73,7 @@ The prototype is ready for the owner's assessment. Feedback will be handled as a
   - moved the extra elements into `x-`-prefixed `extras.css`;
   - made the public-demo anonymization a separate switch, so the default view matches the mockup;
   - aligned the sample tickets with the mockup list (T-1040 discount simulation, T-1039 „Błąd”).
-- **New check:** `client/scripts/compare-mockups.mjs` renders each mockup HTML and the matching app route at 1500 × 1000 and 390 px. The screenshots were compared visually by the agent. Home, both logins, overview and ticket details now match except for the listed differences ([prototype README](../../design/prototype/README.md#differences-from-the-mockups-and-why)). This is a visual comparison, not a pixel diff.
+- **New check:** `client/scripts/compare-mockups.mjs` renders each mockup HTML and the matching app route at 1500 × 1000 and 390 px. The screenshots were compared visually by the agent. Home, both logins, overview and ticket details now match except for the listed differences ([prototype README](https://github.com/MichalWrzesinski/Tabularius/blob/f269996/docs/design/prototype/README.md#differences-from-the-mockups-and-why)). This is a visual comparison, not a pixel diff.
 - **Trade-off reopened:** the first version raised low-contrast mockup greys to WCAG AA. The second keeps the mockup values and asks the owner.
 - **Lesson:** when supplied mockups have sources, compare against them screen by screen before asking for acceptance. Passing functional checks does not show the design was followed.
 - Publication angle (optional): „Green checks, rejected prototype” — automated checks verified behaviour but not fidelity to the design input.
