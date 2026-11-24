@@ -1,6 +1,6 @@
 # Tabularius — product overview
 
-Status: discovery, 2026-11-21. Input: [brief](../input/brief.md) (owner-supplied, kept until its findings are fully moved here). Detailed rule areas: [reports and financial rules](areas/reports.md), [identity and access](areas/identity-access.md), [tickets and correspondence](areas/tickets.md), [threat model](areas/threat-model.md).
+Status: discovery, 2026-11-21. Input: the owner's brief, whose findings are in this document and its areas (removed from the repository on 2026-11-24; [in Git history](https://github.com/MichalWrzesinski/Tabularius/blob/f269996/docs/input/brief.md)). Detailed rule areas: [reports and financial rules](areas/reports.md), [identity and access](areas/identity-access.md), [tickets and correspondence](areas/tickets.md), [threat model](areas/threat-model.md).
 
 Tagline: **„Od wiadomości do raportu”** (From message to report). UI and demo communication in Polish; documentation and code in English.
 

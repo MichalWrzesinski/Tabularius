@@ -12,13 +12,11 @@ docker run --rm -it -u $(id -u):$(id -g) -e npm_config_cache=/tmp/.npm -v "$PWD"
 docker run --rm -it --name tabularius-proto -u $(id -u):$(id -g) -p 127.0.0.1:5173:5173 -v "$PWD":/app -w /app node:26-alpine npm run dev
 ```
 
-Then open http://localhost:5173. Demo logins (shown on the login screens): `admin@example.com` / `Demo123!` and `handlowiec@example.com` / `Demo123!`. The „Prototyp” button switches between demo and production mode and turns on the public-demo views. It also simulates list errors, empty employee data and slow responses, and links to every scenario.
+Then open http://localhost:5173. Demo logins (shown on the login screens): `admin@example.com` / `Demo123!` and `handlowiec@example.com` / `Demo123!`.
 
-The appearance comes from the owner's mockups: `src/styles/mockup.css` is generated from `docs/design/mockups/` (keep class names identical), and anything extra lives in `src/styles/extras.css` with an `x-` prefix.
+The appearance comes from the owner's mockups (see `docs/design/README.md`): `src/styles/mockup.css` was generated from their CSS (keep class names identical), and anything extra lives in `src/styles/extras.css` with an `x-` prefix.
 
 Typecheck: `docker run --rm -u $(id -u):$(id -g) -v "$PWD":/app -w /app node:26-alpine npx vue-tsc --noEmit`
-
-Comparison with the mockups (writes app screenshots at 1500 × 1000 and 390 px; mount the mockups at `/mock`): `scripts/compare-mockups.mjs`.
 
 ## Scripts against the running stack (`make up`)
 
@@ -30,4 +28,3 @@ docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD/scripts":/
 
 - `e2e-cp004.mjs` runs critical path CP-004 through the UI and Mailpit, and deletes its own account afterwards.
 - `e2e-cp001.mjs` runs CP-001 without mail and the file part of CP-003: manual ticket → worker → representative downloads at 360 px → another representative gets 404. Needs the worker (`make up` starts it).
-- The prototype-era walkthrough script was removed on 2026-11-24 (its steps no longer applied after TASK-005; it is in Git history). Its screenshots in `docs/design/prototype/screens` remain the record of the accepted prototype.

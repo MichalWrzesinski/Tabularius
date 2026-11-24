@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Icons copied from the mockups' inline SVGs (docs/design/mockups); extra ones drawn in the same 24px line style.
+// Icons copied from the owner's mockups' inline SVGs (docs/design/README.md); extra ones drawn in the same 24px line style.
 import { computed } from 'vue'
 
 type El =

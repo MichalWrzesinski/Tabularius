@@ -4,7 +4,7 @@
 
 - Date: 2026-11-21. Stage: project start, discovery (increment 1). Commit: initial documentation commit of the local repository (no remote yet).
 - Environment: owner's Mac, local files only. No fixtures, test doubles or real integrations used yet; no code.
-- Inputs: owner's brief `start-info.md` (copied to [docs/input/brief.md](../../input/brief.md)), owner's static mockups desktop v8 / mobile v8 (copied to [docs/design/mockups/](../../design/mockups/)), AppStandards `main` at `410ba9c` (copied to `docs/standards/`).
+- Inputs: owner's brief `start-info.md` (copied to `docs/input/brief.md`, [in Git history](https://github.com/MichalWrzesinski/Tabularius/blob/f269996/docs/input/brief.md)), owner's static mockups desktop v8 / mobile v8 (copied to `docs/design/mockups/` ([in Git history](https://github.com/MichalWrzesinski/Tabularius/tree/f269996/docs/design/mockups))), AppStandards `main` at `410ba9c` (copied to `docs/standards/`).
 
 ## 2. Problem, goal, initial state
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Mockup: docs/design/mockups/desktop/00-strona-glowna.html (+ mobile).
+// Mockup: the owner's mockup 00-strona-glowna, desktop and mobile (docs/design/README.md).
 import logo from '../assets/logo.svg'
 import Ico from '../components/Ico.vue'
 import LegalLinks from '../components/LegalLinks.vue'
