@@ -1,0 +1,30 @@
+# Error reporting (TASK-015, operations standard). Off without SENTRY_DSN. Exceptions reach Sentry through the Monolog
+# handler (prod), so the SDK's own error listener is off (no duplicates). Every event passes App\Module\Monitoring\Scrubber.
+# Missing variables mean monitoring is off, never a broken container.
+parameters:
+    env(SENTRY_DSN): ''
+    env(SENTRY_RELEASE): ''
+    env(SENTRY_ENVIRONMENT): 'unknown'
+
+sentry:
+    dsn: '%env(SENTRY_DSN)%'
+    register_error_listener: false
+    register_error_handler: false
+    messenger:
+        enabled: false
+    tracing:
+        enabled: false
+    options:
+        release: '%env(SENTRY_RELEASE)%'
+        environment: '%env(SENTRY_ENVIRONMENT)%'
+        send_default_pii: false
+        max_request_body_size: none
+        before_send: 'App\Module\Monitoring\Scrubber'
+        in_app_include: ['%kernel.project_dir%/src']
+
+services:
+    Sentry\Monolog\Handler:
+        arguments:
+            $hub: '@Sentry\State\HubInterface'
+            $level: !php/enum Monolog\Level::Error
+            $fillExtraContext: true

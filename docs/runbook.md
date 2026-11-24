@@ -81,4 +81,61 @@ Commands use `SERVER` for the server's address (151.240.121.172) and the SSH ali
 
 ### Known gaps
 
-- No backup off the server, monitoring or alerting (requirements of the public release, not of staging).
+- No backup at another provider: accepted by the owner on 2026-11-24 (see Backups).
+
+## Monitoring and alerts (TASK-015)
+
+Decided by the owner on 2026-11-24: the same arrangement as in Profilo. Alerts go by e-mail to the owner (kontakt@webhome.pl); handling is manual by the owner, so an alert means nobody has looked at it yet.
+
+| What | Watches | Alert |
+|---|---|---|
+| Better Stack uptime monitor | `https://tabularius.gitpush.app/api/ready` (open without the environment login; database check, no data) every 3 min | the service is down |
+| Sentry project `tabularius` | API errors (error-level logs and uncaught exceptions) and dashboard errors through the API's tunnel `/api/monitoring/envelope` | more than 20 events in 5 minutes; a new issue |
+| GitHub e-mail notifications | failed `ci` and `Deploy staging` runs | failed deployment |
+
+What reaches Sentry is scrubbed in the API ([Scrubber](../api/src/Module/Monitoring/Scrubber.php)), for API and browser events alike:
+- **Never sent:** the user, cookies and request bodies.
+- **Removed:** values under sensitive keys (passwords, tokens, sessions, addresses, mail subjects and texts), and e-mail addresses, bearer/JWT tokens, long secrets and SQL parameters inside texts.
+- **Not collected:** the dashboard collects no breadcrumbs, sessions, tracing or replay.
+
+The release is the deployed commit and the environment is `staging`. Without `SENTRY_DSN` both sides report nothing.
+
+### Setup (owner, once)
+
+1. **Sentry:**
+   - Create the project `tabularius` (platform PHP; the browser events use the same project).
+   - Set *Data Scrubbing* on and add an alert of the type "Number of events" above 20 in 5 minutes.
+   - Optionally connect the GitHub repository (links releases to commits).
+2. **GitHub secrets and variables:**
+   - Secrets:
+     - `STAGING_SENTRY_DSN`: the project's DSN;
+     - `STAGING_SENTRY_AUTH_TOKEN`: an organisation token with release permissions, used only by the `Sentry release` job and never sent to the server.
+   - Variables: `SENTRY_ORG` and `SENTRY_PROJECT` (slugs).
+
+   The next deployment writes the DSN to `/srv/Tabularius/.env.mail`. The `Sentry release` job then creates the release, uploads the dashboard's source maps from the client image (`/opt/sourcemaps`, never served) and records the deployment.
+3. **Better Stack:** create a monitor for `https://tabularius.gitpush.app/api/ready` (expected 200) with e-mail alerts to kontakt@webhome.pl, and send a test alert.
+4. **GitHub:** notification settings → Actions → e-mail for failed workflows only.
+5. **Check:**
+   - a test error from the API: `ssh -t webhome-vps 'sudo docker exec tabularius-staging-api-1 php bin/console app:monitoring:test'`;
+   - a test error from the dashboard (browser console: `setTimeout(() => { throw new Error('test') })`);
+   - both appear in Sentry without addresses or texts.
+
+### On an alert
+
+1. **Service down:** check the last `Deploy staging` run and `/api/ready`. Read the logs (Operations above) for `api`, `worker` and `db`. If the latest release is at fault, deploy the previous commit (`gh workflow run deploy-staging -f sha=<previous>`).
+2. **Error spike:** open the Sentry issue and match the release to the commit. If tickets are affected, they are in „Wymaga interwencji” with a reason (TASK-014). The administrator retries or rejects them after the fix.
+3. **Failed deployment:** the previous release keeps running (`deploy.sh` restarts it); read the run's log.
+4. **Possible personal data in a report, or access to data by someone unauthorised:** treat it as a breach (privacy standard: the owner assesses notification within 72 hours).
+
+## Backups
+
+Decided by the owner on 2026-11-24, the same arrangement as in Profilo:
+- the VPS provider backs up the whole server daily;
+- `deploy.sh` dumps both databases before each deployment (`/srv/Tabularius/backups/`, last 3).
+
+There is no encrypted copy at another provider and no scheduled restoration test. The owner accepted this risk. The business data is synthetic and re-seedable, and tickets, addresses and texts are kept only 7 days.
+
+**Restore from a dump** (owner, sudo):
+1. Stop `worker` and `purge`, so that no mail is answered and no job runs.
+2. Load the dump into a fresh database with `psql`.
+3. Re-run `app:mail:purge` and `app:files:purge` before starting the workers again, so that deletions made after the dump are applied again.

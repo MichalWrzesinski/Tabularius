@@ -38,6 +38,10 @@ x-api-env: &api-env
   OPENAI_DAILY_BUDGET_USD: ${OPENAI_DAILY_BUDGET_USD:-2}
   # Mail already in the mailbox before this moment is never read (set when the mailbox is connected).
   MAIL_INGEST_SINCE: ${MAIL_INGEST_SINCE:-}
+  # Error reporting (TASK-015): empty DSN = off. Release = the deployed commit.
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  SENTRY_RELEASE: ${IMAGE_TAG:?}
+  SENTRY_ENVIRONMENT: staging
   REPORT_FILE_TTL_DAYS: "7"
   # Only the Docker gateway (the host's nginx) may set X-Forwarded-* (client IP for rate limits, HTTPS for cookies).
   TRUSTED_PROXIES: ${TRUSTED_PROXIES:?}

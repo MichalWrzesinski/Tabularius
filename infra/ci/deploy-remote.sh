@@ -3,7 +3,7 @@
 # GHCR with the workflow's read-only token, runs deploy.sh there and checks the site from outside.
 #   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN
 #   optional: MAILBOX_DSN (IMAP), MAILER_DSN (SMTP, e.g. Brevo), MAIL_ALLOWED_RECIPIENTS (controlled test addresses),
-#   OPENAI_API_KEY, OPENAI_MODEL
+#   OPENAI_API_KEY, OPENAI_MODEL, SENTRY_DSN (error reporting, TASK-015)
 set -euo pipefail
 
 fail() { echo "::error::$*"; exit 1; }
@@ -31,6 +31,7 @@ fi
 [[ -z "${OPENAI_API_KEY:-}" || "$OPENAI_API_KEY" =~ ^sk-[A-Za-z0-9_-]{20,}$ ]] || fail "OPENAI_API_KEY must look like sk-… (no spaces or quotes)"
 [[ "${OPENAI_MODEL:-}" =~ ^[A-Za-z0-9._:-]*$ ]] || fail "OPENAI_MODEL: letters, digits, . _ : - only"
 [[ "${MAIL_INGEST_SINCE:-}" =~ ^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}(Z|[+-][0-9]{2}:[0-9]{2}))?$ ]] || fail "MAIL_INGEST_SINCE must be ISO 8601, e.g. 2026-11-22T18:00:00Z"
+[[ -z "${SENTRY_DSN:-}" || "$SENTRY_DSN" =~ ^https://[A-Za-z0-9]+@[A-Za-z0-9.-]+/[0-9]+$ ]] || fail "SENTRY_DSN must look like https://key@oNNN.ingest.sentry.io/NNN"
 [[ "${MAIL_ALLOWED_RECIPIENTS:-}" =~ ^[A-Za-z0-9.@_+,\ -]*$ ]] || fail "MAIL_ALLOWED_RECIPIENTS: addresses or @domains separated by commas"
 
 install -d -m 700 ~/.ssh
@@ -57,6 +58,7 @@ printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\
     printf "MAIL_INGEST_SINCE='%s'\n" "${MAIL_INGEST_SINCE:-}"
     if [[ -n "${OPENAI_API_KEY:-}" ]]; then printf "OPENAI_API_KEY='%s'\n" "$OPENAI_API_KEY"; fi
     if [[ -n "${OPENAI_MODEL:-}" ]]; then printf "OPENAI_MODEL='%s'\n" "$OPENAI_MODEL"; fi
+    if [[ -n "${SENTRY_DSN:-}" ]]; then printf "SENTRY_DSN='%s'\n" "$SENTRY_DSN"; fi
   } | ssh server "umask 077 && cat > '$APP_DIR/.env.mail'"
 
   printf '%s' "$GHCR_TOKEN" | ssh server "docker login ghcr.io -u '$GHCR_USER' --password-stdin" >/dev/null

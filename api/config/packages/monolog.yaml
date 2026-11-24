@@ -32,6 +32,10 @@ when@test:
 when@prod:
     monolog:
         handlers:
+            # Error-level entries (uncaught exceptions included) go to Sentry, scrubbed (TASK-015); a no-op without DSN.
+            sentry:
+                type: service
+                id: Sentry\Monolog\Handler
             main:
                 type: fingers_crossed
                 action_level: error
