@@ -78,7 +78,7 @@ Status: DONE · Priority: high · Increment: 6 · Depends on: TASK-014 · Standa
   - **Dashboard:** a test error thrown in the browser went through the tunnel, and Sentry accepted it (200).
   - **API:** `app:monitoring:test`, run by the owner over SSH, logged a test error.
   - **Events:** the owner confirmed that both events arrived in Sentry.
+- **Scrubbing seen in Sentry:** the owner saw `Monitoring test exception with token=[Filtered]` in the API event and confirmed the check.
 - **Not confirmed:**
-  - the absence of the test address and token in the Sentry events, checked only by tests;
   - the Sentry error-count alert;
   - a Better Stack test alert.

@@ -85,8 +85,8 @@ Private source material for campaign no. 2 (brief §12), for review by the owner
   - out-of-catalog requests that resemble catalog operations end in manual handling, not a refusal;
   - prompt-v5 is unmeasured on a final set.
 - **Not observed for real:** a bounce, and the resolve buttons in a browser.
-- **Unchecked:** SPF, DKIM and DMARC. Indexing was allowed on 2026-11-24.
-- **Not explained:** the order of the acknowledgement and the question in the T-1008 thread.
+- **Mail authentication:** DKIM and DMARC are in place; SPF is absent and not needed for mail sent through Brevo (checked on 2026-11-24). Indexing was allowed on 2026-11-24.
+- **Mail order:** the acknowledgement after the question in the T-1008 thread was explained and fixed on 2026-11-24 (the ingest step queued the interpretation first). Not yet observed in a real thread.
 - **Scope of the evidence:** synthetic data only. Nothing here verifies a deployment for a real organisation (brief §13).
 
 ## Repository clean-up

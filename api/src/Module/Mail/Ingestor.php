@@ -210,14 +210,16 @@ final class Ingestor
                     if (null !== $reason && 'identity_unverified' !== $reason) {
                         $this->tickets->event($ticketId, 'system', 'Poczta', self::reasonText($reason), $now);
                     }
-                    if (TicketStatus::Received === $status) {
-                        // Same connection as the ticket: the job exists exactly when the ticket does.
-                        $this->bus->dispatch(new \App\Module\Interpretation\Job\InterpretTicket($ticketId));
-                    }
                 }
                 $this->mail->insert($this->row($message, $keep ? $parsed : null, $idHash, $outcome, $senderHash, $ticketId, $now, null === $parsed ? 0 : $parsed->attachmentCount));
                 if (null !== $ticketId) {
                     $this->outbox->enqueue($ticketId, 'received', $ticketId.':received');
+                    // After the acknowledgement: the queue is FIFO, so „received” goes out before the model is called
+                    // and before any question or report mail. Same connection as the ticket: the job exists exactly
+                    // when the ticket does.
+                    if (TicketStatus::Received === $status) {
+                        $this->bus->dispatch(new \App\Module\Interpretation\Job\InterpretTicket($ticketId));
+                    }
                 }
             });
         } catch (UniqueConstraintViolationException) {
