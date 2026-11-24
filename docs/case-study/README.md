@@ -13,6 +13,10 @@ Private record of facts and links for a later, human-reviewed campaign (brief §
 | 05 | 2026-11-22 | Accounts and the first full loop (no mail, no LLM) | [stages/05-first-full-loop.md](stages/05-first-full-loop.md) |
 | 06 | 2026-11-22 | Mail in and out: identity, baseline interpreter, notifications | [stages/06-mail-identity-notifications.md](stages/06-mail-identity-notifications.md) |
 | 07 | 2026-11-23 | LLM interpretation, business-scope guard, evaluation | [stages/07-llm-guard-evaluation.md](stages/07-llm-guard-evaluation.md) |
+| 08 | 2026-11-23 | Clarification questions and reply correlation | [stages/08-clarification-and-replies.md](stages/08-clarification-and-replies.md) |
+| 09 | 2026-11-24 | Failure scenarios, operations, opening the demo | [stages/09-failures-operations-launch.md](stages/09-failures-operations-launch.md) |
+
+Final summary: [final-summary.md](final-summary.md).
 
 ## Report format
 

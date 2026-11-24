@@ -45,7 +45,7 @@ Run instructions: [client/README.md](../../../client/README.md). Status: **accep
 | Loading, empty, error states | „Prototyp” panel | skeletons, empty states, error with retry |
 
 Results:
-- Automated checks (`client/scripts/prototype-screens.mjs`): 57 checks, no horizontal page scroll at 1440 or 360 px, no console errors.
+- Automated checks (the prototype walkthrough script, removed on 2026-11-24 and kept in Git history): 57 checks, no horizontal page scroll at 1440 or 360 px, no console errors.
 - Curated screenshots: [screens/](screens/).
 - Sample CSV: [sample-sales-report.csv](sample-sales-report.csv).
 
