@@ -92,6 +92,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.STAGING_OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.STAGING_OPENAI_MODEL }}
           SENTRY_DSN: ${{ secrets.STAGING_SENTRY_DSN }}
+          # true = public demo without the environment login (owner, 2026-11-24); anything else keeps staging private.
+          STAGING_PUBLIC: ${{ vars.STAGING_PUBLIC }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
         run: bash "$RUNNER_TEMP/deploy-remote.sh"

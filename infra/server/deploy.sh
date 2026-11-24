@@ -40,6 +40,9 @@ set -a
 . "$APP_DIR/.env"
 set +a
 STAGING_AUTH_PASSWORD="$(sed -n 's/^password: //p' "$APP_DIR/.staging-auth")"
+# Public demo (the deploy workflow's STAGING_PUBLIC variable): no environment login. Anything but "true" keeps it.
+[[ "${STAGING_PUBLIC:-false}" == true ]] || STAGING_PUBLIC=false
+export STAGING_PUBLIC
 
 PREV=""
 [[ -L "$APP_DIR/current" ]] && PREV="$(basename "$(readlink "$APP_DIR/current")")"
@@ -72,12 +75,16 @@ smoke() {
       sleep 3
     done
   done
-  # Refusals: the environment without its login, the application without a session.
+  # Refusals: the environment without its login (private only), the application without a session (always).
   code="$(http_code /)"
-  [[ "$code" == 401 ]] || { log "smoke test failed: / without the staging login returned $code"; return 1; }
+  if [[ "$STAGING_PUBLIC" == true ]]; then
+    [[ "$code" == 200 ]] || { log "smoke test failed: / without a login returned $code on the public demo"; return 1; }
+  else
+    [[ "$code" == 401 ]] || { log "smoke test failed: / without the staging login returned $code"; return 1; }
+  fi
   code="$(http_code /api/v1/admin/tickets -u "$STAGING_AUTH_USER:$STAGING_AUTH_PASSWORD")"
   [[ "$code" == 401 ]] || { log "smoke test failed: the admin API without a session returned $code"; return 1; }
-  log "smoke tests passed (/api/ready, /, /admin/logowanie; 401 without the staging login and without a session)"
+  log "smoke tests passed (/api/ready, /, /admin/logowanie; public=$STAGING_PUBLIC; admin API 401 without a session)"
 }
 
 rollback() {

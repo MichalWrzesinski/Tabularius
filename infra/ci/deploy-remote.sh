@@ -3,8 +3,10 @@
 # GHCR with the workflow's read-only token, runs deploy.sh there and checks the site from outside.
 #   SHA DOMAIN SSH_HOST SSH_USER APP_DIR SSH_KEY KNOWN_HOSTS GHCR_USER GHCR_TOKEN
 #   optional: MAILBOX_DSN (IMAP), MAILER_DSN (SMTP, e.g. Brevo), MAIL_ALLOWED_RECIPIENTS (controlled test addresses),
-#   OPENAI_API_KEY, OPENAI_MODEL, SENTRY_DSN (error reporting, TASK-015)
+#   OPENAI_API_KEY, OPENAI_MODEL, SENTRY_DSN (error reporting, TASK-015), STAGING_PUBLIC (true = no environment login)
 set -euo pipefail
+
+[[ "${STAGING_PUBLIC:-false}" == true ]] && STAGING_PUBLIC=true || STAGING_PUBLIC=false
 
 fail() { echo "::error::$*"; exit 1; }
 [[ "${SHA:-}" =~ ^[0-9a-f]{40}$ ]] || fail "invalid commit SHA"
@@ -66,7 +68,7 @@ printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\
 
   echo "::group::deploy.sh $SHA"
   status=0
-  ssh server "APP_DIR='$APP_DIR' bash '$APP_DIR/releases/$SHA/deploy.sh' $SHA" || status=$?
+  ssh server "APP_DIR='$APP_DIR' STAGING_PUBLIC='$STAGING_PUBLIC' bash '$APP_DIR/releases/$SHA/deploy.sh' $SHA" || status=$?
   echo "::endgroup::"
 }
 [[ "$status" == 0 ]] || fail "deployment failed (deploy.sh exit $status); see the log above"
@@ -74,11 +76,21 @@ printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_ed25519\
 echo "::group::External smoke tests"
 code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN/api/ready") || true
 [[ "$code" == 200 ]] || fail "/api/ready returned $code"
-# Private staging: everything else needs the environment login (the server's deploy.sh tests behind it).
-for path in / /admin/logowanie /api/v1/admin/tickets; do
-  code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN$path") || true
-  [[ "$code" == 401 ]] || fail "$path without the staging login returned $code (expected 401)"
-done
+if [[ "$STAGING_PUBLIC" == true ]]; then
+  # Public demo: the dashboard is open to everyone; the application's own login still guards the API.
+  for path in / /admin/logowanie; do
+    code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN$path") || true
+    [[ "$code" == 200 ]] || fail "$path returned $code on the public demo (expected 200)"
+  done
+  code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN/api/v1/admin/tickets") || true
+  [[ "$code" == 401 ]] || fail "the admin API without a session returned $code (expected 401)"
+else
+  # Private staging: everything else needs the environment login (the server's deploy.sh tests behind it).
+  for path in / /admin/logowanie /api/v1/admin/tickets; do
+    code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$DOMAIN$path") || true
+    [[ "$code" == 401 ]] || fail "$path without the staging login returned $code (expected 401)"
+  done
+fi
 headers=$(curl -sS -D - -o /dev/null --max-time 15 "http://$DOMAIN/") || true
 grep -qi '^location: https://' <<<"$headers" || fail "HTTP does not redirect to HTTPS"
 # Both an application response and the environment login's 401 (Caddy's error path) carry the security headers.

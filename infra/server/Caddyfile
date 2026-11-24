@@ -24,9 +24,13 @@
 	encode zstd gzip
 	import security_headers
 
-	# Staging is private until the public demo is approved: one shared login for the whole environment, independent
-	# of the application's own login. Health endpoints stay open for the deployment checks (no data).
-	@protected not path /api/health /api/ready
+	# Private staging: one shared login for the whole environment, independent of the application's own login. Health
+	# endpoints stay open for the deployment checks (no data). STAGING_PUBLIC=true (the public demo, opened by the owner on
+	# 2026-11-24) turns the login off; anything else keeps it on.
+	@protected {
+		not path /api/health /api/ready
+		expression "{$STAGING_PUBLIC}" != "true"
+	}
 	basic_auth @protected {
 		{$STAGING_AUTH_USER} {$STAGING_AUTH_HASH}
 	}
