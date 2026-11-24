@@ -33,6 +33,12 @@ final class AuditLog
         ]);
     }
 
+    /** Retention (ID-DEMO-7): events older than `$before` are deleted. */
+    public function purge(\DateTimeImmutable $before): int
+    {
+        return (int) $this->connection->executeStatement('DELETE FROM audit_event WHERE at < ?', [$before->format('Y-m-d H:i:s.uP')]);
+    }
+
     /**
      * @return list<array{at: string, actorRef: string, action: string, targetRef: string}>
      */

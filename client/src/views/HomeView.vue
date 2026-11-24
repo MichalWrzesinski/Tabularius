@@ -1,15 +1,8 @@
 <script setup lang="ts">
 // Mockup: docs/design/mockups/desktop/00-strona-glowna.html (+ mobile).
-import { ref } from 'vue'
 import logo from '../assets/logo.svg'
 import Ico from '../components/Ico.vue'
-
-const dialog = ref<HTMLDialogElement | null>(null)
-const legalTitle = ref('')
-function openLegal(title: string) {
-  legalTitle.value = title
-  dialog.value?.showModal()
-}
+import LegalLinks from '../components/LegalLinks.vue'
 </script>
 
 <template>
@@ -71,15 +64,7 @@ function openLegal(title: string) {
     </main>
     <footer class="home-footer">
       <span>© 2026 Tabularius. Wszelkie prawa zastrzeżone.</span>
-      <nav aria-label="Informacje prawne">
-        <button class="legal-link" type="button" @click="openLegal('Regulamin')">Regulamin</button>
-        <button class="legal-link" type="button" @click="openLegal('Polityka prywatności')">Polityka prywatności</button>
-      </nav>
+      <LegalLinks />
     </footer>
-    <dialog ref="dialog" aria-labelledby="legal-title">
-      <h2 id="legal-title">{{ legalTitle }}</h2>
-      <p>Treść tego dokumentu zostanie uzupełniona przed uruchomieniem aplikacji.</p>
-      <form method="dialog"><button>Zamknij</button></form>
-    </dialog>
   </div>
 </template>

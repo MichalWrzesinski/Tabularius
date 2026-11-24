@@ -57,6 +57,13 @@ export const router = createRouter({
         { path: 'ustawienia', component: () => import('./views/SettingsView.vue'), meta: { title: 'Ustawienia' } },
       ],
     },
+    {
+      path: '/polityka-prywatnosci',
+      component: () => import('./views/LegalView.vue'),
+      props: { doc: 'privacy' },
+      meta: { title: 'Polityka prywatności' },
+    },
+    { path: '/regulamin', component: () => import('./views/LegalView.vue'), props: { doc: 'terms' }, meta: { title: 'Regulamin' } },
     { path: '/:pathMatch(.*)*', component: () => import('./views/NotFoundView.vue'), meta: { title: 'Nie znaleziono' } },
   ],
 })

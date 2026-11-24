@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'
 import { logout, session } from '../lib/session'
 import Ico from './Ico.vue'
+import LegalLinks from './LegalLinks.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -79,7 +80,7 @@ async function signOut() {
     </header>
     <main id="main" class="main x-empmain" tabindex="-1">
       <RouterView />
-      <footer class="x-empfoot">© 2026 Tabularius</footer>
+      <footer class="x-empfoot">© 2026 Tabularius <LegalLinks /></footer>
     </main>
   </div>
 </template>
