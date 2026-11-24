@@ -25,9 +25,10 @@ x-api-env: &api-env
   # No real e-mail yet: in demo mode account mail goes to the capture transport, which drops it here.
   # Brevo is connected together with mail ingestion (increment 3) after the owner agrees the step.
   MAILER_DSN: ${MAILER_DSN:-null://null}
-  # Until the public demo is approved, demo replies reach only these test addresses; the rest is captured (dropped).
+  # Demo replies: with MAIL_PUBLIC_REPLIES=1 (the public demo, owner 2026-11-24) to every sender of a ticket; with 0
+  # only to these test addresses, the rest captured (dropped). Account mail is captured in demo either way (ID-DEMO-5).
   MAIL_ALLOWED_RECIPIENTS: ${MAIL_ALLOWED_RECIPIENTS:-}
-  MAIL_PUBLIC_REPLIES: "0"
+  MAIL_PUBLIC_REPLIES: ${MAIL_PUBLIC_REPLIES:-0}
   MAILER_CAPTURE_DSN: null://null
   REPORT_STORAGE_DIR: /app/var/storage/reports
   # Real mailbox (imaps://…); empty until the owner supplies the IMAP details (TASK-006).
