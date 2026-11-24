@@ -20,12 +20,6 @@ Typecheck: `docker run --rm -u $(id -u):$(id -g) -v "$PWD":/app -w /app node:26-
 
 Comparison with the mockups (writes app screenshots at 1500 × 1000 and 390 px; mount the mockups at `/mock`): `scripts/compare-mockups.mjs`.
 
-Screenshots and overflow check (while the dev server runs, from `client/`; needs `npm install playwright@1.64.1` in `scripts/`):
-
-```bash
-docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD/scripts":/pw -v "$PWD/../docs/design/prototype/screens":/out -w /pw mcr.microsoft.com/playwright:v1.64.1-noble node prototype-screens.mjs
-```
-
 ## Scripts against the running stack (`make up`)
 
 From `client/`, after `npm install playwright@1.64.1` in `scripts/`. Both scripts default to `BASE_URL=http://host.docker.internal:8080`.
@@ -36,4 +30,4 @@ docker run --rm --add-host=host.docker.internal:host-gateway -v "$PWD/scripts":/
 
 - `e2e-cp004.mjs` runs critical path CP-004 through the UI and Mailpit, and deletes its own account afterwards.
 - `e2e-cp001.mjs` runs CP-001 without mail and the file part of CP-003: manual ticket → worker → representative downloads at 360 px → another representative gets 404. Needs the worker (`make up` starts it).
-- `prototype-screens.mjs` is the prototype-era walkthrough (mocked tickets `T-10xx`, accepted 2026-11-21). Since TASK-005 tickets and files come from the API, so its ticket and report steps no longer apply; its screenshots in `docs/design/prototype/screens` remain the record of the accepted prototype.
+- The prototype-era walkthrough script was removed on 2026-11-24 (its steps no longer applied after TASK-005; it is in Git history). Its screenshots in `docs/design/prototype/screens` remain the record of the accepted prototype.
