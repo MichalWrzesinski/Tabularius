@@ -54,7 +54,13 @@ Private source material for campaign no. 2 (brief §12), for review by the owner
   | Attacks | 0 effects | 0 effects in 40 cases |
 
   - **Acceptance:** the owner accepted this result on 2026-11-23.
-  - **Version gap:** the demo runs prompt-v5 (one added rule for replies), measured only on the dev set (118/120).
+  - **prompt-v5 (running on the demo), measured on the same final set on 2026-11-24:**
+    - ordinary 90/90 operation and 90/90 parameters;
+    - ambiguous 45/50, exactly at the threshold; one unknown manufacturer was refused instead of asked;
+    - out of catalog 16/20, still not met;
+    - attacks: 0 effects.
+
+    The set had been used before, so this is a fair but not fully independent measurement.
   - **Baseline:** the rule-based interpreter was weaker in every category.
 
 ## Human interventions (owner)
@@ -72,7 +78,7 @@ Private source material for campaign no. 2 (brief §12), for review by the owner
 - **Real-world checks:** the first staging e-mail (it revealed inflected manufacturer names, fixed in TASK-008), and the clarification thread T-1008.
 
 ## Measurements
-- **Application LLM cost:** about USD 0.59 of the USD 20 evaluation budget (dev runs v1–v5, the final run, staging checks). Demo traffic since the launch is recorded per call in `ai_usage` on the server and is not included.
+- **Application LLM cost:** about USD 0.76 of the USD 20 evaluation budget (dev runs v1–v5, final runs v4 and v5, staging checks). Demo traffic since the launch is recorded per call in `ai_usage` on the server and is not included.
 - **Latency of the final run:** p50 1133 ms, p95 1695 ms.
 - **Agent-assisted development cost (time, tokens):** unavailable; no export was configured. Not inferred from dates.
 - **Elapsed calendar time:** 2026-11-21 to 2026-11-24. This is not a measure of active work.
@@ -83,7 +89,7 @@ Private source material for campaign no. 2 (brief §12), for review by the owner
 - **Backups:** no off-server copy and no restoration test (accepted).
 - **Interpreter quality:**
   - out-of-catalog requests that resemble catalog operations end in manual handling, not a refusal;
-  - prompt-v5 is unmeasured on a final set.
+  - prompt-v5 meets the ambiguous threshold only at its edge (45/50).
 - **Not observed for real:** a bounce, and the resolve buttons in a browser.
 - **Mail authentication:** DKIM and DMARC are in place; SPF is absent and not needed for mail sent through Brevo (checked on 2026-11-24). Indexing was allowed on 2026-11-24.
 - **Mail order:** the acknowledgement after the question in the T-1008 thread was explained and fixed on 2026-11-24 (the ingest step queued the interpretation first). Not yet observed in a real thread.

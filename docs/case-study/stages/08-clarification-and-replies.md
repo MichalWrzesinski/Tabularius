@@ -59,7 +59,7 @@
 ## 8. Outcome and next stage
 - **Done:** the clarification loop works end to end on real mail.
 - **Remaining risk:**
-  - **Evaluation gap:** v5 is unmeasured on a final set. The dev set has no reply cases.
+  - **Evaluation gap:** the dev set has no reply cases. v5 was measured on the final set on 2026-11-24 (ambiguous 45/50, at the threshold; see the [evaluation](../../qa/evaluation/README.md)).
   - **Acknowledgement order:** explained and fixed on 2026-11-24, not yet observed in a real thread.
 - **Next:** increment 6 (failure scenarios, operations, launch).
 

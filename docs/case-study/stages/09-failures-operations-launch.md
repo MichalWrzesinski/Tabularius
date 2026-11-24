@@ -72,7 +72,7 @@
 - **Remaining risk, accepted by the owner:**
   - public use with draft legal pages and without monitoring;
   - no off-server backup;
-  - v5 unmeasured on a final set;
+  - prompt-v5 at the edge of the ambiguous threshold (45/50, measured 2026-11-24);
   - `noindex` undecided;
   - SPF/DKIM/DMARC unchecked.
 - **Next:** the owner's open steps in the [readiness record](../../release/public-demo-readiness.md).
