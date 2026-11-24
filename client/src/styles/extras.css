@@ -763,3 +763,95 @@ td a {
 .message .resolve .x-btn2 {
   min-height: 48px;
 }
+
+/* Legal pages and footer links (TASK-016). No mockup: the home page's layout and type. */
+.x-legal-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin-left: 22px;
+}
+.home-footer .x-legal-links {
+  margin-left: 0;
+}
+.x-legal-links .legal-link {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.x-legal-links .legal-link:hover,
+.x-legal-links .legal-link:focus-visible {
+  text-decoration: underline;
+}
+.x-legal-doc {
+  max-width: 760px;
+  margin: 8px auto 48px;
+  color: #4c3a58;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.x-legal-doc h1 {
+  font-size: 36px;
+  letter-spacing: -1px;
+  line-height: 1.2;
+  color: #30183e;
+}
+.x-legal-doc h2 {
+  font-size: 20px;
+  margin: 34px 0 10px;
+  color: #30183e;
+}
+.x-legal-doc p,
+.x-legal-doc li {
+  font-size: 16px;
+}
+.x-legal-doc p + p {
+  margin-top: 12px;
+}
+.x-legal-doc ul {
+  padding-left: 22px;
+  margin: 0 0 12px;
+}
+.x-legal-doc li + li {
+  margin-top: 8px;
+}
+.x-legal-doc mark {
+  background: #fff1d6;
+  color: #6b4a12;
+  padding: 0 3px;
+  border-radius: 4px;
+}
+.x-legal-version {
+  margin-top: 10px;
+  color: #887796;
+  font-size: 14px !important;
+}
+.x-legal-draft {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border: 1px solid #f1dfb8;
+  background: #fffaf0;
+  border-radius: 12px;
+  color: #6b4a12;
+}
+.x-demo-notice {
+  font-size: 13px;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+.x-demo-notice a {
+  text-decoration: underline;
+}
+@media (max-width: 700px) {
+  .x-legal-doc h1 {
+    font-size: 28px;
+  }
+  .x-legal-doc p,
+  .x-legal-doc li {
+    font-size: 15px;
+  }
+  .x-legal-links {
+    margin-left: 0;
+  }
+}

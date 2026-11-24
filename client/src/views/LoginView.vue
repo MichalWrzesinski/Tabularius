@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import logo from '../assets/logo.svg'
 import Ico from '../components/Ico.vue'
+import LegalLinks from '../components/LegalLinks.vue'
 import { errorMessage } from '../lib/http'
 import { loadSession, login, requestPasswordReset, session } from '../lib/session'
 
@@ -107,6 +108,10 @@ void loadSession().catch(() => undefined)
           <b class="address">{{ session.mailbox }}</b>
           <p>Przykład: Przygotuj raport sprzedaży<br />za październik 2026.</p>
           <p style="font-size: 13px; margin-top: 12px; opacity: 0.8">Link do raportu otrzymasz w odpowiedzi.</p>
+          <p class="x-demo-notice">
+            Widoki demo są wspólne dla uczestników. Nie wysyłaj danych poufnych ani prawdziwych danych firmy. Zasady:
+            <RouterLink to="/regulamin">regulamin</RouterLink> i <RouterLink to="/polityka-prywatnosci">polityka prywatności</RouterLink>.
+          </p>
           <p style="margin-top: 18px">Przykładowe dane logowania</p>
           <p style="margin-top: 12px">
             E-mail: <b>{{ creds.email }}</b
@@ -209,7 +214,7 @@ void loadSession().catch(() => undefined)
           </p>
         </template>
       </div>
-      <div class="formfooter"><span>© 2026 Tabularius</span></div>
+      <div class="formfooter"><span>© 2026 Tabularius</span><LegalLinks /></div>
     </section>
   </div>
 </template>

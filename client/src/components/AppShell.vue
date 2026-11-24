@@ -8,6 +8,7 @@ import { listTickets } from '../lib/tickets'
 import { logout, session } from '../lib/session'
 import { initials, openTicketNumber } from '../lib/ticket'
 import Ico from './Ico.vue'
+import LegalLinks from './LegalLinks.vue'
 
 const props = defineProps<{ role: 'admin' | 'employee' }>()
 const route = useRoute()
@@ -157,7 +158,7 @@ async function signOut() {
       <div id="main" tabindex="-1" style="outline: none">
         <RouterView />
       </div>
-      <footer class="appfooter">© 2026 Tabularius</footer>
+      <footer class="appfooter">© 2026 Tabularius <LegalLinks /></footer>
     </main>
   </div>
 </template>

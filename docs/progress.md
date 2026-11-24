@@ -2,7 +2,7 @@
 
 As of: 2026-11-23 Europe/Warsaw | scope: first release (public demo on synthetic data)
 Stage: implementation | increments 1–5 done; increment 6 in progress
-Tasks: TASK-001–014 DONE; TASK-015 (monitoring and operations) in progress — [docs/tasks/](tasks/)
+Tasks: TASK-001–014 DONE; TASK-015 (monitoring and operations, waiting for the owner's accounts) and TASK-016 (legal pages and readiness, drafts awaiting review) in progress — [docs/tasks/](tasks/)
 Release: private repo `MichalWrzesinski/Tabularius`, CI on every PR; **staging live** at https://tabularius.gitpush.app since 2026-11-22, **public since 2026-11-24** (environment login off and demo replies to every sender, both at the owner's request; legal pages still drafts; deployed by CI as `tabularius_deploy`) | production: not planned before separate approval
 Metrics: agent usage not measured (no tool export configured); application LLM cost: about USD 0.59 of the USD 20 evaluation budget ([evaluation](qa/evaluation/README.md))
 
