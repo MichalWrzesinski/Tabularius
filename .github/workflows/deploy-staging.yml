@@ -43,7 +43,7 @@ jobs:
       SHA: ${{ github.event.workflow_run.head_sha || inputs.sha }}
       DOMAIN: ${{ vars.STAGING_DOMAIN }}
       SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
-      SSH_USER: ${{ vars.STAGING_SSH_USER || 'tabularius_deploy' }}
+      SSH_USER: ${{ vars.STAGING_SSH_USER || 'deploy-tabularius' }}
       APP_DIR: ${{ vars.STAGING_APP_DIR || '/srv/Tabularius' }}
     steps:
       - name: Configured?

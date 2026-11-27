@@ -3,7 +3,7 @@
 # Tabularius staging. Changes nothing server-wide: no firewall, SSH settings or packages. Idempotent. Run as root:
 #
 #   sudo bash setup-shared-host.sh <domain> "<deploy SSH public key>" \
-#       [app_dir=/srv/Tabularius] [deploy_user=tabularius_deploy] [proxy_port=8091] [subnet=172.29.0.0/24]
+#       [app_dir=/srv/Tabularius] [deploy_user=deploy-tabularius] [proxy_port=8091] [subnet=172.29.0.0/24]
 #
 # Creates the deploy user (SSH key only, `restrict`ed, member of the docker group), the app directory and its .env
 # with generated database passwords and secrets (they never leave the server).
@@ -12,7 +12,7 @@ set -euo pipefail
 DOMAIN="${1:?domain required}"
 DEPLOY_PUBKEY="${2:?deploy SSH public key required}"
 APP_DIR="${3:-/srv/Tabularius}"
-DEPLOY_USER="${4:-tabularius_deploy}"
+DEPLOY_USER="${4:-deploy-tabularius}"
 PROXY_PORT="${5:-8091}"
 SUBNET="${6:-172.29.0.0/24}"
 

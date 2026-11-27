@@ -6,7 +6,7 @@
   - TASK-011, OpenAI interpreter;
   - TASK-012, evaluation (PRs 36–38 for prompt-v2 to v4, then this report).
 - Environment:
-  - staging behind its environment login, deployed by CI as `tabularius_deploy`;
+  - staging behind its environment login, deployed by CI as `deploy-tabularius`;
   - real IMAP mailbox and SMTP relay (allowlisted test addresses only);
   - real model `gpt-4.1-mini` through the Responses API.
 - Evaluation runs: the GitHub Actions workflow on a `main` commit image, with synthetic sets only.
