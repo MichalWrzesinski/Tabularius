@@ -46,7 +46,7 @@ Commands use `SERVER` for the server's address (151.240.121.172) and the SSH ali
    - From now until the first deployment (step 6) the domain shows an nginx error instead of the temporary page.
    - If certbot uses `webroot`, put its path in the `acme-challenge` block of `infra/server/nginx-tabularius.conf`.
    - If one of the two `/etc/letsencrypt/…` files is missing, remove its line from that file.
-3. **Prepare the server.** This creates the user `tabularius_deploy`, `/srv/Tabularius` and its `.env`, and checks that port 8091 and the network 172.29.0.0/24 are free:
+3. **Prepare the server.** This creates the user `deploy-tabularius`, `/srv/Tabularius` and its `.env`, and checks that port 8091 and the network 172.29.0.0/24 are free:
    ```bash
    scp infra/server/setup-shared-host.sh infra/server/nginx-tabularius.conf webhome-vps:/tmp/
    ssh -t webhome-vps "sudo bash /tmp/setup-shared-host.sh tabularius.gitpush.app \"$(cat tabularius-staging-deploy.pub)\""
@@ -54,7 +54,7 @@ Commands use `SERVER` for the server's address (151.240.121.172) and the SSH ali
    - If the port or the network is taken, pass others as the 5th and 6th arguments, then set the same port in the nginx file.
    - An `AllowUsers` line in `/etc/ssh/sshd_config` may need the new user. Check the login:
      ```bash
-     ssh -i tabularius-staging-deploy tabularius_deploy@SERVER 'docker ps --format "{{.Names}}" | head -3'
+     ssh -i tabularius-staging-deploy deploy-tabularius@SERVER 'docker ps --format "{{.Names}}" | head -3'
      ```
 4. **GitHub secrets and variables** (from the repository folder, with `gh` logged in):
    ```bash
@@ -79,7 +79,7 @@ Commands use `SERVER` for the server's address (151.240.121.172) and the SSH ali
 
 - **Logs:**
   ```bash
-  ssh tabularius_deploy@SERVER 'cd /srv/Tabularius/current && docker compose --env-file ../../.env logs --tail 100 api worker'
+  ssh deploy-tabularius@SERVER 'cd /srv/Tabularius/current && docker compose --env-file ../../.env logs --tail 100 api worker'
   ```
   (`restrict` keys allow commands, not a terminal.)
 - **Earlier release:** run the workflow with `-f sha=<older commit on main>`. Its images are still in GHCR.
